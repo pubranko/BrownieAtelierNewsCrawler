@@ -1,0 +1,65 @@
+{
+    "domain": "epochtimes.jp",
+    "scrape_items": {
+        "title_scraper": [
+            {
+                "pattern": 2,
+                "css_selecter": "head > title",
+                "priority": 2,
+                "register_date":"2022-04-16T14:00:00+09:00"
+            },
+            {
+                "pattern": 1,
+                "css_selecter": "title",
+                "priority": 1,
+                "register_date":"2022-04-16T14:00:00+09:00"
+            }
+        ],
+        "article_scraper": [
+            {
+                "pattern": 4,
+                "css_selecter": ".main_content .post_content > p",
+                "priority": 4,
+                "register_date":"2022-05-22T23:00:00+09:00"
+            },
+            {
+                "pattern": 3,
+                "css_selecter": ".one_post >.active >.post_content > p",
+                "priority": 3,
+                "register_date":"2022-05-22T23:00:00+09:00"
+            },
+            {
+                "pattern": 2,
+                "css_selecter": ".middle_part > .text",
+                "priority": 2,
+                "register_date":"2022-04-16T14:00:00+09:00"
+            },
+            {
+                "pattern": 1,
+                "css_selecter": "article .page_content",
+                "priority": 1,
+                "register_date":"2022-04-16T14:00:00+09:00"
+            }
+        ],
+        "publish_date_scraper": [
+            {
+                "pattern": 3,
+                "css_selecter": "head > meta[name=\"date\"]",
+                "priority": 3,
+                "register_date":"2022-05-15T14:23:00+09:00"
+            },
+            {
+                "pattern": 2,
+                "css_selecter": ".page_datetime.col-sm-12.col-md-12",
+                "priority": 2,
+                "register_date":"2022-04-16T14:00:00+09:00"
+            },
+            {
+                "pattern": 1,
+                "css_selecter": "head > meta[name=\"pubdate\"]",
+                "priority": 1,
+                "register_date":"2022-04-16T14:00:00+09:00"
+            }
+        ]
+    }
+}

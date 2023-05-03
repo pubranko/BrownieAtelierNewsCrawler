@@ -1,0 +1,58 @@
+FROM ubuntu:20.04
+
+#LABELでメタ情報を入れることができる
+LABEL maintainer="BrownieAtelier-base-test"
+
+# OSユーザー＆パスワード
+ARG NORMAL_USER
+ARG NORMAL_PASS
+ARG ROOT_PASS
+
+# タイムゾーン設定
+ENV TZ Asia/Tokyo
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# リポジトリ一覧を更新、インストール済みのパッケージ更新
+# 必要なアプリをインストール
+RUN apt-get update
+RUN apt update
+RUN apt -y upgrade
+RUN apt -y install build-essential libssl-dev wget firefox git
+
+#RUN apt -y install build-essential libssl-dev wget firefox libbz2-dev libdb-dev libreadline-dev libffi-dev libgdbm-dev liblzma-dev libncursesw5-dev libsqlite3-dev zlib1g-dev uuid-dev tk-dev
+
+# Selenium用にgeckodriverを取得して配置。不要になったダウンロードファイル削除
+RUN wget -P /usr/local/bin/ "https://github.com/mozilla/geckodriver/releases/download/v0.31.0/geckodriver-v0.31.0-linux64.tar.gz"
+RUN tar -zxvf /usr/local/bin/geckodriver-v0.31.0-linux64.tar.gz -C /usr/local/bin
+RUN rm /usr/local/bin/geckodriver-v0.31.0-linux64.tar.gz
+
+# pythonまわりのインストール
+RUN apt -y install python3.9
+RUN apt -y install python3.9-venv$GIT_REMOTE_REPOSITORY
+RUN apt -y install python3-selenium
+
+# 更新時に使われたが、その後不要となったものの一括削除
+# キャッシュされているがインストールされていないdebファイルを削除
+# 不要なアプリを削除
+RUN apt autoremove
+RUN apt autoclean
+RUN apt -y remove build-essential libssl-dev wget
+#RUN apt -y remove build-essential libssl-dev wget firefox libbz2-dev libdb-dev libreadline-dev libffi-dev libgdbm-dev liblzma-dev libncursesw5-dev libsqlite3-dev zlib1g-dev uuid-dev tk-dev
+
+# rootユーザパスワード
+RUN echo 'root:'${ROOT_PASS} | chpasswd
+# 新規グループ・ユーザーを作成。
+RUN groupadd -g 1000 ${NORMAL_USER}
+RUN useradd  -g      ${NORMAL_USER} -G sudo -m -s /bin/bash ${NORMAL_USER}
+# ユーザパスワード
+RUN echo ${NORMAL_USER}':'${NORMAL_PASS} | chpasswd
+#sudoユーザーを追加 (TEST用)
+RUN echo 'Defaults visiblepw' >> /etc/sudoers
+RUN echo ${NORMAL_USER}' ALL=(ALL) NOPASSWD:ALL' >> /etc/sud
+# rootユーザーログイン無効化
+# RUN passwd -l root
+
+USER ${NORMAL_USER}
+
+ENTRYPOINT []
+CMD []

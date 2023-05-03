@@ -129,4 +129,22 @@ dmypy.json
 .pyre/
 
 ### 拡張してみた
-debug_entries*.txt
+#.vscode/*
+.vscode/launch.json
+.vscode/jupyter_env.json
+app/.flows/*
+data_dir/exclusive_work/*
+data_dir/backup_files/*
+data_dir/debug/*
+data_dir/direct_crawl_files/*
+data_dir/login_info/*
+data_dir/logs/*
+data_dir/*report*
+certificate
+test_aria/*
+#!/data_dir/scraper_info_by_domain/
+### パスワードなどあるので保存禁止 雛形は docker-compose.yml.org を参照
+docker-compose.yml
+aci-create*.yml
+aci-app-db-login.yml
+aci-app-db.yml
