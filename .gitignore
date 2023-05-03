@@ -129,11 +129,9 @@ dmypy.json
 .pyre/
 
 ### 拡張してみた
-.vscode/*
-# .vscode/launch.json
-# .vscode/jupyter_env.json
-# .vscode/settings.json
-# .vscode/tasks.json
+#.vscode/*
+.vscode/launch.json
+.vscode/jupyter_env.json
 app/.flows/*
 data_dir/exclusive_work/*
 data_dir/backup_files/*
