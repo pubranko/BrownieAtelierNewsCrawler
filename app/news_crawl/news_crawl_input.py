@@ -97,21 +97,23 @@ class NewsCrawlInput(BaseModel):
         return value
 
     @validator(NewsCrawlInputConst.LASTMOD_TERM_MINUTES_TO)
-    def lastmod_term_minutes_to_check(cls, value: list[str], values: dict) -> list[str]:
+    def lastmod_term_minutes_to_check(cls, value: int, values: dict) -> int:
         if value and values[NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM]:
-            assert value <= values[
-                NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM], f'引数エラー : {NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM} と {NewsCrawlInputConst.LASTMOD_TERM_MINUTES_TO} は、from > toで指定してください。from({values[NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM]}) : to({value})）'
+            assert value <= values[NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM], \
+                f'引数エラー : {NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM} と {NewsCrawlInputConst.LASTMOD_TERM_MINUTES_TO} は、from > toで指定してください。from({values[NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM]}) : to({value})）'
         return value
 
     @validator(NewsCrawlInputConst.PAGE_SPAN_TO, always=True)
-    def page_span_to_check(cls, value: list[str], values: dict) -> list[str]:
+    def page_span_to_check(cls, value: int, values: dict) -> int:
 
         assert ((values[NewsCrawlInputConst.PAGE_SPAN_FROM] and value) or
-                (not values[NewsCrawlInputConst.PAGE_SPAN_FROM] and not value)), f'引数エラー : {NewsCrawlInputConst.PAGE_SPAN_FROM} と {NewsCrawlInputConst.PAGE_SPAN_TO} は同時に指定してください。'
+                (not values[NewsCrawlInputConst.PAGE_SPAN_FROM] and not value)), \
+                    f'引数エラー : {NewsCrawlInputConst.PAGE_SPAN_FROM} と {NewsCrawlInputConst.PAGE_SPAN_TO} は同時に指定してください。'
 
         if value and values[NewsCrawlInputConst.PAGE_SPAN_FROM]:
             assert value >= values[
-                NewsCrawlInputConst.PAGE_SPAN_FROM], f'引数エラー : {NewsCrawlInputConst.PAGE_SPAN_FROM}と{NewsCrawlInputConst.PAGE_SPAN_TO}はfrom ≦ toで指定してください。from({values[NewsCrawlInputConst.PAGE_SPAN_FROM]}) : to({value})）'
+                NewsCrawlInputConst.PAGE_SPAN_FROM], \
+                    f'引数エラー : {NewsCrawlInputConst.PAGE_SPAN_FROM}と{NewsCrawlInputConst.PAGE_SPAN_TO}はfrom ≦ toで指定してください。from({values[NewsCrawlInputConst.PAGE_SPAN_FROM]}) : to({value})）'
 
         return value
 

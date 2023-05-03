@@ -90,6 +90,11 @@ class ExtensionsSitemapSpider(SitemapSpider):
     # irregular             : イレギラーなサイト用
     sitemap_type = 'nomal'
 
+    # サイトマップ続き読み込みフラグ
+    loading_site_map_continued_mode: bool = False
+    # サイトマップの続きのURL。続きが必要担った場合だけURLが設定される。値がある場合のURLへのリクエストを実行する。
+    next_sitemap_url:str = ''
+
     # sitemap情報を保存 [{'source_url': response.url, 'lastmod': date_lastmod, 'loc': entry['loc']},,,]
     crawl_urls_list: list[dict[str, Any]] = []
 
@@ -176,7 +181,7 @@ class ExtensionsSitemapSpider(SitemapSpider):
 
         else:
             for url in self.sitemap_urls:
-                yield scrapy.Request(url=url, callback=self.custom_parse_sitemap)
+                yield scrapy.Request(url=url, callback=self.custom_parse_sitemap, priority=10)
 
     def custom_parse_sitemap(self, response: Response):
         '''
@@ -185,7 +190,7 @@ class ExtensionsSitemapSpider(SitemapSpider):
         '''
         if response.url.endswith(self.SITEMAP_TYPE__ROBOTS_TXT):
             for url in sitemap_urls_from_robots(response.text, base_url=response.url):
-                yield Request(url, callback=self.custom_parse_sitemap)
+                yield Request(url, callback=self.custom_parse_sitemap, priority=10)
         else:
             body = self._get_sitemap_body(response)
             if body is None:
@@ -193,17 +198,16 @@ class ExtensionsSitemapSpider(SitemapSpider):
                                     {'response': response}, extra={'spider': self})
                 return
 
-            sitemap = CustomSitemap(
-                body, response, self)        # 引数にresponseを追加
-            it = self.sitemap_filter(sitemap, response)   # 引数にresponseを追加
+            sitemap = CustomSitemap(body, response, self)   # レスポンスのxmlを解析
+            it = self.sitemap_filter(sitemap, response)     # 引数にresponseを追加
 
-            # サイトマップインデックスの場合
+            # 解析中のサイトマップがサイトマップインデックスの場合
             if sitemap.type == self.SITEMAP_TYPE__SITEMAPINDEX:
                 for loc in iterloc(it, self.sitemap_alternate_links):
                     if any(x.search(loc) for x in self._follow):
-                        yield Request(loc, callback=self.custom_parse_sitemap)
+                        yield Request(loc, callback=self.custom_parse_sitemap, priority=10)
 
-            # 子サイトマップの場合
+            # 解析中のサイトマップがサイトマップの場合
             elif sitemap.type == 'urlset':
                 for loc in iterloc(it, self.sitemap_alternate_links):
                     for rule_regex, call_back in self._cbs:
@@ -222,6 +226,12 @@ class ExtensionsSitemapSpider(SitemapSpider):
                             else:
                                 yield Request(loc, callback=call_back)
                             break
+
+                # sitemap_filter内で続きのsitemap_urlが生成されていた場合、そのURLへリクエストを行う。
+                if len(self.next_sitemap_url):
+                    self.logger.info(f'=== {self.name} 次のサイトマップをリクエスト : {self.next_sitemap_url}')
+                    yield Request(self.next_sitemap_url, callback=self.custom_parse_sitemap, priority=10)
+                    self.next_sitemap_url = ''  # リクエスト後はクリアする。
 
     def sitemap_filter(self, entries: CustomSitemap, response: Response):
         '''
@@ -294,6 +304,23 @@ class ExtensionsSitemapSpider(SitemapSpider):
                 ControllerModel.LATEST_LASTMOD: self.domain_lastmod,
                 ControllerModel.CRAWLING_START_TIME: self.news_crawl_input.crawling_start_time,
             }
+
+        # サイトマップ続き読み込みモードがonの場合
+        if self.loading_site_map_continued_mode:
+            # entriesから最後の１件のlastmodを取得
+            entry_list:list[dict] = [_ for _ in entries]
+            last_entry:dict = entry_list[-1]
+            last_lastmod:datetime = parser.parse(last_entry[self.SITEMAP__LASTMOD])
+
+            # 最終更新期間(分)の抽出指定があり、まだ引数で指定された「最終更新日時期間指定_from」まで到達していない場合、次のsitemapのURLを生成する。
+            if self.lastmod_term.lastmod_term_datetime_from:
+                if self.lastmod_term.lastmod_term_datetime_from < last_lastmod:
+                    self.next_sitemap_url = self.loading_site_map_continued(response.url)
+
+            # 前回の続き指定があり、まだ続き指定分まで到達していない場合、次のsitemapのURLを生成する。
+            if self.lastmod_continued.continued:
+                if self.lastmod_continued.latest_lastmod < last_lastmod:
+                    self.next_sitemap_url = self.loading_site_map_continued(response.url)
 
     def parse(self, response: TextResponse):
         '''
@@ -452,3 +479,10 @@ class ExtensionsSitemapSpider(SitemapSpider):
         各スパイダーでオーバーライドして使用する。
         '''
         return d
+
+    def loading_site_map_continued(self,current_sitemap_url) -> str:
+        '''
+        現在のサイトマップURLより次のサイトマップURLを生成し返す。存在しない場合空文字を返す。
+        各スパイダーでオーバーライドして使用する。
+        '''
+        return ''

@@ -17,7 +17,17 @@ import re
 class YomiuriCoJpSitemapSpider(ExtensionsSitemapSpider):
     name: str = 'yomiuri_co_jp_sitemap'
     allowed_domains: list = ['yomiuri.co.jp']
-    sitemap_urls: list = ['https://www.yomiuri.co.jp/sitemap.xml']
+    sitemap_urls: list = [
+        'https://www.yomiuri.co.jp/sitemap-news-latest.xml',
+        'https://www.yomiuri.co.jp/sitemap-news-past-1.xml',
+        'https://www.yomiuri.co.jp/sitemap-news-past-2.xml',
+        'https://www.yomiuri.co.jp/sitemap-news-past-3.xml',
+        'https://www.yomiuri.co.jp/sitemap-news-past-4.xml',
+        'https://www.yomiuri.co.jp/sitemap-news-past-5.xml',
+        'https://www.yomiuri.co.jp/sitemap-news-past-6.xml',
+        'https://www.yomiuri.co.jp/sitemap-news-past-7.xml',
+    ]
+    # sitemap_urls: list = ['https://www.yomiuri.co.jp/sitemap.xml']
     #sitemap_urls: list = ['https://www.yomiuri.co.jp/sitemap-news-past-1.xml']
     _domain_name: str = 'yomiuri_co_jp'        # 各種処理で使用するドメイン名の一元管理
     _spider_version: float = 1.0

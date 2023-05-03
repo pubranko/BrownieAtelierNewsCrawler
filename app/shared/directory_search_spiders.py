@@ -1,3 +1,4 @@
+from typing import ItemsView
 import os
 import sys
 import re
@@ -75,7 +76,7 @@ class DirectorySearchSpiders:
                 splash_mode: bool = False
                 if ptn.search(class_name) and \
                         class_name not in exclusion_list:
-                    members: dict = class_instans.__dict__
+                    members = class_instans.__dict__
                     if 'allowed_domains' in members:
                         # allowed_domainsリスト内の要素数がゼロの場合、ドメインが設定されていないスパイダーなので除外。
                         if len(members['allowed_domains']) == 0:

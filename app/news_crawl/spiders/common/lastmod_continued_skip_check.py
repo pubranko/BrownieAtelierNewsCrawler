@@ -22,8 +22,8 @@ class LastmodContinuedSkipCheck(object):
     logger: LoggerAdapter
     # クロールポイントレコード情報保存
     crawl_point: dict = {}
-    latest_lastmod: Any = None
-    latest_urls: Any = None
+    latest_lastmod: datetime
+    latest_urls: str
 
     def __init__(self,
         continued: Optional[bool],

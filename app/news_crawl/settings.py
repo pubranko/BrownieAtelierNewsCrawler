@@ -209,15 +209,15 @@ INSTALL_ROOT_HANDLER=False
 # Scrapy-Seleniumの設定。上述のDOWNLOADER_MIDDLEWARES={}にも設定を行っている。
 SELENIUM_DRIVER_NAME = 'firefox'
 SELENIUM_DRIVER_EXECUTABLE_PATH = which('geckodriver')
-# SELENIUM_DRIVER_ARGUMENTS = ['-headless']
-SELENIUM_DRIVER_ARGUMENTS = []
+SELENIUM_DRIVER_ARGUMENTS = ['-headless']
 # ブラウザ・通信の不可軽減のため、独自の設定を追加してみた。
 #   その他の設定については、ここが参考になりそう https://www.programcreek.com/python/example/100026/selenium.webdriver.FirefoxProfile
 #   1:通常、2:禁止
 SELENIUM_DRIVER_SET_PREFERENCE = {
-    'permissions.default.image': 2,                 # 画像のダウンロード禁止
-    'permissions.default.image.animation_mode': 2,  # gitなどのアニメーションのダウンロード禁止
-    'permissions.default.stylesheet': 2,            # cssのダウンロード禁止
+    'permissions.default.image': 2,                         # 画像のダウンロード禁止
+    'permissions.default.image.animation_mode': 2,          # gitなどのアニメーションのダウンロード禁止
+    'permissions.default.stylesheet': 2,                    # cssのダウンロード禁止
+    'dom.ipc.plugins.enabled.libflashplayer.so': 'false',   # Flashを使わない
 }
 
 # Scrapy-Splashの設定
