@@ -83,7 +83,7 @@ class SeleniumMiddleware:
         # それを使用するようカスタマイズ
         set_preferences: dict[str,int] = crawler.settings.get(
             'SELENIUM_DRIVER_SET_PREFERENCE')
-        new_profile = FirefoxProfile()
+        new_profile = FirefoxProfile(profile_directory=crawler.settings.get('SELENIUM_FIREFOX_PROFILE_DIRECTORY'))
         for set_preference_key, set_preference_value in set_preferences.items():
             new_profile.set_preference(set_preference_key, set_preference_value)
         # ここで当ミドルウェアのインスタンス化を行っている。

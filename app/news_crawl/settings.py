@@ -219,6 +219,8 @@ SELENIUM_DRIVER_SET_PREFERENCE = {
     'permissions.default.stylesheet': 2,                    # cssのダウンロード禁止
     'dom.ipc.plugins.enabled.libflashplayer.so': 'false',   # Flashを使わない
 }
+SELENIUM_FIREFOX_PROFILE_DIRECTORY = 'firefox_profile'      # firefoxのクローラー用にカスタマイズしたプロファイル。Browniatelier/app/firefox_profile
+
 
 # Scrapy-Splashの設定
 SPLASH_URL = 'http://localhost:8050/'

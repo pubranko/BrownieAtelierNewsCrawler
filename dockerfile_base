@@ -3,23 +3,29 @@ FROM ubuntu:20.04
 #LABELでメタ情報を入れることができる
 LABEL maintainer="BrownieAtelier-base-test"
 
-# OSユーザー＆パスワード
+###########################################
+# dockerコマンドより受け取る環境変数
+##########################################
 ARG NORMAL_USER
 ARG NORMAL_PASS
 ARG ROOT_PASS
+ARG GIT_REMOTE_REPOSITORY
 
+###################
 # タイムゾーン設定
+###################
 ENV TZ Asia/Tokyo
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
+############################################################
+# インストール
+############################################################
 # リポジトリ一覧を更新、インストール済みのパッケージ更新
 # 必要なアプリをインストール
 RUN apt-get update
 RUN apt update
 RUN apt -y upgrade
-RUN apt -y install build-essential libssl-dev wget firefox git
-
-#RUN apt -y install build-essential libssl-dev wget firefox libbz2-dev libdb-dev libreadline-dev libffi-dev libgdbm-dev liblzma-dev libncursesw5-dev libsqlite3-dev zlib1g-dev uuid-dev tk-dev
+RUN apt -y install build-essential libssl-dev wget sudo git firefox
 
 # Selenium用にgeckodriverを取得して配置。不要になったダウンロードファイル削除
 RUN wget -P /usr/local/bin/ "https://github.com/mozilla/geckodriver/releases/download/v0.31.0/geckodriver-v0.31.0-linux64.tar.gz"
@@ -28,7 +34,7 @@ RUN rm /usr/local/bin/geckodriver-v0.31.0-linux64.tar.gz
 
 # pythonまわりのインストール
 RUN apt -y install python3.9
-RUN apt -y install python3.9-venv$GIT_REMOTE_REPOSITORY
+RUN apt -y install python3.9-venv
 RUN apt -y install python3-selenium
 
 # 更新時に使われたが、その後不要となったものの一括削除
@@ -36,23 +42,53 @@ RUN apt -y install python3-selenium
 # 不要なアプリを削除
 RUN apt autoremove
 RUN apt autoclean
-RUN apt -y remove build-essential libssl-dev wget
-#RUN apt -y remove build-essential libssl-dev wget firefox libbz2-dev libdb-dev libreadline-dev libffi-dev libgdbm-dev liblzma-dev libncursesw5-dev libsqlite3-dev zlib1g-dev uuid-dev tk-dev
+RUN apt -y remove build-essential libssl-dev
 
+#####################################
+# ユーザー設定(root、一般)
+#####################################
 # rootユーザパスワード
 RUN echo 'root:'${ROOT_PASS} | chpasswd
-# 新規グループ・ユーザーを作成。
+# 新規グループ・一般ユーザーを作成。
 RUN groupadd -g 1000 ${NORMAL_USER}
 RUN useradd  -g      ${NORMAL_USER} -G sudo -m -s /bin/bash ${NORMAL_USER}
-# ユーザパスワード
+# 一般ユーザパスワード
 RUN echo ${NORMAL_USER}':'${NORMAL_PASS} | chpasswd
-#sudoユーザーを追加 (TEST用)
+# 一般ユーザーにsudo権限付与
 RUN echo 'Defaults visiblepw' >> /etc/sudoers
-RUN echo ${NORMAL_USER}' ALL=(ALL) NOPASSWD:ALL' >> /etc/sud
-# rootユーザーログイン無効化
-# RUN passwd -l root
+RUN echo ${NORMAL_USER}' ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-USER ${NORMAL_USER}
+#############################
+# BrownieAtelierインストール
+#############################
+# アプリ用ディレクトリ作成
+WORKDIR /home/${NORMAL_USER}/BrownieAtelier
+
+# gitリポジトリ設定
+RUN git init
+RUN git remote add origin ${GIT_REMOTE_REPOSITORY}
+# リポジトリの所有権でエラーが出ないように例外をコンフィグに登録
+RUN git config --global --add safe.directory /home/mikuras/BrownieAtelier
+# リモートリポジトリよりpullを実行し最新ソースを取得する。
+# RUN git pull origin master
+RUN git pull origin develop
+
+# アプリ内でpython仮想環境構築
+WORKDIR /home/${NORMAL_USER}
+RUN python3.9 -m venv .venv
+RUN "." .venv/bin/activate
+RUN .venv/bin/pip install --upgrade pip
+# pythonライブラリ系インストール
+RUN /home/${NORMAL_USER}/.venv/bin/pip install -r /home/${NORMAL_USER}/BrownieAtelier/app/requirements.txt
+
+# 上記ファイルは全てrootとなっているため、オーナー＆グループを一般ユーザーに変更
+WORKDIR /home/${NORMAL_USER}
+RUN chown -R ${NORMAL_USER}:${NORMAL_USER} .
+
+###########################################
+# 起動時のユーザーを一般ユーザーに変更
+###########################################
+# USER ${NORMAL_USER}
 
 ENTRYPOINT []
 CMD []
