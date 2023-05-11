@@ -32,7 +32,7 @@ class ScrapedNewsClipMasterSaveTask(ExtensionsTask):
         self.logger.info(f'=== Scraped Save run kwargs : \
                             {scrapying_input.DOMAIN} = {domain}, \
                             {scrapying_input.TARGET_START_TIME_FROM} = {target_start_time_from}, \
-                            {scrapying_input.TARGET_START_TIME_TO} = {target_start_time_from}, \
+                            {scrapying_input.TARGET_START_TIME_TO} = {target_start_time_to}, \
                             {scrapying_input.URLS} = {urls}, \
                             {scrapying_input.FOLLOWING_PROCESSING_EXECUTION} = {following_processing_execution}')
 
