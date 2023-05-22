@@ -1,0 +1,125 @@
+import os
+import sys
+import logging
+import tempfile
+import glob
+import json
+from typing import Any
+from logging import Logger, StreamHandler, LoggerAdapter
+from pydantic import ValidationError
+from prefect.logging.loggers import PrefectLogAdapter
+
+from datetime import datetime
+from prefect import flow, task
+import prefect
+import prefect.context
+from prefect.context import FlowRunContext
+from prefect import get_run_logger
+from prefect.futures import PrefectFuture
+from prefect.task_runners import SequentialTaskRunner
+from prefect.states import Crashed, Pending, exception_to_failed_state, Failed, Running, Completed
+from prefect.exceptions import FailedRun
+# from prefect.core.parameter import Parameter
+# from prefect.tasks.control_flow.conditional import ifelse
+# from prefect.engine import signals
+# from prefect.utilities.context import Context
+# from prefect_lib.common_module.flow_status_change import flow_status_change
+# from prefect_lib.task.scraper_info_uploader_task import ScraperInfoUploaderTask
+from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
+from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import ScraperInfoByDomainModel
+from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import ScraperInfoByDomainConst
+from shared.settings import TIMEZONE, LOG_FORMAT, LOG_DATEFORMAT
+from shared.settings import DATA_DIR__SCRAPER_INFO_BY_DOMAIN_DIR
+# from prefect_lib.common_module.logging_setting import LOG_FILE_PATH
+# from app.prefect_lib.flows.common_flow import common_flow
+from prefect_lib.tasks.init_task import init_task
+from prefect_lib.tasks.end_task import end_task
+
+
+'''
+mongoDBのインポートを行う。
+・pythonのlistをpickle.loadsで復元しインポートする。
+・対象のコレクションを選択できる。
+・対象の年月を指定できる。範囲を指定した場合、月ごとにエクスポートを行う。
+'''
+
+
+@task
+def scraper_info_by_domain(scraper_info_by_domain_files: list, mongo: MongoModel):
+    logger = get_run_logger()   # PrefectLogAdapter
+    logger.info('=== scraper_info_by_domain動いたよ〜')
+
+    logger.info(f'=== ScraperInfoUploaderTask run kwargs : {scraper_info_by_domain_files}')
+
+    scraper_info_by_domain_model = ScraperInfoByDomainModel(mongo)
+
+    get_files: list = []
+    if len(scraper_info_by_domain_files) == 0:
+        path = os.path.join(DATA_DIR__SCRAPER_INFO_BY_DOMAIN_DIR, '*.json')
+        get_files = glob.glob(path)
+        if len(get_files) == 0:
+            # raise ENDRUN(state=state.Failed())
+            raise IOError(f'対象ディレクトリにファイルが見つかりませんでした。ディレクトリにファイルを格納してください。 (ディレクトリ= {DATA_DIR__SCRAPER_INFO_BY_DOMAIN_DIR})')
+        else:
+            logger.info(
+                f'=== ScraperInfoUploaderTask run ファイル指定なし → 全ファイル対象 : {get_files}')
+    else:
+        for file in scraper_info_by_domain_files:
+            file_path = os.path.join(DATA_DIR__SCRAPER_INFO_BY_DOMAIN_DIR, file)
+            if os.path.exists(file_path):
+                raise IOError(f'対象ディレクトリにファイルが見つかりませんでした。ファイル名に誤りがある可能性があります。 (ディレクトリ= {DATA_DIR__SCRAPER_INFO_BY_DOMAIN_DIR}, ファイル名= {file})')
+            get_files.append(file_path)
+
+
+    for file_path in get_files:
+        logger.info(
+            f'=== ScraperInfoUploaderTask run ファイルチェック : {file_path}')
+        with open(file_path, 'r') as f:
+            file = f.read()
+
+        scraper_info: dict = json.loads(file)
+
+        try:
+            scraper_info_by_domain_model.data_check(scraper=scraper_info)
+        except ValidationError as e:
+            error_info: list = e.errors()
+            logger.error(
+                f'=== ScraperInfoUploaderTask run エラー({file_path}) : {error_info[0]["msg"]}')
+        else:
+            scraper_info_by_domain_model.update_one(
+                filter={ScraperInfoByDomainConst.DOMAIN: scraper_info[ScraperInfoByDomainConst.DOMAIN]},
+                record={"$set":scraper_info})
+            logger.info(
+                f'=== ScraperInfoUploaderTask run 登録完了 : {file_path}')
+
+        # 処理の終わったファイルオブジェクトを削除
+        del file, scraper_info
+
+
+@flow(
+    flow_run_name='[ENTRY_001] Scraper info uploader flow',
+    task_runner=SequentialTaskRunner())
+def scraper_info_by_domain_flow(scraper_info_by_domain_files: list):
+
+    # ロガー取得
+    logger = get_run_logger()   # PrefectLogAdapter
+    # 初期処理
+    init_task_result: PrefectFuture = init_task.submit()
+
+    if init_task_result.get_state().is_completed():
+        start_time, log_file_path, mongo = init_task_result.result()
+
+        # prefect flow context取得
+        any: Any = prefect.context.get_run_context()
+        flow_context: FlowRunContext = any
+
+        try:
+            scraper_info_by_domain(scraper_info_by_domain_files, mongo)
+        except Exception as e:
+            # 例外をキャッチしてログ出力等の処理を行う
+            logger.error(f'=== {e}')
+        finally:
+            # 後続の処理を実行する
+            end_task(start_time, log_file_path, mongo, flow_context.flow_run.name)
+    else:
+        logger.error(f'=== init_taskが正常に完了しなかったため、後続タスクの実行を中止しました。')

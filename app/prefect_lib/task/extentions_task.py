@@ -2,13 +2,19 @@
 import os
 import sys
 import re
-from typing import Any, Final
-from logging import Logger
+from typing import Any, Final, Union
+from logging import Logger,LoggerAdapter
 from datetime import datetime
 import prefect
-from prefect.core.task import Task
-from prefect.engine import signals
-from prefect.utilities.context import Context
+import prefect.context
+from prefect.context import FlowRunContext, TaskRunContext
+from prefect import Task, get_run_logger
+from prefect import tasks
+from prefect.task_runners import BaseTaskRunner
+# from prefect.engine import signals
+from prefect.utilities.context import temporary_context
+from prefect.logging.loggers import PrefectLogAdapter
+from contextvars import Context
 from prefect.utilities import context as prefect_utilities_con
 path = os.getcwd()
 sys.path.append(path)
@@ -27,11 +33,17 @@ class ExtensionsTask(Task):
     start_time: datetime
     log_record: str  # 読み込んだログファイルオブジェクト
     log_file_path: str  # ログファイルのパス
-    #prefect_context: Context = prefect.context
-    any: Any = prefect
-    prefect_context: Context = any.context
-    logger: Logger
+    # prefect_context = prefect.context.get_run_context()
+    # prefect_context = prefect.
+    # any: Any = prefect.context.get_run_context()
+    # prefect_context: Context = any.context
+    prefect_context: TaskRunContext
+    # logger: Logger
+    # logger: Logger= get_run_logger().logger
+    # _ = get_run_logger()
+    # logger=  _ if type(_) is Logger else _.logger
     mongo: MongoModel
+
 
 
     ###############
@@ -43,12 +55,31 @@ class ExtensionsTask(Task):
     '''定数: mongo'''
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(fn=tasks.P ,*args, **kwargs)
 
         # 開始時間
         self.start_time=datetime.now().astimezone(TIMEZONE)
 
+        _ = prefect.get_run_logger()
+        print(f'=== task init確認中 {type(_)}')
+        if type(_) is LoggerAdapter:
+            self.logger = _.logger
+        elif type(_) is PrefectLogAdapter:
+            self.logger = _.logger
+        elif type(_) is Logger:
+            self.logger = _
+        else:
+            raise RuntimeError("実験中。あとで考える。")
         self.mongo = MongoModel(self.logger)
+        # _ = prefect.context.get_run_context()
+        # if type(_) is TaskRunContext:
+        #     self.prefect_context = _
+        #     prefect.context.get_run_context().flow_run().dict()
+
+        print('\n\n=== 実験２ ')
+        print(type(prefect.context.get_run_context()))
+        print(prefect.context.get_run_context())
+
 
     def log_check(self):
         '''クリティカル、エラー、ワーニングがあったらメールで通知'''
@@ -91,7 +122,9 @@ class ExtensionsTask(Task):
         crawler_logs = CrawlerLogsModel(self.mongo)
         crawler_logs.insert_one({
             CrawlerLogsModel.START_TIME: self.start_time,
-            CrawlerLogsModel.FLOW_NAME: self.prefect_context['flow_name'],
+            # CrawlerLogsModel.FLOW_NAME: self.prefect_context['flow_name'],
+            # CrawlerLogsModel.FLOW_NAME: self.prefect_context.flow_run['flow_name'],
+            CrawlerLogsModel.FLOW_NAME: "どうしていいかわからんからとりあえず暫定",
             # CrawlerLogsModel.RECORD_TYPE: self.name,
             CrawlerLogsModel.RECORD_TYPE: CrawlerLogsModel.RECORD_TYPE__FLOW_REPORTS,
             CrawlerLogsModel.LOGS: self.log_record,

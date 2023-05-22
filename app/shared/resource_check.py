@@ -1,8 +1,10 @@
 import sys
 import psutil
 import logging
+from typing import Union
+from logging import Logger,LoggerAdapter
 
-def resource_check() -> dict:
+def resource_check(logger: Union[Logger,LoggerAdapter]) -> dict:
     '''
     CPU、メモリースワップメモリーの使用状況をチェックする。
     psutilで取得した値をログへ出力しdictで返す。
@@ -22,8 +24,8 @@ def resource_check() -> dict:
         'swap_memory_percent': swap_memory.percent,
     }
 
-    function_name:str = sys._getframe().f_code.co_name
-    logger = logging.getLogger(function_name)
+    # function_name:str = sys._getframe().f_code.co_name
+    # logger = logging.getLogger(function_name)
 
     logger.info('=== ＣＰＵ使用率 : ' + str(psutil.cpu_percent()) + '%')
     logger.info('=== メモリー使用状況')
