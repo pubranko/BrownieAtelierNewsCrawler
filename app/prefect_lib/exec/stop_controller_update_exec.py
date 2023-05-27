@@ -1,19 +1,18 @@
-from prefect_lib.flow.stop_controller_update_flow import flow
-from prefect_lib.task.stop_controller_update_task import StopControllerUpdateTask
-# domain、crawling_start_time_*による絞り込みは任意
-flow.run(parameters=dict(
-    # domain='epochtimes.jp',
-    # register='in',
-    # destination='crawling',
-    # domain='epochtimes.jp',
-    # register='out',
-    # destination='crawling',
-    # domain='sankei.com',
-    # register='in',
-    # destination='scrapying',
+import os
+import glob
+from prefect_lib.flows.stop_controller_update_flow import stop_controller_update_flow, StopControllerUpdateConst
+
+stop_controller_update_flow(
     domain='sankei.com',
-    # register=StopControllerUpdateTask.REGISTER_ADD,
-    register=StopControllerUpdateTask.REGISTER_DELETE,
-    # destination=StopControllerUpdateTask.CRAWLING,
-    destination=StopControllerUpdateTask.SCRAPYING,
-))
+    # domain='epochtimes.jp',
+    # command=StopControllerUpdateConst.COMMAND_ADD,
+    command=StopControllerUpdateConst.COMMAND_DELETE,
+    destination=StopControllerUpdateConst.CRAWLING,
+    # destination=StopControllerUpdateConst.SCRAPYING,
+    )
+
+
+# テスト時のログファイル削除漏れ防止用
+for log_file in glob.glob('/tmp/prefect_log_*'):
+    print(f'削除漏れlog_file削除: {log_file}')
+    os.remove(log_file)

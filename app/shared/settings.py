@@ -6,14 +6,13 @@ from decouple import config, AutoConfig
 # config = AutoConfig(search_path="./shared")
 
 
-import scrapy
 TIMEZONE = timezone(timedelta(hours=9), 'JST')
 '''タイムゾーン'''
 
 DATA_DIR = os.path.abspath(str(config('PREFECT__DATA_DIR_PATH', default='data_dir')))
 '''データ類の保存ベースディレクトリ'''
 
-# DATA_DIR__LOGS = os.path.join(DATA_DIR, 'logs')
+DATA_DIR__LOGS = os.path.join(DATA_DIR, 'logs')
 '''ログの一時保存先'''
 DATA_DIR__BACKUP_BASE_DIR:str = os.path.join(DATA_DIR, 'backup_files')
 '''バックアップファイルを保存するベースディレクトリパス'''
@@ -34,7 +33,7 @@ PREFECT_LIB__TASK_DIR: Final[str] = 'prefect_lib/task'
 
 
 
-LOG_FORMAT = '%(asctime)s %(levelname)s [%(name)s] : %(message)s'
+LOG_FORMAT = '%(asctime)s %(levelname)-7s [%(name)s] : %(message)s'
 '''ログフォーマット'''
 #LOG_FORMAT = '[%(asctime)s] %(levelname)s - %(name)s | %(message)s'
 # 日付/時刻をフォーマットするための文字列、 LOG_FORMAT の %(asctime)s プレース・ホルダーの展開。

@@ -1,0 +1,41 @@
+import os
+import logging
+from logging import Logger
+from typing import Any
+from shared.settings import LOG_FORMAT, LOG_DATEFORMAT
+from prefect_lib.flows import LOG_FILE_PATH
+from prefect import get_run_logger
+
+
+def common_flow(func):
+    def _deco(*args, **kwargs):
+
+        ####################################################
+        # 初期処理                                         #
+        ####################################################
+        file_handler = logging.FileHandler(LOG_FILE_PATH)
+        file_handler.setFormatter(logging.Formatter(
+            fmt=LOG_FORMAT, datefmt=LOG_DATEFORMAT))
+        prefect_logger: Logger = logging.getLogger('prefect')
+        prefect_logger.addHandler(file_handler)
+        prefect_logger.setLevel(logging.DEBUG)
+
+        # DEBUGレベルの場合、余計な"aiosqlite","httpcore"ロガーのログ出力を抑制する。
+        logging.getLogger('aiosqlite').setLevel(logging.WARNING)
+
+        logger = get_run_logger()   # PrefectLogAdapter
+        logger.info(f'=== 保存用ログファイル: {os.environ.get("SCRAPY__LOG_FILE")}')
+
+        ####################################################
+        # 主処理 #
+        ####################################################
+        func(*args, **kwargs)
+
+        ####################################################
+        # 終了処理 #
+        ####################################################
+        # DEBUGレベルの場合、余計な"aiosqlite","httpcore"ロガーのログ出力を抑制する。
+        # logging.getLogger('httpcore').setLevel(logging.WARNING)
+
+
+    return _deco

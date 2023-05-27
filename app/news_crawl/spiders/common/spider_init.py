@@ -51,7 +51,7 @@ def spider_init(
     if not duplicate_check:
         raise CloseSpider('同一ドメインへの多重クローリングとなるため中止')
 
-    resource: dict = resource_check()
+    resource: dict = resource_check(spider.logger)
     # CPUチェック
     if float(str(resource['cpu_percent'])) > 90:
         spider.logger.warning('=== CPU使用率が90%を超えています。')

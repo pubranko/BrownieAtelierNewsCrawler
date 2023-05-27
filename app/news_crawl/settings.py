@@ -184,14 +184,16 @@ TIMEZONE = timezone(timedelta(hours=9), 'JST')
 # else:
 #     LOG_LEVEL = 'INFO'
 LOG_LEVEL:str = str(config('SCRAPY__LOG_LEVEL', default='INFO'))
+
 #LOG_FILE = 'logs/test.log'
-#LOG_FILE = ''
+LOG_FILE = str(config('SCRAPY__LOG_FILE', default='./scrapy.log'))
+
 # ロギングを有効にするかどうか。
 LOG_ENABLED = True
 #LOG_ENABLED = False
 LOG_ENCODING = 'utf-8'
 # ログ・メッセージをフォーマットするための文字列。 利用可能なプレース・ホルダーの全リストについては、 Python logging documentation を参照してください。
-LOG_FORMAT = '%(asctime)s %(levelname)s [%(name)s] : %(message)s'
+LOG_FORMAT = '%(asctime)s %(levelname)-7s [%(name)s] : %(message)s'
 #LOG_FORMAT = '[%(asctime)s] %(levelname)s - %(name)s | %(message)s'
 # 日付/時刻をフォーマットするための文字列、 LOG_FORMAT の %(asctime)s プレース・ホルダーの展開。
 # 利用可能なディレクティブのリストについては、 Python datetime documentation を参照してください。

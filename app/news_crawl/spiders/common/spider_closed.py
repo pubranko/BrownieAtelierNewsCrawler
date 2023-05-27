@@ -27,7 +27,7 @@ def spider_closed(
         spider.logger.info(
             f'=== closed : controllerに次回クロールポイント情報を保存 \n {spider._crawl_point}')
 
-    resource_check()
+    resource_check(spider.logger)
 
     # クロールの統計結果とクロールを行ったサイトの一覧情報を「spider_report」としてログに保存する。
     crawler_logs = CrawlerLogsModel(spider.mongo)

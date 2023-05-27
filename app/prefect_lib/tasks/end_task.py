@@ -1,15 +1,13 @@
 import os
 import re
-from typing import Any, Union
-from datetime import datetime
-from logging import Logger, StreamHandler, LoggerAdapter
-from prefect.logging.loggers import PrefectLogAdapter
+from typing import Union
+from logging import Logger, LoggerAdapter
 from prefect import task
 from prefect import get_run_logger
-from prefect.context import FlowRunContext
+from shared.resource_check import resource_check
+from prefect_lib.flows import START_TIME, LOG_FILE_PATH
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from BrownieAtelierNotice.mail_send import mail_send
-from shared.resource_check import resource_check
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
 
@@ -23,8 +21,7 @@ mongoDBのインポートを行う。
 
 
 @task
-# def end_task(start_time: datetime, log_file_path: str, mongo: MongoModel, flow_context:FlowRunContext):
-def end_task(start_time: datetime, log_file_path: str, mongo: MongoModel, flow_name:str):
+def end_task(mongo: MongoModel, flow_name:str):
     '''Flow共通終了処理'''
 
     def log_check(log_record:str, logger:Union[Logger,LoggerAdapter]):
@@ -44,16 +41,16 @@ def end_task(start_time: datetime, log_file_path: str, mongo: MongoModel, flow_n
 
         title: str = ''
         if pattern_traceback.search(log_record):
-            # title = f'【{flow_context.flow_run.name}:クリティカル発生】{start_time.isoformat()}'
-            title = f'【{flow_name}:クリティカル発生】{start_time.isoformat()}'
+            # title = f'【{flow_context.flow_run.name}:クリティカル発生】{START_TIME.isoformat()}'
+            title = f'【{flow_name}:クリティカル発生】{START_TIME.isoformat()}'
         elif pattern_critical.search(log_record):
-            # title = f'【{flow_context.flow_run.name}:クリティカル発生】{start_time.isoformat()}'
-            title = f'【{flow_name}:クリティカル発生】{start_time.isoformat()}'
+            # title = f'【{flow_context.flow_run.name}:クリティカル発生】{START_TIME.isoformat()}'
+            title = f'【{flow_name}:クリティカル発生】{START_TIME.isoformat()}'
         elif pattern_error.search(log_record):
-            # title = f'【{flow_context.flow_run.name}:エラー発生】{start_time.isoformat()}'
-            title = f'【{flow_name}:エラー発生】{start_time.isoformat()}'
+            # title = f'【{flow_context.flow_run.name}:エラー発生】{START_TIME.isoformat()}'
+            title = f'【{flow_name}:エラー発生】{START_TIME.isoformat()}'
         # elif pattern_warning.search(self.log_record):
-        #     title = f'【{self.name}:ワーニング発生】{self.start_time.isoformat()}'
+        #     title = f'【{self.name}:ワーニング発生】{self.START_TIME.isoformat()}'
 
         if title:
             msg: str = '\n'.join([
@@ -65,7 +62,7 @@ def end_task(start_time: datetime, log_file_path: str, mongo: MongoModel, flow_n
         '''処理が終わったらログを保存'''
         crawler_logs = CrawlerLogsModel(mongo)
         crawler_logs.insert_one({
-            CrawlerLogsModel.START_TIME: start_time,
+            CrawlerLogsModel.START_TIME: START_TIME,
             CrawlerLogsModel.FLOW_NAME: flow_name,
             CrawlerLogsModel.RECORD_TYPE: CrawlerLogsModel.RECORD_TYPE__FLOW_REPORTS,
             CrawlerLogsModel.LOGS: log_record,
@@ -73,11 +70,11 @@ def end_task(start_time: datetime, log_file_path: str, mongo: MongoModel, flow_n
 
     # ロガー取得
     logger = get_run_logger()   # PrefectLogAdapter
-    logger.info(f'=== end_task開始:  {start_time}, {log_file_path}, {flow_name}')
+    logger.info(f'=== end_task開始:  {START_TIME}, {LOG_FILE_PATH}, {flow_name}')
     resource_check(logger)
 
     # logファイルを確認しエラーの有無をチェックする。
-    with open(log_file_path) as f:
+    with open(LOG_FILE_PATH) as f:
         log_record = f.read()
     log_check(log_record, logger)
 
@@ -86,5 +83,5 @@ def end_task(start_time: datetime, log_file_path: str, mongo: MongoModel, flow_n
     mongo.close()
 
     # 不要となったログファイルを削除
-    if log_file_path:
-        os.remove(log_file_path)
+    if LOG_FILE_PATH:
+        os.remove(LOG_FILE_PATH)
