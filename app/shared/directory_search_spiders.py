@@ -111,23 +111,19 @@ class DirectorySearchSpiders:
         '''
         return list(self.spiders_info.keys())
 
-    def spiders_info_list_get(self, target_spiders_name: set) -> list[list[dict[str, Any]]]:
+    def spiders_info_list_get(self, target_spiders_name: set[str]) -> list[dict[str, Any]]:
         '''
         引数(spiders_name)で指定された対象スパイダーのスパイダー情報リストを返す。
         ＜データイメージ＞
-            result = [[spider_info, spider_info]]
-            spider_info = [{'class_instans': *, 'class_name': *, 'domain': *, 'domain_name': *, 'selenium_mode': *, 'splash_mode': *}]
+            result = [spider_info, spider_info,,,]
+            spider_info = {'class_instans': *, 'class_name': *, 'domain': *, 'domain_name': *, 'selenium_mode': *, 'splash_mode': *}
         '''
-        result: list[list[dict[str, Any]]] = []
-        non_selenium: list[dict[str, Any]] = []
+        result: list[dict[str, Any]] = []
         for spider_name, spider_attr in self.spiders_info.items():
             # 対象スパイダー以外は除外
             if not spider_name in target_spiders_name:
                 continue
-            non_selenium.append(spider_attr)
-        #非seleniumのスパイダーがあった場合
-        if len(non_selenium):
-            result.append(non_selenium)
+            result.append(spider_attr)
 
         return result
 

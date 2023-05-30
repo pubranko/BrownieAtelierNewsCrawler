@@ -33,7 +33,7 @@ def scrapy_deco(func):
     return deco
 
 @scrapy_deco
-def custom_crawl_run(logger: Union[Logger,LoggerAdapter], start_time: datetime, scrapy_crawling_kwargs: dict, spiders_info: list[dict[str, Any]]):
+def custom_crawl_run(logger: Union[Logger,LoggerAdapter], scrapy_crawling_kwargs: dict, spiders_info: list[dict[str, Any]]):
     '''
     '''
     process = CrawlerProcess(settings=get_project_settings())
@@ -45,7 +45,7 @@ def custom_crawl_run(logger: Union[Logger,LoggerAdapter], start_time: datetime, 
     #process.start(stop_after_crawl=False)
 
 @scrapy_deco
-def custom_runner_run(logger: Union[Logger,LoggerAdapter], start_time: datetime, scrapy_crawling_kwargs: dict, spiders_info: list[dict[str, Any]]):
+def custom_runner_run(logger: Union[Logger,LoggerAdapter], scrapy_crawling_kwargs: dict, spiders_info: list[dict[str, Any]]):
     '''
     検討したがcustom_crawl_runを使用することにした。
     とりあえずサンプルとしてソースは残している。

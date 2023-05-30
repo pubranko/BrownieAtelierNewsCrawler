@@ -22,6 +22,7 @@ def common_flow(func):
 
         # DEBUGレベルの場合、余計な"aiosqlite","httpcore"ロガーのログ出力を抑制する。
         logging.getLogger('aiosqlite').setLevel(logging.WARNING)
+        logging.getLogger('httpcore').setLevel(logging.WARNING)
 
         logger = get_run_logger()   # PrefectLogAdapter
         logger.info(f'=== 保存用ログファイル: {os.environ.get("SCRAPY__LOG_FILE")}')
@@ -34,8 +35,5 @@ def common_flow(func):
         ####################################################
         # 終了処理 #
         ####################################################
-        # DEBUGレベルの場合、余計な"aiosqlite","httpcore"ロガーのログ出力を抑制する。
-        # logging.getLogger('httpcore').setLevel(logging.WARNING)
-
 
     return _deco

@@ -27,11 +27,9 @@ def spider_init(
     #logger: LoggerAdapter = spider.logger
 
     spider.logger.info(
-        '=== spider_init : ' + spider_name + '開始')
+        f'=== spider_init : {spider_name} 開始')
 
     # MongoDBオープン
-    spider.logger.logger
-    spider.logger.logger
     spider.mongo = MongoModel(spider.logger.logger)     # MongoModelではLoggerAdapterではなくLoggerで定義している。そのためとりあえずLoggerを渡すよう対応中
     # コントローラーモデルを生成
     controller = ControllerModel(spider.mongo)

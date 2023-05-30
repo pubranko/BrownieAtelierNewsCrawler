@@ -1,22 +1,24 @@
-from prefect_lib.flow.scrapy_crawling_flow import flow
+import os
+import glob
+from prefect_lib.flows.manual_crawling_flow import manual_crawling_flow
 
-flow.run(parameters=dict(
+manual_crawling_flow(
     spider_names=[
         "sankei_com_sitemap",
-        "asahi_com_sitemap",
-        "kyodo_co_jp_sitemap",
-        "yomiuri_co_jp_sitemap",
-        "jp_reuters_com_crawl",
-        "epochtimes_jp_crawl",
-        "mainichi_jp_crawl",
-        "nikkei_com_crawl"
+        # "asahi_com_sitemap",
+        # "kyodo_co_jp_sitemap",
+        # "yomiuri_co_jp_sitemap",
+        # "jp_reuters_com_crawl",
+        # "epochtimes_jp_crawl",
+        # "mainichi_jp_crawl",
+        # "nikkei_com_crawl"
     ],
     spider_kwargs=dict(
         debug = True,
         # crawl_point_non_update = True,
         page_span_from = 2,
         page_span_to = 2,
-        lastmod_term_minutes_from = 120,
+        lastmod_term_minutes_from = 80,
         lastmod_term_minutes_to = 60,
         # continued = True,
         # direct_crawl_urls = [],
@@ -37,4 +39,4 @@ flow.run(parameters=dict(
     #     #'url_pattern':'https://jp.reuters.com/article/euronext-tech-idJPKBN2NO0TB',
     #     #'url_pattern':'https://www.epochtimes.jp/2022/06/107648.html',
     # },
-))
+)
