@@ -1,6 +1,6 @@
 import pickle
 from bs4 import BeautifulSoup as bs4
-from typing import Any
+from typing import Any, Optional
 from datetime import datetime
 from pymongo.cursor import Cursor
 from pymongo import ASCENDING
@@ -21,10 +21,10 @@ from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import S
 @task
 def scrapying_task(
     mongo: MongoModel,
-    domain: str = '',
-    urls: list=[],
-    target_start_time_from: datetime = START_TIME,
-    target_start_time_to: datetime = START_TIME):
+    domain: Optional[str],
+    urls: Optional[list],
+    target_start_time_from: Optional[datetime],
+    target_start_time_to: Optional[datetime]):
     '''
     scrapyによるクロールを実行する。
     ・対象のスパイダーを指定できる。

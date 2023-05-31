@@ -10,6 +10,7 @@ from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from BrownieAtelierNotice.mail_send import mail_send
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
+from prefect.context import FlowRunContext
 
 
 '''
@@ -21,7 +22,7 @@ mongoDBのインポートを行う。
 
 
 @task
-def end_task(mongo: MongoModel, flow_name:str):
+def end_task(mongo: MongoModel):
     '''Flow共通終了処理'''
 
     def log_check(log_record:str, logger:Union[Logger,LoggerAdapter]):
@@ -70,7 +71,14 @@ def end_task(mongo: MongoModel, flow_name:str):
 
     # ロガー取得
     logger = get_run_logger()   # PrefectLogAdapter
-    logger.info(f'=== end_task開始:  {START_TIME}, {LOG_FILE_PATH}, {flow_name}')
+    flow_context = FlowRunContext.get()
+    if flow_context:
+        flow_name = flow_context.flow_run.name
+        logger.info(f'=== end_task開始:  {START_TIME}, {LOG_FILE_PATH}, {flow_name}')
+    else:
+        flow_name = 'フロー名不明'
+        logger.error(f'=== end_task開始:  {START_TIME}, {LOG_FILE_PATH}, {flow_name}')
+
     resource_check(logger)
 
     # logファイルを確認しエラーの有無をチェックする。

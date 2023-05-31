@@ -3,13 +3,9 @@ import glob
 import json
 from typing import Any
 from pydantic import ValidationError
-import prefect
-import prefect.context
 from prefect import flow, task, get_run_logger
-from prefect.context import FlowRunContext
 from prefect.futures import PrefectFuture
 from prefect.task_runners import SequentialTaskRunner
-
 from prefect_lib.tasks.init_task import init_task
 from prefect_lib.tasks.end_task import end_task
 from prefect_lib.flows.common_flow import common_flow
@@ -91,10 +87,6 @@ def scraper_info_by_domain_flow(scraper_info_by_domain_files: list):
     if init_task_result.get_state().is_completed():
         mongo = init_task_result.result()
 
-        # prefect flow context取得
-        any: Any = prefect.context.get_run_context()
-        flow_context: FlowRunContext = any
-
         try:
             scraper_info_by_domain_task(scraper_info_by_domain_files, mongo)
         except Exception as e:
@@ -102,6 +94,6 @@ def scraper_info_by_domain_flow(scraper_info_by_domain_files: list):
             logger.error(f'=== {e}')
         finally:
             # 後続の処理を実行する
-            end_task(mongo, flow_context.flow_run.name)
+            end_task(mongo)
     else:
         logger.error(f'=== init_taskが正常に完了しなかったため、後続タスクの実行を中止しました。')

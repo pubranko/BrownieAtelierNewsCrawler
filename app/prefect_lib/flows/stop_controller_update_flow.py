@@ -1,8 +1,5 @@
-from typing import Any, Final
-import prefect
-import prefect.context
+from typing import Final
 from prefect import flow, task, get_run_logger
-from prefect.context import FlowRunContext
 from prefect.futures import PrefectFuture
 from prefect.task_runners import SequentialTaskRunner
 from prefect_lib.tasks.init_task import init_task
@@ -89,10 +86,6 @@ def stop_controller_update_flow(domain: str, command: str, destination: str):
     if init_task_result.get_state().is_completed():
         mongo = init_task_result.result()
 
-        # prefect flow context取得
-        any: Any = prefect.context.get_run_context()
-        flow_context: FlowRunContext = any
-
         try:
             stop_controller_update_task(domain, command, destination, mongo)
         except Exception as e:
@@ -100,6 +93,6 @@ def stop_controller_update_flow(domain: str, command: str, destination: str):
             logger.error(f'=== {e}')
         finally:
             # 後続の処理を実行する
-            end_task(mongo, flow_context.flow_run.name)
+            end_task(mongo)
     else:
         logger.error(f'=== init_taskが正常に完了しなかったため、後続タスクの実行を中止しました。')
