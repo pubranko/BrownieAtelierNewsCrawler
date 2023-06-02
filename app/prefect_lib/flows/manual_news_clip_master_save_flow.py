@@ -15,12 +15,10 @@ from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
     flow_run_name='[CRAWL_003] Manual scrapying flow',
     task_runner=SequentialTaskRunner())
 @common_flow
-def manual_scrapying_flow(
+def manual_news_clip_master_save_flow(
     domain: Optional[str],
     target_start_time_from: Optional[datetime],
     target_start_time_to: Optional[datetime],
-    urls: Optional[list],
-    following_processing_execution: bool,
 ):
 
     # ロガー取得
@@ -33,11 +31,7 @@ def manual_scrapying_flow(
 
         try:
             # 引数で指定されたクロール結果のスクレイピングを実施
-            scrapying_task(mongo, domain, urls, target_start_time_from, target_start_time_to)
-
-            if following_processing_execution:
-                # 後続処理実施指定がある場合、スクレイピング結果をニュースクリップマスターへ保存
-                news_clip_master_save_task(mongo, domain, target_start_time_from, target_start_time_to)
+            news_clip_master_save_task(mongo, domain, target_start_time_from, target_start_time_to)
 
         except Exception as e:
             # 例外をキャッチしてログ出力等の処理を行う

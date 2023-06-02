@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 from prefect import task, get_run_logger
 from datetime import datetime
 from pymongo import ASCENDING
@@ -14,9 +14,9 @@ from BrownieAtelierMongo.collection_models.news_clip_master_model import NewsCli
 @task
 def news_clip_master_save_task(
     mongo: MongoModel,
-    domain: str = '',
-    target_start_time_from: datetime = START_TIME,
-    target_start_time_to: datetime = START_TIME):
+    domain: Optional[str],
+    target_start_time_from: Optional[datetime],
+    target_start_time_to: Optional[datetime],):
     '''
     scrapyによるクロールを実行する。
     ・対象のスパイダーを指定できる。
