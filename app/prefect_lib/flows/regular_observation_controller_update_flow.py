@@ -1,24 +1,21 @@
-from typing import Optional
-from datetime import datetime
+
+from typing import Any, Final
 from prefect import flow, get_run_logger
 from prefect.futures import PrefectFuture
 from prefect.task_runners import SequentialTaskRunner
 from prefect_lib.tasks.init_task import init_task
 from prefect_lib.tasks.end_task import end_task
 from prefect_lib.flows.common_flow import common_flow
-from prefect_lib.tasks.news_clip_master_save_task import news_clip_master_save_task
+from prefect_lib.tasks.regular_observation_controller_update_task import regular_observation_controller_update_task
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
+from prefect_lib.flows import START_TIME
 
 
 @flow(
-    flow_run_name='[CRAWL_006] Manual news clip master save flow',
+    flow_run_name='[ENTRY_002] Regular observation controller update Flow',
     task_runner=SequentialTaskRunner())
 @common_flow
-def manual_news_clip_master_save_flow(
-    domain: Optional[str],
-    target_start_time_from: Optional[datetime],
-    target_start_time_to: Optional[datetime],
-):
+def regular_observation_controller_update_flow(spiders_name: str, register: str):
 
     # ロガー取得
     logger = get_run_logger()   # PrefectLogAdapter
@@ -29,8 +26,7 @@ def manual_news_clip_master_save_flow(
         mongo: MongoModel = init_task_result.result()
 
         try:
-            # 引数で指定されたクロール結果のスクレイピングを実施
-            news_clip_master_save_task(mongo, domain, target_start_time_from, target_start_time_to)
+            regular_observation_controller_update_task(mongo, spiders_name, register)
 
         except Exception as e:
             # 例外をキャッチしてログ出力等の処理を行う

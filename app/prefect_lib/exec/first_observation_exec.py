@@ -1,2 +1,2 @@
-from prefect_lib.flow.first_observation_flow import flow
-flow.run()
+from prefect_lib.flows.first_observation_flow import first_observation_flow
+first_observation_flow()

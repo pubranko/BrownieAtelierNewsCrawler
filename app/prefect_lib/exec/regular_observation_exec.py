@@ -1,2 +1,2 @@
-from prefect_lib.flow.regular_observation_flow import flow
-flow.run()
+from prefect_lib.flows.regular_observation_flow import regular_observation_flow
+regular_observation_flow()

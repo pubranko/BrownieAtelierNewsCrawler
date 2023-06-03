@@ -48,32 +48,6 @@ class NewsCrawlInput(BaseModel):
         None, title="直接クロールするURLリスト")
     url_pattern: Optional[str] = Field(None, title="URLパターンによる絞り込み")
 
-    ############################################
-    # 定数
-    ############################################
-    DEBUG: str = Field(NewsCrawlInputConst.DEBUG, const=True)
-    '''定数: debug '''
-    CRAWL_POINT_NON_UPDATE: str = Field(
-        NewsCrawlInputConst.CRAWL_POINT_NON_UPDATE, const=True)
-    '''定数: crawl_point_non_update '''
-    CRAWLING_START_TIME: str = Field(NewsCrawlInputConst.CRAWLING_START_TIME, const=True)
-    '''定数: crawling_start_time '''
-    LASTMOD_TERM_MINUTES_FROM: str = Field(
-        NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM, const=True)
-    '''定数: lastmod_term_minutes_from '''
-    LASTMOD_TERM_MINUTES_TO: str = Field(
-        NewsCrawlInputConst.LASTMOD_TERM_MINUTES_TO, const=True)
-    '''定数: lastmod_term_minutes_to '''
-    PAGE_SPAN_FROM: str = Field(NewsCrawlInputConst.PAGE_SPAN_FROM, const=True)
-    '''定数: page_span_from '''
-    PAGE_SPAN_TO: str = Field(NewsCrawlInputConst.PAGE_SPAN_TO, const=True)
-    '''定数: page_span_to '''
-    CONTINUED: str = Field(NewsCrawlInputConst.CONTINUED, const=True)
-    '''定数: continued '''
-    DIRECT_CRAWL_URLS: str = Field(NewsCrawlInputConst.DIRECT_CRAWL_URLS, const=True)
-    '''定数: direct_crawl_urls '''
-    URL_PATTERN: str = Field(NewsCrawlInputConst.URL_PATTERN, const=True)
-    '''定数: url_pattern '''
 
     def __init__(self, **data: Any):
         super().__init__(**data)
@@ -86,7 +60,7 @@ class NewsCrawlInput(BaseModel):
     '''
     ##################################
     # 単項目チェック
-    ##################################
+    ##################################continued
     @validator(NewsCrawlInputConst.DIRECT_CRAWL_URLS)
     def start_time_check(cls, value: list[str], values: dict) -> list[str]:
         if value:

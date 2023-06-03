@@ -2,24 +2,24 @@ from typing import Any
 from prefect import flow, get_run_logger
 from prefect.futures import PrefectFuture
 from prefect.task_runners import SequentialTaskRunner
+from prefect_lib.flows import START_TIME
+from prefect_lib.flows.common_flow import common_flow
 from prefect_lib.tasks.init_task import init_task
 from prefect_lib.tasks.end_task import end_task
-from prefect_lib.flows.common_flow import common_flow
 from prefect_lib.tasks.crawling_input_create_task import crawling_input_create_task
-from prefect_lib.tasks.manual_crawling_target_spiders_task import manual_crawling_target_spiders_task
+from prefect_lib.tasks.regular_observation_task import regular_observation_task
 from prefect_lib.tasks.crawling_task import crawling_task
 from prefect_lib.tasks.scrapying_task import scrapying_task
 from prefect_lib.tasks.news_clip_master_save_task import news_clip_master_save_task
 from news_crawl.news_crawl_input import NewsCrawlInput
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from prefect_lib.flows import START_TIME
 
 
 @flow(
-    flow_run_name='[CRAWL_003] Manual crawling flow',
+    flow_run_name='[CRAWL_002] Regular observation flow',
     task_runner=SequentialTaskRunner())
 @common_flow
-def manual_crawling_flow(spider_names: list[str], spider_kwargs: dict, following_processing_execution: bool):
+def regular_observation_flow():
 
     # ロガー取得
     logger = get_run_logger()   # PrefectLogAdapter
@@ -31,14 +31,14 @@ def manual_crawling_flow(spider_names: list[str], spider_kwargs: dict, following
 
         try:
             # クローラー用引数を生成、クロール対象スパイダーを生成し、クローリングを実行する。
-            news_crawl_input: NewsCrawlInput = crawling_input_create_task(
-                spider_kwargs)
-            crawling_target_spiders = manual_crawling_target_spiders_task(
-                spider_names)
-            crawling_task(news_crawl_input, crawling_target_spiders)
+            news_crawl_input: NewsCrawlInput = crawling_input_create_task(dict(
+                crawling_start_time = START_TIME,
+                continued = True))
+            crawling_target_spiders = regular_observation_task(mongo)
+            if len(crawling_target_spiders):
+                crawling_task(news_crawl_input, crawling_target_spiders)
 
-            if following_processing_execution:
-                # 後続処理実施指定がある場合、クロール結果のスクレイピングを実施
+                # クロール結果のスクレイピングを実施
                 scrapying_task(mongo, '', [], START_TIME, START_TIME)
                 # スクレイピング結果をニュースクリップマスターへ保存
                 news_clip_master_save_task(mongo,'', START_TIME, START_TIME)
@@ -52,3 +52,4 @@ def manual_crawling_flow(spider_names: list[str], spider_kwargs: dict, following
 
     else:
         logger.error(f'=== init_taskが正常に完了しなかったため、後続タスクの実行を中止しました。')
+

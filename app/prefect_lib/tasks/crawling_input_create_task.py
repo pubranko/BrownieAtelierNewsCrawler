@@ -3,7 +3,7 @@ from news_crawl.news_crawl_input import NewsCrawlInput
 from prefect_lib.flows import START_TIME
 
 @task
-def manual_crawling_input_create_task(spider_kwargs: dict) -> NewsCrawlInput:
+def crawling_input_create_task(spider_kwargs: dict) -> NewsCrawlInput:
     '''
     scrapyによるクロールを実行するための引数チェック&生成を行う。
     '''
@@ -15,4 +15,3 @@ def manual_crawling_input_create_task(spider_kwargs: dict) -> NewsCrawlInput:
     _.update(spider_kwargs)
 
     return  NewsCrawlInput(**_)
-
