@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 from datetime import datetime
 from prefect import flow, get_run_logger
 from prefect.futures import PrefectFuture
@@ -7,7 +7,7 @@ from prefect_lib.tasks.init_task import init_task
 from prefect_lib.tasks.end_task import end_task
 from prefect_lib.flows.common_flow import common_flow
 from prefect_lib.tasks.mongo_common_task import mongo_common_task
-from prefect_lib.tasks.mongo_export_task import mongo_export_task
+from prefect_lib.tasks.mongo_import_task import mongo_import_task
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from BrownieAtelierMongo.collection_models.crawler_response_model import CrawlerResponseModel
 from BrownieAtelierMongo.collection_models.scraped_from_response_model import ScrapedFromResponseModel
@@ -19,24 +19,12 @@ from BrownieAtelierMongo.collection_models.stats_info_collect_model import Stats
 
 
 @flow(
-    flow_run_name='[MONGO_003] Mongo export selector flow',
+    flow_run_name='[MONGO_004] Mongo import selector flow',
     task_runner=SequentialTaskRunner())
 @common_flow
-def mongo_export_selector_flow(
-    collections_name:list =[
-        CrawlerResponseModel.COLLECTION_NAME,
-        ScrapedFromResponseModel.COLLECTION_NAME, # 通常運用では不要なバックアップとなるがテスト用に実装している。
-        NewsClipMasterModel.COLLECTION_NAME,
-        CrawlerLogsModel.COLLECTION_NAME,
-        AsynchronousReportModel.COLLECTION_NAME,
-        ControllerModel.COLLECTION_NAME,
-        StatsInfoCollectModel.COLLECTION_NAME,
-    ],
-    prefix:str = '',   # export先のフォルダyyyy-mmの先頭に拡張した名前を付与する。
-    suffix:str = '',   # export先のフォルダyyyy-mmの末尾に拡張した名前を付与する。
-    period_month_from:int = 0,  # 月次エクスポートを行うデータの基準年月  ex)0 -> 当月, 1 => 前月
-    period_month_to:int = 0,  # 月次エクスポートを行うデータの基準年月
-    crawler_response__registered:bool =True,   # crawler_responseの場合、登録済みになったレコードのみエクスポートする場合True、登録済み以外のレコードも含めてエクスポートする場合False
+def mongo_import_selector_flow(
+    folder_name:str,
+    collections_name:list[str],
 ):
 
     # ロガー取得
@@ -49,10 +37,7 @@ def mongo_export_selector_flow(
 
         try:
             # mongo操作Flowの共通処理
-            dir_path, period_from, period_to = mongo_common_task(
-                prefix, suffix, period_month_from, period_month_to)
-
-            mongo_export_task(mongo, dir_path, period_from, period_to, collections_name, crawler_response__registered)
+            mongo_import_task(mongo, folder_name, collections_name)
 
         except Exception as e:
             # 例外をキャッチしてログ出力等の処理を行う

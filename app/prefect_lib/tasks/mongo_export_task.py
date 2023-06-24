@@ -23,7 +23,7 @@ from BrownieAtelierMongo.collection_models.asynchronous_report_model import Asyn
 @task
 def mongo_export_task(
     mongo: MongoModel,
-    dir_path: str,   # export先のフォルダ名先頭に拡張した名前を付与する。
+    dir_path: str,   # export先のフォルダ名
     period_from: datetime,  # 月次エクスポートを行うデータの基準年月
     period_to: datetime,  # 月次エクスポートを行うデータの基準年月
     collections_name: list[Union[CrawlerResponseModel, ScrapedFromResponseModel, NewsClipMasterModel,
@@ -31,18 +31,15 @@ def mongo_export_task(
     crawler_response__registered: bool,
 ):
     '''
-    mongoDBのコレクションよりimport/exportを行うための前処理を実行する。
-    ①import/export先のフォルダ名の生成  ex) prefix_yyyy-mm_yyyy-mm_suffix, prefix_yyyy-mm_yyyy-mm, yyyy-mm_yyyy-mm_suffix, yyyy-mm_yyyy-mm
-    ②exportを行う範囲の日時を生成
     '''
     logger = get_run_logger()   # PrefectLogAdapter
-    logger.info(f'=== mongo_export_task 引数 : {dir_path} {period_from} {period_to}')
+    logger.info(f'=== 引数 : {dir_path} {period_from} {period_to}')
 
     # バックアップフォルダ直下に基準年月ごとのフォルダを作る。
     # 同一フォルダへのエクスポートは禁止。
     if os.path.exists(dir_path):
         logger.error(
-            f'=== mongo_export_task : backup_dirパラメータエラー : {dir_path} は既に存在します。')
+            f'=== backup_dirパラメータエラー : {dir_path} は既に存在します。')
         raise ValueError(dir_path)
     else:
         os.mkdir(dir_path)
@@ -111,21 +108,37 @@ def mongo_export_task(
                 f'=== {collection_name} バックアップ対象件数 : {str(record_count)}')
 
             # 100件単位で処理を実施
-            limit: int = 100
-            skip_list = list(range(0, record_count, limit))
+            # limit: int = 100
+            # skip_list = list(range(0, record_count, limit))
 
             # ファイルにリストオブジェクトを追記していく
             with open(file_path, 'ab') as file:
                 pass  # 空ファイル作成
-            for skip in skip_list:
-                records: Cursor = collection.find(
-                    filter=filter,
-                    sort=sort_parameter,
-                ).skip(skip).limit(limit)
-                record_list: list = [record for record in records]
-                with open(file_path, 'ab') as file:
-                    file.write(pickle.dumps(record_list))
 
+            records: Cursor = collection.find(
+                filter=filter,
+                sort=sort_parameter)
+            record_list: list = [record for record in records]
+
+            logger.info(f'=== find対象件数 : {str(len(record_list))}')
+
+            with open(file_path, 'ab') as file:
+                file.write(pickle.dumps(record_list))
+
+
+            # for skip in skip_list:
+            #     records: Cursor = collection.find(
+            #         filter=filter,
+            #         sort=sort_parameter,
+            #     ).skip(skip).limit(limit)
+            #     record_list: list = [record for record in records]
+
+            #     logger.info(f'=== find対象件数 : {str(len(record_list))}')
+
+            #     with open(file_path, 'ab') as file:
+            #         file.write(pickle.dumps(record_list))
+
+            #     logger.info(f'=== filesize : {str(os.path.getsize(file_path))}')
 
 
 

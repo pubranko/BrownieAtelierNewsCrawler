@@ -132,6 +132,7 @@ dmypy.json
 .vscode/tasks.json
 .vscode/launch.json
 .vscode/jupyter_env.json
+prefect.db
 app/.flows/*
 data_dir/exclusive_work/*
 data_dir/backup_files/*

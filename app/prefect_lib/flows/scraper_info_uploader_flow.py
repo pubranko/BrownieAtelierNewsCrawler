@@ -26,7 +26,7 @@ mongoDBのインポートを行う。
 @task
 def scraper_info_by_domain_task(scraper_info_by_domain_files: list, mongo: MongoModel):
     logger = get_run_logger()   # PrefectLogAdapter
-    logger.info(f'=== scraper_info_by_domain_task 引数: {scraper_info_by_domain_files}')
+    logger.info(f'=== 引数: {scraper_info_by_domain_files}')
 
     scraper_info_by_domain_model = ScraperInfoByDomainModel(mongo)
 
@@ -39,7 +39,7 @@ def scraper_info_by_domain_task(scraper_info_by_domain_files: list, mongo: Mongo
             raise IOError(f'対象ディレクトリにファイルが見つかりませんでした。ディレクトリにファイルを格納してください。 (ディレクトリ= {DATA_DIR__SCRAPER_INFO_BY_DOMAIN_DIR})')
         else:
             logger.info(
-                f'=== scraper_info_by_domain_task ファイル指定なし → 全ファイル対象 : {get_files}')
+                f'=== ファイル指定なし → 全ファイル対象 : {get_files}')
     else:
         for file in scraper_info_by_domain_files:
             file_path = os.path.join(DATA_DIR__SCRAPER_INFO_BY_DOMAIN_DIR, file)
@@ -50,7 +50,7 @@ def scraper_info_by_domain_task(scraper_info_by_domain_files: list, mongo: Mongo
 
     for file_path in get_files:
         logger.info(
-            f'=== scraper_info_by_domain_task ファイルチェック : {file_path}')
+            f'=== ファイルチェック : {file_path}')
         with open(file_path, 'r') as f:
             file = f.read()
 
@@ -61,13 +61,13 @@ def scraper_info_by_domain_task(scraper_info_by_domain_files: list, mongo: Mongo
         except ValidationError as e:
             error_info: list = e.errors()
             logger.error(
-                f'=== scraper_info_by_domain_task エラー({file_path}) : {error_info[0]["msg"]}')
+                f'=== エラー({file_path}) : {error_info[0]["msg"]}')
         else:
             scraper_info_by_domain_model.update_one(
                 filter={ScraperInfoByDomainConst.DOMAIN: scraper_info[ScraperInfoByDomainConst.DOMAIN]},
                 record={"$set":scraper_info})
             logger.info(
-                f'=== scraper_info_by_domain_task 登録完了 : {file_path}')
+                f'=== 登録完了 : {file_path}')
 
         # 処理の終わったファイルオブジェクトを削除
         del file, scraper_info

@@ -1,4 +1,4 @@
-from prefect_lib.flows.mongo_import_selector_flow import mongo_import_selector_flow
+from prefect_lib.flows.mongo_delete_selector_flow import mongo_delete_selector_flow
 from BrownieAtelierMongo.collection_models.crawler_response_model import CrawlerResponseModel
 from BrownieAtelierMongo.collection_models.scraped_from_response_model import ScrapedFromResponseModel
 from BrownieAtelierMongo.collection_models.news_clip_master_model import NewsClipMasterModel
@@ -6,9 +6,7 @@ from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogs
 from BrownieAtelierMongo.collection_models.asynchronous_report_model import AsynchronousReportModel
 from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 
-
-mongo_import_selector_flow(
-    folder_name='test7_2023-05_2023-06',
+mongo_delete_selector_flow(
     collections_name=[
         CrawlerResponseModel.COLLECTION_NAME,
         ScrapedFromResponseModel.COLLECTION_NAME, # 通常運用では不要なバックアップとなるがテスト用に実装している。
@@ -17,5 +15,7 @@ mongo_import_selector_flow(
         AsynchronousReportModel.COLLECTION_NAME,
         # ControllerModel.COLLECTION_NAME,
     ],
+    period_month_from=1,  # 月次エクスポートを行うデータの基準年月
+    period_month_to=0,  # 月次エクスポートを行うデータの基準年月
 )
 

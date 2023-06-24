@@ -8,7 +8,7 @@ def manual_crawling_target_spiders_task(spider_names: list[str]) -> list[dict[st
     scrapyによるクロールを実行するための対象スパイダー情報の一覧を生成する。
     '''
     logger = get_run_logger()   # PrefectLogAdapter
-    logger.info(f'=== manual_crawling_target_spiders 引数 : spider_names={spider_names}')
+    logger.info(f'=== 引数 : spider_names={spider_names}')
 
     # threads: list[threading.Thread] = []
     directory_search_spiders = DirectorySearchSpiders()

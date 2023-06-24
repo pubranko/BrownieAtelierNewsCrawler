@@ -7,7 +7,7 @@ from prefect_lib.flows import START_TIME
 
 
 @task
-def mongo_import_export_init_task(
+def mongo_common_task(
     prefix:str,   # export先のフォルダ名先頭に拡張した名前を付与する。
     suffix:str,   # export先のフォルダ名の末尾に拡張した名前を付与する。
     period_month_from:int,  # 月次エクスポートを行うデータの基準年月
@@ -19,7 +19,7 @@ def mongo_import_export_init_task(
     ②exportを行う範囲の日時を生成
     '''
     logger = get_run_logger()   # PrefectLogAdapter
-    logger.info(f'=== mongo_import_export_init_task 引数 : {prefix} {period_month_from} {period_month_to}')
+    logger.info(f'=== 引数 : {prefix} {period_month_from} {period_month_to}')
 
 
     period_from: datetime = datetime.combine(
@@ -46,7 +46,7 @@ def mongo_import_export_init_task(
     folder_name:str = f'{pre}{start_period_yyyy_mm}_{end_period_yyyy_mm}{suf}'
     dir_path = os.path.join(DATA_DIR__BACKUP_BASE_DIR, folder_name)
 
-    logger.info(f'=== mongo_import_export_init_task 結果 : {dir_path} {period_from} {period_to}')
+    logger.info(f'=== 結果 : {dir_path} {period_from} {period_to}')
 
     return dir_path, period_from, period_to
 

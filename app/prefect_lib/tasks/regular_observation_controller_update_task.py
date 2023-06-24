@@ -12,11 +12,11 @@ def regular_observation_controller_update_task(mongo, spiders_name: str, registe
     scrapyによるクロールを実行するための対象スパイダー情報の一覧を生成する。
     '''
     logger = get_run_logger()   # PrefectLogAdapter
-    logger.info(f'=== Regular Observation Controller Update Task run kwargs : {str(spiders_name)} / {str(register)}')
+    logger.info(f'=== 引数 : {str(spiders_name)} / {str(register)}')
     controller = ControllerModel(mongo)
     record = set(controller.regular_observation_spider_name_set_get())
     logger.info(
-        f'=== Regular Observation  Controller Update Task : run : 更新前の登録内容 : {str(record)}')
+        f'=== 更新前の登録内容 : {str(record)}')
 
     # 引数のスパイダー情報リストをセットへ変換（重複削除）
     spiders_name_set = set(spiders_name)
@@ -31,7 +31,7 @@ def regular_observation_controller_update_task(mongo, spiders_name: str, registe
         for spider_name in spiders_name_set:
             if not spider_name in spiders_exist_set:
                 logger.error(
-                    f'=== Regular Observation  Controller Update Task : run : spider_nameパラメータエラー : {spider_name} は存在しません。')
+                    f'=== spider_nameパラメータエラー : {spider_name} は存在しません。')
                 raise ValueError(spider_name)
         record.update(spiders_name_set)
     elif register == RegularObservationControllerUpdateConst.REGISTER_DELETE:
@@ -40,14 +40,14 @@ def regular_observation_controller_update_task(mongo, spiders_name: str, registe
                 record.remove(spider_name)
             else:
                 logger.error(
-                    f'=== Regular Observation  Controller Update Task : run : spider_nameパラメータエラー : {spider_name} は登録されていません。')
+                    f'=== spider_nameパラメータエラー : {spider_name} は登録されていません。')
                 raise ValueError(spider_name)
     else:
         logger.error(
-            f'=== Regular Observation  Controller Update Task : run : 登録方法(register)パラメータエラー : {register}')
+            f'=== 登録方法(register)パラメータエラー : {register}')
         raise ValueError(register)
 
     logger.info(
-        f'=== Regular Observation  Controller Update Task : run : 更新後の登録内容 : {str(record)}')
+        f'=== 更新後の登録内容 : {str(record)}')
 
     controller.regular_observation_spider_name_set_update(record)

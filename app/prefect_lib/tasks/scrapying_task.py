@@ -32,7 +32,7 @@ def scrapying_task(
     ・後続のスクレイピング〜news_clipへの登録まで一括で実行するか選択できる。
     '''
     logger = get_run_logger()   # PrefectLogAdapter
-    logger.info(f'=== scrapy_crawling_task 引数 : ')
+    logger.info(f'=== 引数 : domain = {domain}, urls = {urls}, target_start_time_from = {target_start_time_from}, target_start_time_to = {target_start_time_to}')
 
     crawler_response: CrawlerResponseModel = CrawlerResponseModel(mongo)
     scraped_from_response: ScrapedFromResponseModel = ScrapedFromResponseModel(mongo)
@@ -103,7 +103,7 @@ def scrapying_task(
                 scraper_info_by_domain_data_list = scraper_info_by_domain.find_and_data_models_get(
                     filter={ScraperInfoByDomainConst.DOMAIN: record[CrawlerResponseModel.DOMAIN]})
                 logger.info(
-                    f'=== scrapying_run run  ドメイン別スクレイパー情報取得 (domain: {record[CrawlerResponseModel.DOMAIN]})')
+                    f'=== ドメイン別スクレイパー情報取得 (domain: {record[CrawlerResponseModel.DOMAIN]})')
 
             scraper_info_by_domain_data = scraper_info_by_domain_data_list[0]   # ドメイン単位で取得しているため常に１件
             for scraper, pattern_list in scraper_info_by_domain_data.scrape_item_get():
@@ -124,7 +124,7 @@ def scrapying_task(
             # タイトルしか無い記事も稀に存在する。有料会員にしか本文を見せていないニュースサイトもあるため、データが欠損していても保存はするよう見直し。
             scraped_from_response.insert_one(scraped)
             logger.info(
-                f'=== scrapying_run run  処理対象url : {record[CrawlerResponseModel.URL]}')
+                f'=== 処理対象url : {record[CrawlerResponseModel.URL]}')
 
             # 最後に今回処理を行ったdomainを保存
             old_domain = record[CrawlerResponseModel.DOMAIN]
