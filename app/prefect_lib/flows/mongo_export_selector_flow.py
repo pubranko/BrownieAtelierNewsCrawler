@@ -1,5 +1,3 @@
-from typing import Optional
-from datetime import datetime
 from prefect import flow, get_run_logger
 from prefect.futures import PrefectFuture
 from prefect.task_runners import SequentialTaskRunner
@@ -23,7 +21,7 @@ from BrownieAtelierMongo.collection_models.stats_info_collect_model import Stats
     task_runner=SequentialTaskRunner())
 @common_flow
 def mongo_export_selector_flow(
-    collections_name:list =[
+    collections_name:list[str] =[
         CrawlerResponseModel.COLLECTION_NAME,
         ScrapedFromResponseModel.COLLECTION_NAME, # 通常運用では不要なバックアップとなるがテスト用に実装している。
         NewsClipMasterModel.COLLECTION_NAME,

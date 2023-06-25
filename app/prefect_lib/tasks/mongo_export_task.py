@@ -1,12 +1,8 @@
 import os
-import copy
 import pickle
-
-from typing import Union, Any
-from datetime import datetime, date, time
-from dateutil.relativedelta import relativedelta
+from typing import Any
+from datetime import datetime
 from prefect import task, get_run_logger
-from shared.settings import TIMEZONE, DATA_DIR__BACKUP_BASE_DIR
 from prefect_lib.flows import START_TIME
 from pymongo import ASCENDING
 from pymongo.cursor import Cursor
@@ -26,8 +22,7 @@ def mongo_export_task(
     dir_path: str,   # export先のフォルダ名
     period_from: datetime,  # 月次エクスポートを行うデータの基準年月
     period_to: datetime,  # 月次エクスポートを行うデータの基準年月
-    collections_name: list[Union[CrawlerResponseModel, ScrapedFromResponseModel, NewsClipMasterModel,
-                            CrawlerLogsModel, AsynchronousReportModel, ControllerModel]],
+    collections_name: list[str],
     crawler_response__registered: bool,
 ):
     '''
@@ -100,16 +95,11 @@ def mongo_export_task(
 
         if collection:
             filter: Any = {'$and': conditions} if conditions else None
-            # export_exec(collection_name, filter,
-            #             sort_parameter, collection, file_path)
+
             # エクスポート対象件数を確認
             record_count = collection.count(filter)
             logger.info(
                 f'=== {collection_name} バックアップ対象件数 : {str(record_count)}')
-
-            # 100件単位で処理を実施
-            # limit: int = 100
-            # skip_list = list(range(0, record_count, limit))
 
             # ファイルにリストオブジェクトを追記していく
             with open(file_path, 'ab') as file:
@@ -120,39 +110,8 @@ def mongo_export_task(
                 sort=sort_parameter)
             record_list: list = [record for record in records]
 
-            logger.info(f'=== find対象件数 : {str(len(record_list))}')
-
             with open(file_path, 'ab') as file:
                 file.write(pickle.dumps(record_list))
 
-
-            # for skip in skip_list:
-            #     records: Cursor = collection.find(
-            #         filter=filter,
-            #         sort=sort_parameter,
-            #     ).skip(skip).limit(limit)
-            #     record_list: list = [record for record in records]
-
-            #     logger.info(f'=== find対象件数 : {str(len(record_list))}')
-
-            #     with open(file_path, 'ab') as file:
-            #         file.write(pickle.dumps(record_list))
-
-            #     logger.info(f'=== filesize : {str(os.path.getsize(file_path))}')
-
-
-
         # 誤更新防止のため、ファイルの権限を参照に限定
         os.chmod(file_path, 0o444)
-
-
-
-'''
-保存するフォルダ内の形式
-
-prefix_yyyy-mm_yyyy-mm_suffix
-    timestamp
-    collection
-    collection
-    ,,,,
-'''
