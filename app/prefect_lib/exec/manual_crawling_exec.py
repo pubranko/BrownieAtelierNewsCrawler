@@ -24,8 +24,8 @@ manual_crawling_flow(
         # direct_crawl_urls = [],
         # url_pattern =  'https://www.yomiuri.co.jp/national/20220430-OYT1T50050',
     ),
-    # following_processing_execution=False    # 後続処理実行(scrapying,news_clip_masterへの登録,solrへの登録)
-    following_processing_execution=True    # 後続処理実行(scrapying,news_clip_masterへの登録,solrへの登録)
+    following_processing_execution=False    # 後続処理実行(scrapying,news_clip_masterへの登録,solrへの登録)
+    # following_processing_execution=True    # 後続処理実行(scrapying,news_clip_masterへの登録,solrへの登録)
     # spider_kwargs={
     #     'debug': 'Yes',
     #     'pages': '1,1',
