@@ -56,7 +56,7 @@ class ScraperPatternReportExcel:
         # 見出し編集
         self.scraper_pattern_report_header()
         # データ編集
-        self.scraper_pattern_report_body_task(scraper_pattern_report_data)
+        self.scraper_pattern_report_body(scraper_pattern_report_data)
 
     def scraper_pattern_report_header(self):
         '''スクレイパー情報解析レポート用Excelの見出し編集'''
@@ -87,7 +87,7 @@ class ScraperPatternReportExcel:
             head2_cell.border = border
             head2_cell.alignment = Alignment(horizontal="center")  # 中央寄せ
 
-    def scraper_pattern_report_body_task(self, scraper_pattern_report_data: ScraperPatternReportData):
+    def scraper_pattern_report_body(self, scraper_pattern_report_data: ScraperPatternReportData):
         '''
         スクレイパー情報解析レポート用Excelの編集
         '''

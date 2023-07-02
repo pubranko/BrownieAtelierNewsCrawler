@@ -1,14 +1,11 @@
-from calendar import month
 from copy import deepcopy
-import re
-from datetime import datetime, timedelta
+from datetime import datetime, date, time
 from dateutil.relativedelta import relativedelta
-from xml.dom import minicompat
-from dateutil import parser
-from typing import Any, Union, Optional, Tuple, Final
-from pydantic import BaseModel, ValidationError, validator, Field
-from pydantic.main import ModelMetaclass
+from typing import Any, Optional, Tuple, Final
+from pydantic import BaseModel, validator, Field
 from shared.settings import TIMEZONE
+from prefect_lib.flows import START_TIME
+
 
 ############################################
 # 定数
@@ -32,10 +29,9 @@ class StatsAnalysisReportConst:
 
 
 class StatsAnalysisReportInput(BaseModel):
-    start_time: datetime = Field(..., title="開始時間")
     report_term: str = Field(..., title="レポート期間")
     totalling_term: str = Field(..., title="集計期間")
-    base_date: Optional[datetime] = None
+    base_date: Optional[date] = None
 
     #####################
     # 定数
@@ -77,12 +73,6 @@ class StatsAnalysisReportInput(BaseModel):
     ##################################
     # 単項目チェック、省略時の値設定
     ##################################
-    @validator(StatsAnalysisReportConst.START_TIME)
-    def start_time_check(cls, value: str, values: dict) -> str:
-        if value:
-            assert isinstance(value, datetime), '日付型以外がエラー'
-        return value
-
     @validator(StatsAnalysisReportConst.REPORT_TERM)
     def report_term_check(cls, value: str, values: dict) -> str:
         if value:
@@ -105,12 +95,6 @@ class StatsAnalysisReportInput(BaseModel):
                     'レポート期間の指定ミス。daily, weekly, monthly, yearlyで入力してください。')
         return value
 
-    @validator(StatsAnalysisReportConst.BASE_DATE)
-    def base_date_check(cls, value: Optional[datetime], values: dict) -> Optional[datetime]:
-        if value:
-            assert isinstance(value, datetime), '日時型以外がエラー'
-        return value
-
     ###################################
     # 関連項目チェック
     ###################################
@@ -118,15 +102,17 @@ class StatsAnalysisReportInput(BaseModel):
     #####################################
     # カスタマイズデータ
     #####################################
-    def base_date_get(self) -> Tuple[datetime, datetime]:
+    def base_date_get(self, start_time: datetime) -> Tuple[datetime, datetime]:
         '''
         レポート期間(report_term)と基準日(base_date)を基に基準期間(base_date_from, base_date_to)を取得する。
         ※基準日(base_date)=基準期間to(base_date_to)となる。
         '''
-        start_time: datetime = self.start_time
+        # start_time: datetime = self.start_time
         #base_date = self.base_date
         if self.base_date:
-            base_date_to = self.base_date
+            # base_date_to = self.base_date
+            base_date_to = datetime.combine(
+                self.base_date, time.min, TIMEZONE)
         else:
             base_date_to = start_time.replace(
                 hour=0, minute=0, second=0, microsecond=0)
@@ -148,7 +134,7 @@ class StatsAnalysisReportInput(BaseModel):
         [(from, to), (from, to),,,]
         '''
         term_list: list[tuple[datetime, datetime]] = []
-        base_date_from, base_date_to = self.base_date_get()
+        base_date_from, base_date_to = self.base_date_get(START_TIME)
 
         if self.totalling_term == StatsAnalysisReportConst.TOTALLING_TERM__DAILY:
             term = relativedelta(days=1)
