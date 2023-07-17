@@ -21,10 +21,10 @@ def stats_info_collect_args_check_task(base_date: date) -> StatsInfoCollectInput
         # e.errors()エラー結果をdict形式で見れる。
         # str(e)エラー結果をlist形式で見れる。
         logger.error(
-            f'=== StatsInfoCollectTask run エラー内容: {e.errors()}')
+            f'=== エラー内容: {e.errors()}')
         raise ValueError()
 
     logger.info(
-        f'=== StatsInfoCollectTask run 基準日from ~ to : {stats_info_collect_input.base_date_get(START_TIME)}')
+        f'=== 基準日from ~ to : {stats_info_collect_input.base_date_get(START_TIME)}')
 
     return stats_info_collect_input
