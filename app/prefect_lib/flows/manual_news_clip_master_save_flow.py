@@ -11,7 +11,7 @@ from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 
 
 @flow(
-    flow_run_name='[CRAWL_006] Manual news clip master save flow',
+    name='Manual news clip master save flow',
     task_runner=SequentialTaskRunner())
 @common_flow
 def manual_news_clip_master_save_flow(

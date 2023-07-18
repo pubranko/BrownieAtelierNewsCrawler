@@ -19,7 +19,7 @@ from BrownieAtelierMongo.collection_models.stats_info_collect_model import Stats
 
 
 @flow(
-    flow_run_name='[MONGO_004] Mongo import selector flow',
+    name='Mongo import selector flow',
     task_runner=SequentialTaskRunner())
 @common_flow
 def mongo_import_selector_flow(

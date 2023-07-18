@@ -73,7 +73,9 @@ def end_task(mongo: MongoModel):
     logger = get_run_logger()   # PrefectLogAdapter
     flow_context = FlowRunContext.get()
     if flow_context:
-        flow_name = flow_context.flow_run.name
+        # flow_name = flow_context.flow_run.name
+        flow_name = flow_context.flow.name
+        # print(f'=== flow名確認! {flow_context.flow_run.name}  :  {flow_context.flow.name}')
         logger.info(f'=== end_task開始:  {START_TIME}, {LOG_FILE_PATH}, {flow_name}')
     else:
         flow_name = 'フロー名不明'

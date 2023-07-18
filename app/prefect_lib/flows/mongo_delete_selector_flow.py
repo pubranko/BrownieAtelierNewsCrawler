@@ -10,7 +10,7 @@ from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 
 
 @flow(
-    flow_run_name='[MONGO_003] Mongo export selector flow',
+    name='Mongo export selector flow',
     task_runner=SequentialTaskRunner())
 @common_flow
 def mongo_delete_selector_flow(

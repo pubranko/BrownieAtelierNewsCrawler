@@ -11,7 +11,7 @@ from BrownieAtelierMongo.collection_models.scraped_from_response_model import Sc
 
 
 @flow(
-    flow_run_name='[MONGO_001] Daily clear flow',
+    name='Daily clear flow',
     task_runner=SequentialTaskRunner())
 @common_flow
 def daily_clear_flow():

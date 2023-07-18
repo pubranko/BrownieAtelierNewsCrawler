@@ -73,7 +73,7 @@ def stop_controller_update_task(domain: str, command: str, destination: str, mon
 
 
 @flow(
-    flow_run_name='[ENTRY_003] Stop Controller Update Flow',
+    name='Stop Controller Update Flow',
     task_runner=SequentialTaskRunner())
 @common_flow
 def stop_controller_update_flow(domain: str, command: str, destination: str):

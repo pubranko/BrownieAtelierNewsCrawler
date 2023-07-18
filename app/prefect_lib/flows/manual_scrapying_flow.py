@@ -12,7 +12,7 @@ from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 
 
 @flow(
-    flow_run_name='[CRAWL_003] Manual scrapying flow',
+    name='Manual scrapying flow',
     task_runner=SequentialTaskRunner())
 @common_flow
 def manual_scrapying_flow(

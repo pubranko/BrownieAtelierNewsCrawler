@@ -74,7 +74,7 @@ def scraper_info_by_domain_task(scraper_info_by_domain_files: list, mongo: Mongo
 
 
 @flow(
-    flow_run_name='[ENTRY_001] Scraper info uploader flow',
+    name='Scraper info uploader flow',
     task_runner=SequentialTaskRunner())
 @common_flow
 def scraper_info_by_domain_flow(scraper_info_by_domain_files: list):

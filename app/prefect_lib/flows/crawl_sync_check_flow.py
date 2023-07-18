@@ -11,7 +11,7 @@ from prefect_lib.tasks.sync_check_news_clip_master_task import sync_check_news_c
 from prefect_lib.tasks.sync_check_notice_result_task import sync_check_notice_result_task
 
 @flow(
-    flow_run_name='[CHECK_001] Crawl sync check flow',
+    name='Crawl sync check flow',
     task_runner=SequentialTaskRunner())
 @common_flow
 def crawl_sync_check_flow(domain: str, start_time_from: datetime, start_time_to: datetime):

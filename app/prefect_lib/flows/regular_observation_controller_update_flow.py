@@ -12,7 +12,7 @@ from prefect_lib.flows import START_TIME
 
 
 @flow(
-    flow_run_name='[ENTRY_002] Regular observation controller update Flow',
+    name='Regular observation controller update Flow',
     task_runner=SequentialTaskRunner())
 @common_flow
 def regular_observation_controller_update_flow(spiders_name: str, register: str):

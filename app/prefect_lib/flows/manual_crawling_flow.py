@@ -16,7 +16,7 @@ from prefect_lib.flows import START_TIME
 
 
 @flow(
-    flow_run_name='[CRAWL_003] Manual crawling flow',
+    name='Manual crawling flow',
     task_runner=SequentialTaskRunner())
 @common_flow
 def manual_crawling_flow(spider_names: list[str], spider_kwargs: dict, following_processing_execution: bool):

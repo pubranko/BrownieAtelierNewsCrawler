@@ -16,7 +16,7 @@ from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 
 
 @flow(
-    flow_run_name='[STATS_001] Stats info collect flow',
+    name='Stats info collect flow',
     task_runner=SequentialTaskRunner(),
     validate_parameters = False)            # 入力チェックは別途行うのでFalse
 @common_flow

@@ -15,7 +15,7 @@ from BrownieAtelierMongo.collection_models.asynchronous_report_model import Asyn
 from shared.settings import TIMEZONE
 
 @flow(
-    flow_run_name='[MONGO_002] monthly clear flow',
+    name='monthly clear flow',
     task_runner=SequentialTaskRunner())
 @common_flow
 def monthly_clear_flow():

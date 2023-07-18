@@ -21,7 +21,7 @@ from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 
 
 @flow(
-    flow_run_name='[STATS_003] Scraper pattern info report flow',
+    name='Scraper pattern info report flow',
     task_runner=SequentialTaskRunner(),
     validate_parameters = False)            # 入力チェックは別途行うのでFalse
 @common_flow

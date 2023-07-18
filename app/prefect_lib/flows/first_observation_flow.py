@@ -16,7 +16,7 @@ from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 
 
 @flow(
-    flow_run_name='[CRAWL_001] First observation flow',
+    name='First observation flow',
     task_runner=SequentialTaskRunner())
 @common_flow
 def first_observation_flow():
