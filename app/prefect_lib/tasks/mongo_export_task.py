@@ -14,6 +14,7 @@ from BrownieAtelierMongo.collection_models.news_clip_master_model import NewsCli
 from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
 from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 from BrownieAtelierMongo.collection_models.asynchronous_report_model import AsynchronousReportModel
+from BrownieAtelierMongo.collection_models.stats_info_collect_model import StatsInfoCollectModel
 
 
 @task
@@ -28,7 +29,7 @@ def mongo_export_task(
     '''
     '''
     logger = get_run_logger()   # PrefectLogAdapter
-    logger.info(f'=== 引数 : {dir_path} {period_from} {period_to}')
+    logger.info(f'=== 引数 : dir_path={dir_path} collections_name= {collections_name} period_from~to= {period_from} ~ {period_to}')
 
     # バックアップフォルダ直下に基準年月ごとのフォルダを作る。
     # 同一フォルダへのエクスポートは禁止。
@@ -89,6 +90,12 @@ def mongo_export_task(
             conditions.append(
                 {AsynchronousReportModel.START_TIME: {'$gte': period_from}})
             conditions.append({AsynchronousReportModel.START_TIME: {'$lte': period_to}})
+
+        elif collection_name == StatsInfoCollectModel.COLLECTION_NAME:
+            collection = StatsInfoCollectModel(mongo)
+            conditions.append(
+                {StatsInfoCollectModel.START_TIME: {'$gte': period_from}})
+            conditions.append({StatsInfoCollectModel.START_TIME: {'$lte': period_to}})
 
         elif collection_name == ControllerModel.COLLECTION_NAME:
             collection = ControllerModel(mongo)

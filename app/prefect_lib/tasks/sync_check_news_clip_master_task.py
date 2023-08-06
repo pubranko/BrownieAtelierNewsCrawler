@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 from pymongo.cursor import Cursor
 from prefect import task, get_run_logger
 
@@ -12,7 +12,7 @@ from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 
 
 @task
-def sync_check_news_clip_master_task(mongo: MongoModel, domain: str, start_time_from: datetime, start_time_to: datetime, response_sync_list:list):
+def sync_check_news_clip_master_task(mongo: MongoModel, domain: Optional[str], start_time_from: Optional[datetime], start_time_to: Optional[datetime], response_sync_list: list):
     '''crawler_responseの結果news_clip_masterとの同期チェック'''
 
     # ロガー取得
@@ -45,7 +45,8 @@ def sync_check_news_clip_master_task(mongo: MongoModel, domain: str, start_time_
         # news_clip_master側に存在しないcrawler_responseがある場合
         if news_clip_master.count(filter=master_filter) == 0:
             if not CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER in response_sync:
-                master_async_list.append(response_sync[CrawlerResponseModel.URL])
+                master_async_list.append(
+                    response_sync[CrawlerResponseModel.URL])
 
                 # 非同期ドメイン集計カウントアップ
                 if response_sync[CrawlerResponseModel.DOMAIN] in master_async_domain_aggregate:

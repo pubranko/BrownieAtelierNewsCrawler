@@ -5,7 +5,7 @@ from prefect.futures import PrefectFuture
 from prefect.task_runners import SequentialTaskRunner
 from prefect_lib.tasks.init_task import init_task
 from prefect_lib.tasks.end_task import end_task
-from prefect_lib.flows.common_flow import common_flow
+from prefect_lib.flows.init_flow import init_flow
 from prefect_lib.tasks.mongo_common_task import mongo_common_task
 from prefect_lib.tasks.mongo_import_task import mongo_import_task
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
@@ -21,11 +21,11 @@ from BrownieAtelierMongo.collection_models.stats_info_collect_model import Stats
 @flow(
     name='Mongo import selector flow',
     task_runner=SequentialTaskRunner())
-@common_flow
 def mongo_import_selector_flow(
     folder_name:str,
     collections_name:list[str],
 ):
+    init_flow()
 
     # ロガー取得
     logger = get_run_logger()   # PrefectLogAdapter

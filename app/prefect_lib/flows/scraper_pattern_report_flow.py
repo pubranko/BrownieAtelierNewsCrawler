@@ -8,7 +8,7 @@ from prefect.task_runners import SequentialTaskRunner
 
 from prefect_lib.tasks.init_task import init_task
 from prefect_lib.tasks.end_task import end_task
-from prefect_lib.flows.common_flow import common_flow
+from prefect_lib.flows.init_flow import init_flow
 from prefect_lib.tasks.scraper_pattern_report_args_check_task import scraper_pattern_report_args_check_task
 from prefect_lib.tasks.scraper_pattern_report_data_frame_task import scraper_pattern_report_data_frame_task
 # from prefect_lib.tasks.scraper_pattern_report_header_task import scraper_pattern_report_header_task
@@ -24,8 +24,10 @@ from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
     name='Scraper pattern info report flow',
     task_runner=SequentialTaskRunner(),
     validate_parameters = False)            # 入力チェックは別途行うのでFalse
-@common_flow
-def scraper_pattern_report_flow(report_term: str, base_date: Optional[datetime] = None):
+def scraper_pattern_report_flow(
+    report_term: str,
+    base_date: Optional[datetime] = None):
+    init_flow()
 
     # ロガー取得
     logger = get_run_logger()   # PrefectLogAdapter

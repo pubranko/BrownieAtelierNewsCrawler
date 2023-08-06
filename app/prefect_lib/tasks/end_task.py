@@ -93,5 +93,5 @@ def end_task(mongo: MongoModel):
     mongo.close()
 
     # 不要となったログファイルを削除
-    if LOG_FILE_PATH:
-        os.remove(LOG_FILE_PATH)
+    # if LOG_FILE_PATH:
+    #     os.remove(LOG_FILE_PATH)

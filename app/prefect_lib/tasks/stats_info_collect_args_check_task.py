@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 from datetime import datetime, date
 from prefect import task, get_run_logger
 from pydantic import ValidationError
@@ -8,7 +8,7 @@ from prefect_lib.flows import START_TIME
 
 
 @task
-def stats_info_collect_args_check_task(base_date: date) -> StatsInfoCollectInput:
+def stats_info_collect_args_check_task(base_date: Optional[date] = None) -> StatsInfoCollectInput:
     '''
     '''
     logger = get_run_logger()   # PrefectLogAdapter

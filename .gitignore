@@ -144,3 +144,5 @@ data_dir/*report*
 certificate
 test_aria/*
 #!/data_dir/scraper_info_by_domain/
+profiles.toml
+memo_store.toml

@@ -1,12 +1,13 @@
+from typing import Optional
 from datetime import datetime, date
+from dateutil.relativedelta import relativedelta
 from prefect import flow, get_run_logger
 from prefect.futures import PrefectFuture
 from prefect.task_runners import SequentialTaskRunner
 
-
 from prefect_lib.tasks.init_task import init_task
 from prefect_lib.tasks.end_task import end_task
-from prefect_lib.flows.common_flow import common_flow
+from prefect_lib.flows.init_flow import init_flow
 from prefect_lib.tasks.stats_info_collect_args_check_task import stats_info_collect_args_check_task
 from prefect_lib.tasks.stats_info_collect_task import stats_info_collect_task
 from prefect_lib.tasks.stats_info_collect_save_task import stats_info_collect_save_task
@@ -19,8 +20,8 @@ from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
     name='Stats info collect flow',
     task_runner=SequentialTaskRunner(),
     validate_parameters = False)            # 入力チェックは別途行うのでFalse
-@common_flow
-def stats_info_collect_flow(base_date:date):
+def stats_info_collect_flow(base_date:Optional[date] = None):
+    init_flow()
 
     # ロガー取得
     logger = get_run_logger()   # PrefectLogAdapter

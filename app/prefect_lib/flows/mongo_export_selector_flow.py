@@ -3,7 +3,7 @@ from prefect.futures import PrefectFuture
 from prefect.task_runners import SequentialTaskRunner
 from prefect_lib.tasks.init_task import init_task
 from prefect_lib.tasks.end_task import end_task
-from prefect_lib.flows.common_flow import common_flow
+from prefect_lib.flows.init_flow import init_flow
 from prefect_lib.tasks.mongo_common_task import mongo_common_task
 from prefect_lib.tasks.mongo_export_task import mongo_export_task
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
@@ -15,27 +15,23 @@ from BrownieAtelierMongo.collection_models.asynchronous_report_model import Asyn
 from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 from BrownieAtelierMongo.collection_models.stats_info_collect_model import StatsInfoCollectModel
 
+from BrownieAtelierMongo.collection_models.news_clip_master_model import NewsClipMasterModel
+from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
+from BrownieAtelierMongo.collection_models.stats_info_collect_model import StatsInfoCollectModel
+
 
 @flow(
     name='Mongo export selector flow',
     task_runner=SequentialTaskRunner())
-@common_flow
 def mongo_export_selector_flow(
-    collections_name:list[str] =[
-        CrawlerResponseModel.COLLECTION_NAME,
-        ScrapedFromResponseModel.COLLECTION_NAME, # 通常運用では不要なバックアップとなるがテスト用に実装している。
-        NewsClipMasterModel.COLLECTION_NAME,
-        CrawlerLogsModel.COLLECTION_NAME,
-        AsynchronousReportModel.COLLECTION_NAME,
-        ControllerModel.COLLECTION_NAME,
-        StatsInfoCollectModel.COLLECTION_NAME,
-    ],
-    prefix:str = '',   # export先のフォルダyyyy-mmの先頭に拡張した名前を付与する。
-    suffix:str = '',   # export先のフォルダyyyy-mmの末尾に拡張した名前を付与する。
-    period_month_from:int = 0,  # 月次エクスポートを行うデータの基準年月  ex)0 -> 当月, 1 => 前月
-    period_month_to:int = 0,  # 月次エクスポートを行うデータの基準年月
-    crawler_response__registered:bool =True,   # crawler_responseの場合、登録済みになったレコードのみエクスポートする場合True、登録済み以外のレコードも含めてエクスポートする場合False
+    collections_name:list[str],
+    prefix:str,   # export先のフォルダyyyy-mmの先頭に拡張した名前を付与する。
+    suffix:str,   # export先のフォルダyyyy-mmの末尾に拡張した名前を付与する。
+    period_month_from:int,  # 月次エクスポートを行うデータの基準年月  ex)0 -> 当月, 1 => 前月
+    period_month_to:int,  # 月次エクスポートを行うデータの基準年月
+    crawler_response__registered:bool =False,   # crawler_responseの場合、登録済みになったレコードのみエクスポートする場合True、登録済み以外のレコードも含めてエクスポートする場合False
 ):
+    init_flow()
 
     # ロガー取得
     logger = get_run_logger()   # PrefectLogAdapter

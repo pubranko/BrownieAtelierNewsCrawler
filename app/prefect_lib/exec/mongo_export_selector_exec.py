@@ -15,7 +15,7 @@ mongo_export_selector_flow(
         AsynchronousReportModel.COLLECTION_NAME,
         ControllerModel.COLLECTION_NAME,
     ],
-    prefix='test7',   # export先のフォルダyyyy-mmの先頭に拡張した名前を付与する。
+    prefix='',   # export先のフォルダyyyy-mmの先頭に拡張した名前を付与する。
     suffix='',
     period_month_from=3,  # 月次エクスポートを行うデータの基準年月
     period_month_to=3,  # 月次エクスポートを行うデータの基準年月

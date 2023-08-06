@@ -5,7 +5,7 @@ from prefect.futures import PrefectFuture
 from prefect.task_runners import SequentialTaskRunner
 from prefect_lib.tasks.init_task import init_task
 from prefect_lib.tasks.end_task import end_task
-from prefect_lib.flows.common_flow import common_flow
+from prefect_lib.flows.init_flow import init_flow
 from prefect_lib.tasks.news_clip_master_save_task import news_clip_master_save_task
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 
@@ -13,12 +13,12 @@ from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 @flow(
     name='Manual news clip master save flow',
     task_runner=SequentialTaskRunner())
-@common_flow
 def manual_news_clip_master_save_flow(
-    domain: Optional[str],
-    target_start_time_from: Optional[datetime],
-    target_start_time_to: Optional[datetime],
+    domain: Optional[str] = None,
+    target_start_time_from: Optional[datetime] = None,
+    target_start_time_to: Optional[datetime] = None,
 ):
+    init_flow()
 
     # ロガー取得
     logger = get_run_logger()   # PrefectLogAdapter

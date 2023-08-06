@@ -19,7 +19,7 @@ def mongo_common_task(
     ②exportを行う範囲の日時を生成
     '''
     logger = get_run_logger()   # PrefectLogAdapter
-    logger.info(f'=== 引数 : {prefix} {period_month_from} {period_month_to}')
+    logger.info(f'=== 引数 : prefix={prefix} suffix={suffix} period_month_from~to= {period_month_from} ~ {period_month_to}')
 
 
     period_from: datetime = datetime.combine(

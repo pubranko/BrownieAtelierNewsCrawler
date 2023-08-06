@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 from pymongo.cursor import Cursor
 from prefect import task, get_run_logger
 
@@ -13,7 +13,7 @@ from shared.timezone_recovery import timezone_recovery
 
 
 @task
-def sync_check_crawler_response_task(mongo: MongoModel, domain: str, start_time_from: datetime, start_time_to: datetime):
+def sync_check_crawler_response_task(mongo: MongoModel, domain: Optional[str], start_time_from: Optional[datetime], start_time_to: Optional[datetime]):
     '''crawl対象のurlとcrawler_responseの同期チェック'''
 
     # ロガー取得

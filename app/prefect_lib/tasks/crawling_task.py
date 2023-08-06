@@ -1,5 +1,5 @@
 import logging
-from logging import StreamHandler
+from logging import StreamHandler, FileHandler
 from typing import Any
 from prefect import task, get_run_logger
 from news_crawl.news_crawl_input import NewsCrawlInput
@@ -25,16 +25,18 @@ def crawling_task(news_crawl_input: NewsCrawlInput, crawling_target_spiders: lis
     for spider_info in crawling_target_spiders:
         runner.crawl(spider_info['class_instans'], **news_crawl_input.__dict__)
     run = runner.join()
-    reac:Any = reactor
+    reac: Any = reactor
     run.addBoth(lambda _: reac.stop())
     reac.run(0)
 
-    # Scrapy実行後に、rootロガーに追加されているストリームハンドラを削除(これをやらないとログが二重化する)
-    # root_logger = logging.getLogger()
-    # for handler in root_logger.handlers:
-    #     if type(handler) == StreamHandler:
-    #         root_logger.removeHandler(handler)
-    # root_logger = logging.getLogger()
+    # Scrapy実行後に、rootロガーに追加されているストリームハンドラ、ファイルハンドラを削除(これをやらないとログが二重化する)
+    root_logger = logging.getLogger()
+    for handler in root_logger.handlers:
+        if type(handler) == StreamHandler:
+            root_logger.removeHandler(handler)
+        if type(handler) == FileHandler:
+            root_logger.removeHandler(handler)
+    root_logger = logging.getLogger()
 
-    # logger.info('=== 不要なのroot logger handlers 削除後の確認:' +
-    #             str(root_logger.handlers))
+    logger.info(
+        f'=== 不要なのroot logger handlers 削除後の確認:{str(root_logger.handlers)}')

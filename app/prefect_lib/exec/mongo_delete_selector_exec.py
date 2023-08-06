@@ -13,9 +13,10 @@ mongo_delete_selector_flow(
         NewsClipMasterModel.COLLECTION_NAME,
         CrawlerLogsModel.COLLECTION_NAME,
         AsynchronousReportModel.COLLECTION_NAME,
-        # ControllerModel.COLLECTION_NAME,
+        ControllerModel.COLLECTION_NAME,
     ],
-    period_month_from=1,  # 月次エクスポートを行うデータの基準年月
-    period_month_to=0,  # 月次エクスポートを行うデータの基準年月
+    period_month_from=3,  # 月次エクスポートを行うデータの基準年月
+    period_month_to=3,  # 月次エクスポートを行うデータの基準年月
+    # crawler_response__registered=False,
 )
 

@@ -7,12 +7,12 @@ from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 
 
 @task
-def regular_observation_controller_update_task(mongo, spiders_name: str, register: str):
+def regular_observation_controller_update_task(mongo, spiders_name: list[str], register_type: str):
     '''
     scrapyによるクロールを実行するための対象スパイダー情報の一覧を生成する。
     '''
     logger = get_run_logger()   # PrefectLogAdapter
-    logger.info(f'=== 引数 : {str(spiders_name)} / {str(register)}')
+    logger.info(f'=== 引数 : {str(spiders_name)} / {str(register_type)}')
     controller = ControllerModel(mongo)
     record = set(controller.regular_observation_spider_name_set_get())
     logger.info(
@@ -27,14 +27,14 @@ def regular_observation_controller_update_task(mongo, spiders_name: str, registe
     for spider_info in directory_search_spiders.spiders_name_list_get():
         spiders_exist_set.add(spider_info)
 
-    if register == RegularObservationControllerUpdateConst.REGISTER_ADD:
+    if register_type == RegularObservationControllerUpdateConst.REGISTER_ADD:
         for spider_name in spiders_name_set:
             if not spider_name in spiders_exist_set:
                 logger.error(
                     f'=== spider_nameパラメータエラー : {spider_name} は存在しません。')
                 raise ValueError(spider_name)
         record.update(spiders_name_set)
-    elif register == RegularObservationControllerUpdateConst.REGISTER_DELETE:
+    elif register_type == RegularObservationControllerUpdateConst.REGISTER_DELETE:
         for spider_name in spiders_name_set:
             if spider_name in record:
                 record.remove(spider_name)
@@ -44,8 +44,8 @@ def regular_observation_controller_update_task(mongo, spiders_name: str, registe
                 raise ValueError(spider_name)
     else:
         logger.error(
-            f'=== 登録方法(register)パラメータエラー : {register}')
-        raise ValueError(register)
+            f'=== 登録方法(register_type)パラメータエラー : {register_type}')
+        raise ValueError(register_type)
 
     logger.info(
         f'=== 更新後の登録内容 : {str(record)}')

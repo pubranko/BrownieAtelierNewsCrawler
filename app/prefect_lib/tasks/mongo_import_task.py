@@ -13,6 +13,7 @@ from BrownieAtelierMongo.collection_models.news_clip_master_model import NewsCli
 from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
 # from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 from BrownieAtelierMongo.collection_models.asynchronous_report_model import AsynchronousReportModel
+from BrownieAtelierMongo.collection_models.stats_info_collect_model import StatsInfoCollectModel
 
 
 @task
@@ -72,6 +73,8 @@ def mongo_import_task(
                 collection = CrawlerLogsModel(mongo)
             elif collection_name == AsynchronousReportModel.COLLECTION_NAME:
                 collection = AsynchronousReportModel(mongo)
+            elif collection_name == StatsInfoCollectModel.COLLECTION_NAME:
+                collection = StatsInfoCollectModel(mongo)
             # elif file_name == ControllerModel.COLLECTION_NAME:
             #     collection = ControllerModel(mongo)
 

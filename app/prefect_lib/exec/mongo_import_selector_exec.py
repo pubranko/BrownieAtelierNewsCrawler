@@ -8,13 +8,13 @@ from BrownieAtelierMongo.collection_models.controller_model import ControllerMod
 
 
 mongo_import_selector_flow(
-    folder_name='test7_2023-03_2023-03',
+    folder_name='api_2023-07_2023-07_20230731',
     collections_name=[
         CrawlerResponseModel.COLLECTION_NAME,
         # ScrapedFromResponseModel.COLLECTION_NAME, # 通常運用では不要なバックアップとなるがテスト用に実装している。
         # NewsClipMasterModel.COLLECTION_NAME,
-        CrawlerLogsModel.COLLECTION_NAME,
-        AsynchronousReportModel.COLLECTION_NAME,
+        # CrawlerLogsModel.COLLECTION_NAME,
+        # AsynchronousReportModel.COLLECTION_NAME,
         # ControllerModel.COLLECTION_NAME,
     ],
 )

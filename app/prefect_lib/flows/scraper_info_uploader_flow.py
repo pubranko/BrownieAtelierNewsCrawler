@@ -1,6 +1,8 @@
 import os
 import glob
 import json
+import logging
+from logging import Logger
 from typing import Any
 from pydantic import ValidationError
 from prefect import flow, task, get_run_logger
@@ -8,11 +10,15 @@ from prefect.futures import PrefectFuture
 from prefect.task_runners import SequentialTaskRunner
 from prefect_lib.tasks.init_task import init_task
 from prefect_lib.tasks.end_task import end_task
-from prefect_lib.flows.common_flow import common_flow
+# from prefect_lib.flows.common_flow import common_flow
+from prefect_lib.flows.init_flow import init_flow
 from shared.settings import DATA_DIR__SCRAPER_INFO_BY_DOMAIN_DIR
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import ScraperInfoByDomainModel
 from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import ScraperInfoByDomainConst
+
+from shared.settings import LOG_FORMAT, LOG_DATEFORMAT
+from prefect_lib.flows import LOG_FILE_PATH
 
 
 '''
@@ -75,9 +81,11 @@ def scraper_info_by_domain_task(scraper_info_by_domain_files: list, mongo: Mongo
 
 @flow(
     name='Scraper info uploader flow',
+    flow_run_name='Scraper info uploader flow run',
     task_runner=SequentialTaskRunner())
-@common_flow
-def scraper_info_by_domain_flow(scraper_info_by_domain_files: list):
+# @common_flow
+def scraper_info_by_domain_flow(scraper_info_by_domain_files: list = []):
+    init_flow()
 
     # ロガー取得
     logger = get_run_logger()   # PrefectLogAdapter

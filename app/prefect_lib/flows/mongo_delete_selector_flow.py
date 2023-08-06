@@ -3,22 +3,22 @@ from prefect.futures import PrefectFuture
 from prefect.task_runners import SequentialTaskRunner
 from prefect_lib.tasks.init_task import init_task
 from prefect_lib.tasks.end_task import end_task
-from prefect_lib.flows.common_flow import common_flow
+from prefect_lib.flows.init_flow import init_flow
 from prefect_lib.tasks.mongo_common_task import mongo_common_task
 from prefect_lib.tasks.mongo_delete_task import mongo_delete_task
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 
 
 @flow(
-    name='Mongo export selector flow',
+    name='Mongo delete selector flow',
     task_runner=SequentialTaskRunner())
-@common_flow
 def mongo_delete_selector_flow(
     collections_name:list[str],
     period_month_from:int,  # 月次エクスポートを行うデータの基準年月  ex)0 -> 当月, 1 => 前月
     period_month_to:int,  # 月次エクスポートを行うデータの基準年月
     crawler_response__registered:bool =True,   # crawler_responseの場合、登録済みになったレコードのみ削除する場合True、登録済み以外のレコードも含めて削除する場合False
 ):
+    init_flow()
 
     # ロガー取得
     logger = get_run_logger()   # PrefectLogAdapter

@@ -3,7 +3,7 @@ from prefect import flow, get_run_logger
 from prefect.futures import PrefectFuture
 from prefect.task_runners import SequentialTaskRunner
 from prefect_lib.flows import START_TIME
-from prefect_lib.flows.common_flow import common_flow
+from prefect_lib.flows.init_flow import init_flow
 from prefect_lib.tasks.init_task import init_task
 from prefect_lib.tasks.end_task import end_task
 from prefect_lib.tasks.crawling_input_create_task import crawling_input_create_task
@@ -18,8 +18,8 @@ from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 @flow(
     name='First observation flow',
     task_runner=SequentialTaskRunner())
-@common_flow
 def first_observation_flow():
+    init_flow()
 
     # ロガー取得
     logger = get_run_logger()   # PrefectLogAdapter

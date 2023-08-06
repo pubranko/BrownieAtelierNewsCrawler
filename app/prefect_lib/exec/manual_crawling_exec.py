@@ -40,3 +40,28 @@ manual_crawling_flow(
     #     #'url_pattern':'https://www.epochtimes.jp/2022/06/107648.html',
     # },
 )
+
+'''
+{
+    "spider_names": [
+        "sankei_com_sitemap",
+        "asahi_com_sitemap",
+        "kyodo_co_jp_sitemap",
+        "yomiuri_co_jp_sitemap",
+        "jp_reuters_com_crawl",
+        "epochtimes_jp_crawl",
+        "mainichi_jp_crawl",
+        "nikkei_com_crawl"
+    ],
+
+    "spider_kwargs": {
+        "debug": true,
+        "page_span_from": 2,
+        "page_span_to": 2,
+        "lastmod_term_minutes_from": 90,
+        "lastmod_term_minutes_to": 60
+    },
+
+    "following_processing_execution": true
+}
+'''

@@ -19,6 +19,6 @@ scraper_info_by_domain_flow(scraper_info_by_domain_files=[
 ],)
 
 # テスト時のログファイル削除漏れ防止用
-for log_file in glob.glob('/tmp/prefect_log_*'):
-    print(f'削除漏れlog_file削除: {log_file}')
-    os.remove(log_file)
+# for log_file in glob.glob('/tmp/prefect_log_*'):
+#     print(f'削除漏れlog_file削除: {log_file}')
+#     os.remove(log_file)
