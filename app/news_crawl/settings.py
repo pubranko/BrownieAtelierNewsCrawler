@@ -175,17 +175,10 @@ SCHEDULER_PRIORITY_QUEUE = 'scrapy.pqueues.ScrapyPriorityQueue'
 TIMEZONE = timezone(timedelta(hours=9), 'JST')
 
 #LOGのレベル(CRITICAL > ERROR > WARNING > INFO > DEBUG)
-#LOG_LEVEL = 'INFO'
-#LOG_LEVEL = 'DEBUG'
-# 環境変数にSCRAPY__LOG_LEVELがあればそれをログレベルとする。（チェックはしないので設定を間違えないでね）
-# なければINFOで実行する。
-# if os.environ.get('SCRAPY__LOG_LEVEL'):
-#     LOG_LEVEL = os.environ['SCRAPY__LOG_LEVEL']
-# else:
-#     LOG_LEVEL = 'INFO'
+# 環境変数にSCRAPY__LOG_LEVELがあればそれをログレベルとする。
 LOG_LEVEL:str = str(config('SCRAPY__LOG_LEVEL', default='INFO'))
 
-#LOG_FILE = 'logs/test.log'
+#基本的にSCRAPY__LOG_FILEに指定されたprefect側のログファイルを使用する。
 LOG_FILE = str(config('SCRAPY__LOG_FILE', default='./scrapy.log'))
 
 # ロギングを有効にするかどうか。
