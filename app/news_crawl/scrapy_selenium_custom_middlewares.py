@@ -59,6 +59,7 @@ class SeleniumMiddleware:
             'executable_path': driver_executable_path,
             'options': driver_options,
             'service_log_path': os.path.devnull,    # geckodriver.logを出力させないための設定
+            'service_args': ['--log-level=INFO'],   # seleniumのログをINFOに制限
         }
 
         self.driver = driver_class(**driver_kwargs)
