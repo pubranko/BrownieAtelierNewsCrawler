@@ -7,9 +7,9 @@
 prefect config set PREFECT_API_URL=$PREFECT__API_URL
 
 # prefectクラウドへのログイン
-prefect cloud login --key $PREFECT__API_KEY
+prefect cloud login --key $PREFECT__API_KEY --workspace $PREFECT__WORK_SPACE
 prefect cloud logout
-prefect cloud login --key $PREFECT__API_KEY
+prefect cloud login --key $PREFECT__API_KEY --workspace $PREFECT__WORK_SPACE
 
 # アプリディレクトリへ
 cd $HOME/BrownieAtelier/app
