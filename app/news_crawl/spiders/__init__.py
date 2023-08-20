@@ -22,3 +22,8 @@
 #     print('=== spider __init__ logger:',logger.name,':',logger.handlers)
 # logger = logging.getLogger('')  #root
 # print('=== spider __init__ logger:',logger.name,':',logger.handlers)
+
+import logging
+# logging.getLogger('scrapy.core.engine').setLevel(logging.INFO)    #効果がなかった、、、
+logging.getLogger('scrapy.core.scraper').setLevel(logging.INFO)
+logging.getLogger('filelock').setLevel(logging.INFO)
