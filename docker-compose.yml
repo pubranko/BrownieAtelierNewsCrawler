@@ -25,13 +25,13 @@ services:
             # prefectの認証(フレームワーク仕様)
             # PRECECT_AUTH: ${PRECECT_AUTH}
             # prefectの環境設定
-            PREFECT_HOME: "/home/mikuras/BrownieAtelier/"
+            PREFECT_HOME: "${CONTAINER_HOME}/BrownieAtelier/"
             PREFECT__API_URL: ${PREFECT__API_URL}
             PREFECT__API_KEY: ${PREFECT__API_KEY}
             PREFECT_LOGGING_LEVEL: "INFO"
             PREFECT_LOGGING_SERVER_LEVEL: "INFO"
             PREFECT_LOGGING_INTERNAL_LEVEL: "INFO"
-            PREFECT__DATA_DIR_PATH: "/home/mikuras/BrownieAtelier/data_dir"
+            PREFECT__DATA_DIR_PATH: "${CONTAINER_HOME}/BrownieAtelier/data_dir"
             PREFECT__LOGGING__FORMAT: "%(asctime)s %(levelname)s [%(name)s] : %(message)s"  #たぶんいらない
             PREFECT__LOGGING__DATEFMT: "%Y-%m-%d %H:%M:%S"  #たぶんいらない
             # Scrapyのコンフィグファイル(フレームワーク仕様)
@@ -46,6 +46,6 @@ services:
             BROWNIE_ATELIER_NOTICE__TO_EMAIL : ${BROWNIE_ATELIER_NOTICE__TO_EMAIL}
             BROWNIE_ATELIER_NOTICE__PASSWORD : ${BROWNIE_ATELIER_NOTICE__PASSWORD}
             # pythonパス
-            PYTHONPATH: $HOME/BrownieAtelier/.venv/bin/
+            PYTHONPATH: ${CONTAINER_HOME}/BrownieAtelier/.venv/bin/
             # gitリモートリポジトリ
             GIT_REMOTE_REPOSITORY: ${GIT_REMOTE_REPOSITORY}

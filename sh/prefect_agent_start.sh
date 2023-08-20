@@ -7,6 +7,7 @@
 prefect config set PREFECT_API_URL=$PREFECT__API_URL
 
 # prefectクラウドへのログイン
+prefect cloud login --key $PREFECT__API_KEY
 prefect cloud logout
 prefect cloud login --key $PREFECT__API_KEY
 
