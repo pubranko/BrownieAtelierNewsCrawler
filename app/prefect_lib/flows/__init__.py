@@ -12,6 +12,7 @@ from prefect_lib.flows import *
 
 # from prefect_lib.flows import LOG_FILE_PATH
 
+logging.basicConfig(level=logging.INFO)
 
 # 開始時間
 START_TIME = datetime.now().astimezone(TIMEZONE)

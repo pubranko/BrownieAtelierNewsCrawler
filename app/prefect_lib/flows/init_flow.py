@@ -21,6 +21,8 @@ def init_flow():
     # DEBUGレベルの場合、余計な"aiosqlite","httpcore"ロガーのログ出力を抑制する。
     logging.getLogger('aiosqlite').setLevel(logging.WARNING)
     logging.getLogger('httpcore').setLevel(logging.WARNING)
+    # 不要なhttpxのログを抑制
+    logging.getLogger('httpx').setLevel(logging.INFO)
 
     logger = get_run_logger()   # PrefectLogAdapter
     logger.info(f'=== 保存用ログファイル: {os.environ.get("SCRAPY__LOG_FILE")}')

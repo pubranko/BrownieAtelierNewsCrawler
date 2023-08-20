@@ -5,13 +5,13 @@ version: '3.1'
 services:
 
     brownie_atelier:
-        image: brownie_atelier_app:0.12
+        image: brownie_atelier_app:0.13
         container_name: brownie_atelier_app
         # restart: always
         volumes:
             - ${LOCAL_MONGO_KEY_DIR}:$HOME/mongo-key
-        # command: ${DOCKER_COMPOSE_COMMAND}
-        command: bash $HOME/BrownieAtelier/sh/prefect_agent_start.sh
+        command: ${DOCKER_COMPOSE_COMMAND}
+        # command: bash $HOME/BrownieAtelier/sh/prefect_agent_start.sh
         environment:
             # mongoDB接続情報
             BROWNIE_ATELIER_MONGO__MONGO_SERVER: ${BROWNIE_ATELIER_MONGO__MONGO_SERVER}
@@ -22,26 +22,22 @@ services:
             BROWNIE_ATELIER_MONGO__MONGO_TLS: ${BROWNIE_ATELIER_MONGO__MONGO_TLS}
             BROWNIE_ATELIER_MONGO__MONGO_TLS_CA_FILE: ${BROWNIE_ATELIER_MONGO__MONGO_TLS_CA_FILE}
             BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE: ${BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE}
-            # mongoDBコレクション情報
-            MONGO_CRAWLER_RESPONSE: crawler_response
-            MONGO_CONTROLLER: controller
-            MONGO_CRAWLER_LOGS: crawler_logs
-            MONGO_SCRAPED_FROM_RESPONSE: scraped_from_response
-            MONGO_NEWS_CLIP_MASTER: news_clip_master
-            MONGO_SCRAPER_BY_DOMAIN: scraper_by_domain
-            MONGO_ASYNCHRONOUS_REPORT: asynchronous_report
-            MONGO_STATS_INFO_COLLECT: stats_info_collect
             # prefectの認証(フレームワーク仕様)
-            PRECECT_AUTH: ${PRECECT_AUTH}
+            # PRECECT_AUTH: ${PRECECT_AUTH}
             # prefectの環境設定
-            PREFECT__DATA_DIR_PATH: "../data_dir"
-            PREFECT__LOGGING__LEVEL: "INFO"
-            PREFECT__LOGGING__FORMAT: "%(asctime)s %(levelname)s [%(name)s] : %(message)s"
-            PREFECT__LOGGING__DATEFMT: "%Y-%m-%d %H:%M:%S"
+            PREFECT_HOME: "/home/mikuras/BrownieAtelier/"
+            PREFECT_API_KEY: ${PREFECT_API_KEY}
+            PREFECT_LOGGING_LEVEL: "INFO"
+            PREFECT_LOGGING_SERVER_LEVEL: "INFO"
+            PREFECT_LOGGING_INTERNAL_LEVEL: "INFO"
+            PREFECT__DATA_DIR_PATH: "/home/mikuras/BrownieAtelier/data_dir"
+            PREFECT__LOGGING__FORMAT: "%(asctime)s %(levelname)s [%(name)s] : %(message)s"  #たぶんいらない
+            PREFECT__LOGGING__DATEFMT: "%Y-%m-%d %H:%M:%S"  #たぶんいらない
             # Scrapyのコンフィグファイル(フレームワーク仕様)
             SCRAPY_SETTINGS_MODULE: "news_crawl.settings"
             # Scrapyの環境設定
             SCRAPY__LOG_LEVEL: "INFO"
+            # Brownie atelier noticeの設定
             # Email接続情報
             BROWNIE_ATELIER_NOTICE__SMTP_HOST : ${BROWNIE_ATELIER_NOTICE__SMTP_HOST}
             BROWNIE_ATELIER_NOTICE__SMTP_PORT : ${BROWNIE_ATELIER_NOTICE__SMTP_PORT}

@@ -16,7 +16,7 @@ formatters:
     standard:
         (): prefect.logging.formatters.PrefectFormatter
         format: "%(asctime)s %(levelname)-7s [%(name)s] : %(message)s"
-        flow_run_fmt: "%(asctime)s %(levelname)-7s [Flow run %(flow_run_name)r] : %(message)s"
+        flow_run_fmt: "%(asctime)s %(levelname)-7s [Flow run %(flow_name)r] : %(message)s"
         task_run_fmt: "%(asctime)s %(levelname)-7s [Task run %(task_run_name)r] : %(message)s"
         datefmt: "%Y-%m-%d %H:%M:%S"
 
@@ -69,12 +69,15 @@ loggers:
         handlers: [api]
 
     prefect.flow_runs:
-        level: NOTSET
+        level: "${PREFECT_LOGGING_LEVEL}"
         handlers: [api]
 
     prefect.task_runs:
-        level: NOTSET
+        level: "${PREFECT_LOGGING_LEVEL}"
         handlers: [api]
+
+    prefect.task_runner.sequential:
+        level: "${PREFECT_LOGGING_LEVEL}"
 
     prefect.server:
         level: "${PREFECT_LOGGING_SERVER_LEVEL}"
