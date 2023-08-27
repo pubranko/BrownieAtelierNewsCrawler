@@ -1,5 +1,6 @@
 from typing import Any
 from prefect import flow, get_run_logger
+from prefect.states import State
 from prefect.futures import PrefectFuture
 from prefect.task_runners import SequentialTaskRunner
 from prefect_lib.flows import START_TIME
@@ -26,7 +27,9 @@ def first_observation_flow():
     # 初期処理
     init_task_result: PrefectFuture = init_task.submit()
 
-    if init_task_result.get_state().is_completed():
+    any:Any = init_task_result.get_state()
+    state:State = any
+    if state.is_completed():
         mongo: MongoModel = init_task_result.result()
 
         try:
