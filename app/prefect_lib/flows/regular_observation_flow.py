@@ -14,6 +14,8 @@ from prefect_lib.tasks.scrapying_task import scrapying_task
 from prefect_lib.tasks.news_clip_master_save_task import news_clip_master_save_task
 from news_crawl.news_crawl_input import NewsCrawlInput
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
+from BrownieAtelierStorage.models.controller_blob_model import ControllerBlobModel
+from BrownieAtelierStorage.settings import AZURE_STORAGE__CONNECTION_STRING
 
 
 @flow(
@@ -45,6 +47,14 @@ def regular_observation_flow():
                 scrapying_task(mongo, '', [], START_TIME, START_TIME)
                 # スクレイピング結果をニュースクリップマスターへ保存
                 news_clip_master_save_task(mongo,'', START_TIME, START_TIME)
+
+                # 定期観測終了後コンテナーを停止させる。
+                #   azure functions BLOBトリガーを動かすためのBLOBファイルを削除＆作成を実行する。
+                #   ※テスト環境の場合は実行しない。AZURE_STORAGE__CONNECTION_STRINGに値がある＝本番環境。
+                if AZURE_STORAGE__CONNECTION_STRING:
+                    controller_blob_model = ControllerBlobModel()
+                    controller_blob_model.delete_blob()
+                    controller_blob_model.upload_blob()
 
         except Exception as e:
             # 例外をキャッチしてログ出力等の処理を行う
