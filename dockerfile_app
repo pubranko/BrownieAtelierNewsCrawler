@@ -18,6 +18,7 @@ RUN echo ${NORMAL_PASS} | sudo -S apt -y upgrade
 # アプリ用ディレクトリへ移動
 WORKDIR /home/${NORMAL_USER}/BrownieAtelier
 # リモートリポジトリよりpullを実行し最新ソースを取得する。
+RUN git pull origin ${BRANCH}
 RUN git submodule update --recursive
 
 # テスト環境用ブランチ調整 #############################################

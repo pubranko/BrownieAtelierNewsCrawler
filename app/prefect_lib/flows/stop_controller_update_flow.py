@@ -1,5 +1,6 @@
-from typing import Final
+from typing import Final, Any
 from prefect import flow, task, get_run_logger
+from prefect.states import State
 from prefect.futures import PrefectFuture
 from prefect.task_runners import SequentialTaskRunner
 from prefect_lib.tasks.init_task import init_task
@@ -23,7 +24,9 @@ def stop_controller_update_flow(domain: str, command: str, destination: str):
     # 初期処理
     init_task_result: PrefectFuture = init_task.submit()
 
-    if init_task_result.get_state().is_completed():
+    any:Any = init_task_result.get_state()
+    state:State = any
+    if state.is_completed():
         mongo = init_task_result.result()
 
         try:
