@@ -1,6 +1,6 @@
-# Brawnie Atlier
+# Brawnie Atlier（ブラウニー工房）
 ## 目次
-- [Brawnie Atlier](#brawnie-atlier)
+- [Brawnie Atlier（ブラウニー工房）](#brawnie-atlierブラウニー工房)
   - [目次](#目次)
   - [システム概要](#システム概要)
   - [当資料の基準日](#当資料の基準日)
