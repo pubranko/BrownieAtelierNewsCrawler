@@ -10,8 +10,13 @@
   - [プロジェクトで使用されるGitリポジトリ](#プロジェクトで使用されるgitリポジトリ)
   - [プロジェクトで作成・使用するdockerリポジトリ一覧](#プロジェクトで作成使用するdockerリポジトリ一覧)
   - [現在実装済みのFlowの一覧](#現在実装済みのflowの一覧)
+    - [＜各種登録系＞](#各種登録系)
+    - [\<ニュースクロール・スクレイピング系＞](#ニュースクロールスクレイピング系)
+    - [＜MongoDB更新系＞](#mongodb更新系)
+    - [＜レポート系＞](#レポート系)
+    - [＜チェック系＞](#チェック系)
   - [定期観測の処理の流れ](#定期観測の処理の流れ)
-    - [主要機能である定期観測(regular\_observation\_flow.py)の処理の流れの紹介](#主要機能である定期観測regular_observation_flowpyの処理の流れの紹介)
+    - [主要機能である定期観測(regular\_observation\_flow.py)の処理の流れを紹介](#主要機能である定期観測regular_observation_flowpyの処理の流れを紹介)
 
 ## システム概要
 - 現在、以下のような機能の構築を目指して作成中です。
@@ -31,7 +36,7 @@
 4. Docker, Docker Compose
 5. Azure Container Instances
 6. Azure Function (Httpトリガー、Timerトリガー、BLOBトリガー)
-7. Azure File Storage
+7. Azure File Storage, Azure BLOB Storage
 
 ## システム概要図
 <!-- ![システム概要図](static/システム概要図.jpg) -->
@@ -89,32 +94,44 @@
 |     |                                  |                     |                                             |                                                       |
 
 ## 現在実装済みのFlowの一覧
-
+### ＜各種登録系＞
 | №          | Flow一覧                                      | 処理概要|
 | :--------- | :-------------------------------------------- | :---------|
 |            | ＜各種登録系＞                                 ||
-| Register-1 | regular_observation_controller_update_flow.py | 定期観測用のスパイダーを登録する。<br>定期観測に使用しないスパイダーはここでは登録しない。<br>登録先MongoDBコレクション(controller)|
+| Register-1 | regular_observation_controller_update_flow.py | 定期観測用のスパイダーを登録する。<br>定期観測に使用しないスパイダーはここでは登録しない。<br>登録先MongoDBコレクション(controller)。|
 | Register-2 | scraper_info_uploader_flow.py                 | 各ニュースサイト別に、スクレイピングの情報を登録する。|
 | Register-3 | stop_controller_update_flow.py                | 各ニュースサイト別に、定期観測クローリングのON/OFF、スクレイピングのON/OFF指定を登録する。|
-|            | <ニュースクロール・スクレイピング系＞            ||
+
+### <ニュースクロール・スクレイピング系＞
+| №          | Flow一覧                                      | 処理概要|
+| :--------- | :-------------------------------------------- | :---------|
 | Crawl-1    | first_observation_flow.py                     | 定期観測対象のスパイダーでまだ一度も定期観測していないスパイダーのみ実行する。|
 | Crawl-2    | regular_observation_flow.py                   | 定期観測対象のスパイダーを実行する。<br>※対象のスパイダーは、上述「Register-1」で登録する。|
 | Crawl-3    | manual_crawling_flow.py                       | 手動でクローリングを行う際、必要な引数を与えて実行します。|
 | Crawl-4    | manual_scrapying_flow.py                      | 手動でスクレイピングを行う際、必要な引数を与えて実行します。|
 | Crawl-5    | manual_news_clip_master_save_flow.py          | 手動でニュースクリップマスターへ保存を行う際、必要な引数を与えて実行します。|
-|            | ＜MongoDB更新系＞                              ||
+
+### ＜MongoDB更新系＞
+| №          | Flow一覧                                      | 処理概要|
+| :--------- | :-------------------------------------------- | :---------|
 | Mongo-1    | mongo_delete_selector_flow.py                 | mongodbの各種コレクションに対して、指定したデータを削除する。|
 | Mongo-2    | mongo_export_selector_flow.py                 | mongodbの各種コレクションに対して、指定したデータをエクスポートする。|
 | Mongo-3    | mongo_import_selector_flow.py                 | mongodbの各種コレクションに対して、指定したデータをインポートする。|
-|            | ＜レポート系＞                                 ||
+
+### ＜レポート系＞
+| №          | Flow一覧                                      | 処理概要|
+| :--------- | :-------------------------------------------- | :---------|
 | Report-1   | scraper_pattern_report_flow.py                | 各ニュースサイト別のスクレイピング結果より、使われたパターンの統計情報をExcelで作成しメールにて送信する。|
 | Report-2   | stats_info_collect_flow.py                    | 各ニュースサイトをクローリングした際、フレームワーク：Scrapyでは統計情報を出力している。<br>その統計をMongoDBに保存させているため、情報を扱いやすいように加工したデータを日付別に保存する。|
 | Report-3   | stats_analysis_report_flow.py                 | 各ニュースサイトをクローリングした際、フレームワーク：Scrapyでは統計情報を出力している。<br>その統計をMongoDBに保存させているため、それを使いレポートをExcelで作成しメールにて送信する。|
-|            | ＜チェック系＞                                 ||
+
+### ＜チェック系＞
+| №          | Flow一覧                                      | 処理概要|
+| :--------- | :-------------------------------------------- | :---------|
 | Check-1    | crawl_sync_check_flow.py                      | クロール対象となったURLとクローラーレスポンス（crawler_response）の同期が取れているかチェック。<br>クローラーレスポンス（crawler_response）とニュースクリップマスター（news_clip_master）の同期が取れているかチェック。 |
 
 ## 定期観測の処理の流れ
-### 主要機能である定期観測(regular\_observation\_flow.py)の処理の流れの紹介
+### 主要機能である定期観測(regular\_observation\_flow.py)の処理の流れを紹介
 <!-- ![定期観測の処理の流れ](static/定期観測の処理の流れ.jpg) -->
 
 <a href="static/定期観測の処理の流れ.jpg">
