@@ -1,6 +1,6 @@
-# Brawnie Atlier
+# Brawnie Atlier（ブラウニー工房）
 ## 目次
-- [Brawnie Atlier](#brawnie-atlier)
+- [Brawnie Atlier（ブラウニー工房）](#brawnie-atlierブラウニー工房)
   - [目次](#目次)
   - [システム概要](#システム概要)
   - [当資料の基準日](#当資料の基準日)
@@ -38,16 +38,18 @@
 6. Azure Function (Httpトリガー、Timerトリガー、BLOBトリガー)
 7. Azure File Storage, Azure BLOB Storage
 
+[目次へ戻る](#目次)
+
 ## システム概要図
 <!-- ![システム概要図](static/システム概要図.jpg) -->
 <a href="static/システム概要図.jpg" class="lightbox">
   <img src="static/システム概要図.jpg" width="800" alt="画像の説明">
 </a>
 
+[目次へ戻る](#目次)
+
 ## システム概要図のアクション番号について
-
-
-| №    | デプロイ<br>アクション | 保守運用<br>アクション | 処理実行<br>アクション | アクション内容|
+| №    | デプロイ | 保守運用 | 処理実行 | アクション内容|
 | :--: | :-----: | :-----: | :-----: | :------------------------------------------------------ |
 | A1   | 〇      |         |         | 自作したFlowを、Prefect社が運用しているPrefectCloudに登録する。|
 |      |         | 〇      |         | PrefectCloudの環境設定、登録した各種Flowを実行、実行結果の参照を行う。|
@@ -76,6 +78,8 @@
 | A16  |         |         | ◎      | 各Flowでエラーが発生した場合、メールを送信する。|
 | A17  |         |         | ◎      | ローカル端末にメールを送信する。|
 
+[目次へ戻る](#目次)
+
 ## プロジェクトで使用されるGitリポジトリ
 
 | №   | リポジトリ名             | メイン | サブ | 概要                                                                                                                                                                                                                                   | gitリポジトリー                                          |
@@ -86,12 +90,16 @@
 | 4   | BrownieAtelierNotice<br>ブラウニーアトリエ通知     |        | 〇   | Gitサブモジュール。メールによる送信機能。エラー発生時の通知用モジュール。| https://github.com/pubranko/BrownieAtelierNotice.git     |
 | 5   | BrownieAtelierStorage<br>ブラウニーアトリエストレージ    |        | 〇   | Gitサブモジュール。AzureStoregeへの接続、参照、更新を行う専用モジュール。| https://github.com/pubranko/BrownieAtelierStorage.git    |
 
+[目次へ戻る](#目次)
+
 ## プロジェクトで作成・使用するdockerリポジトリ一覧
 | №   | イメージ名                       | コンテナー名        | イメージリポジトリ                          |                                                       |
 | :-- | :------------------------------- | :------------------ | :------------------------------------------ | :---------------------------------------------------- |
 | 1   | mikuras/brownie_atelier_app:0.13 | Brownie-atelier-app | https://hub.docker.com/repositories/mikuras | ブラウニー工房のアプリをUbuntu20.04へ格納したイメージ<br>※プライベートリポジトリ |
 | 2   | mongo:5.0.10-focal               | mongo-azure-db      | https://hub.docker.com/_/mongo              | MongoDB公式イメージ                                   |
 |     |                                  |                     |                                             |                                                       |
+
+[目次へ戻る](#目次)
 
 ## 現在実装済みのFlowの一覧
 ### ＜各種登録系＞
@@ -130,6 +138,8 @@
 | :--------- | :-------------------------------------------- | :---------|
 | Check-1    | crawl_sync_check_flow.py                      | クロール対象となったURLとクローラーレスポンス（crawler_response）の同期が取れているかチェック。<br>クローラーレスポンス（crawler_response）とニュースクリップマスター（news_clip_master）の同期が取れているかチェック。 |
 
+[目次へ戻る](#目次)
+
 ## 定期観測の処理の流れ
 ### 主要機能である定期観測(regular\_observation\_flow.py)の処理の流れを紹介
 <!-- ![定期観測の処理の流れ](static/定期観測の処理の流れ.jpg) -->
@@ -138,3 +148,4 @@
   <img src="static/定期観測の処理の流れ.jpg" width="800" alt="定期観測の処理の流れ">
 </a>
 
+[目次へ戻る](#目次)
