@@ -42,9 +42,12 @@
 
 ## システム概要図
 <!-- ![システム概要図](static/システム概要図.jpg) -->
-<a href="static/システム概要図.jpg" class="lightbox">
-  <img src="static/システム概要図.jpg" width="800" alt="画像の説明">
+<a href="static/システム概要図.jpg" onclick="window.open('static/システム概要図.jpg', '', 'width=1024,height=768,scrollbars=yes'); return false;">
+  <img src="static/システム概要図.jpg" width="800" alt="システム概要図">
 </a>
+<!-- <a href="static/システム概要図.jpg" class="lightbox">
+  <img src="static/システム概要図.jpg" width="800" alt="画像の説明">
+</a> -->
 
 [目次へ戻る](#目次)
 
@@ -144,8 +147,11 @@
 ### 主要機能である定期観測(regular\_observation\_flow.py)の処理の流れを紹介
 <!-- ![定期観測の処理の流れ](static/定期観測の処理の流れ.jpg) -->
 
-<a href="static/定期観測の処理の流れ.jpg">
+<a href="static/定期観測の処理の流れ.jpg" onclick="window.open('static/定期観測の処理の流れ.jpg', '', 'width=1024,height=768,scrollbars=yes'); return false;">
   <img src="static/定期観測の処理の流れ.jpg" width="800" alt="定期観測の処理の流れ">
 </a>
+<!-- <a href="static/定期観測の処理の流れ.jpg">
+  <img src="static/定期観測の処理の流れ.jpg" width="800" alt="定期観測の処理の流れ">
+</a> -->
 
 [目次へ戻る](#目次)
