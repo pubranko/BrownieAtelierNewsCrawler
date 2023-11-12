@@ -34,12 +34,12 @@
 
 ## 主要技術
 1. 言語(python3.9～)
-2. フレームワーク(Prefect2, Scrapy)
-3. DB(MongoDB, Apache Solr)
-4. Docker, Docker Compose
-5. Azure Container Instances
-6. Azure Function (Httpトリガー、Timerトリガー、BLOBトリガー)
-7. Azure File Storage, Azure BLOB Storage
+2. フレームワーク<br>Prefect2 ([ https://orion-docs.prefect.io/2.10.9/ ](https://orion-docs.prefect.io/2.10.9/)) <br> Scrapy ([ https://docs.scrapy.org/en/2.6/ ](https://docs.scrapy.org/en/2.6/))
+3. DB<br>MongoDB ([ https://www.mongodb.com/docs/v5.0/ ](https://www.mongodb.com/docs/v5.0/) )<br>Apache Solr ([ https://solr.apache.org/ ](https://solr.apache.org/))
+4. Docker, Docker Compose <br>([ https://docs.docker.jp/ ](https://docs.docker.jp/))
+5. Azure Container Instances <br> ([ https://azure.microsoft.com/ja-jp/products/container-instances ](https://azure.microsoft.com/ja-jp/products/container-instances))
+6. Azure Functions (Httpトリガー、Timerトリガー、BLOBトリガー) <br> ([ https://azure.microsoft.com/ja-jp/products/functions ](https://azure.microsoft.com/ja-jp/products/functions))
+7. Azure File Storage, Azure BLOB Storage <br> ([ https://learn.microsoft.com/ja-jp/azure/storage/common/storage-introduction ](https://learn.microsoft.com/ja-jp/azure/storage/common/storage-introduction))
 
 [目次へ戻る](#目次)
 
@@ -95,7 +95,7 @@
 [目次へ戻る](#目次)
 
 ## プロジェクトで作成・使用するdockerリポジトリ一覧
-| No. | イメージ名                        | コンテナー名         | イメージリポジトリ                           |                                                       |
+| No. | イメージ名                        | コンテナー名         | イメージリポジトリリンク                      | イメージリポジト補足説明                                |
 | :-- | :------------------------------- | :------------------ | :------------------------------------------ | :---------------------------------------------------- |
 | 1   | mikuras/brownie_atelier_app:0.13 | Brownie-atelier-app | https://hub.docker.com/repositories/mikuras | ブラウニー工房のアプリをUbuntu20.04へ格納したイメージ<br>※プライベートリポジトリ |
 | 2   | mongo:5.0.10-focal               | mongo-azure-db      | https://hub.docker.com/_/mongo              | MongoDB公式イメージ                                   |
@@ -169,10 +169,10 @@
 | 2   | クローラーレスポンス<br>crawler_response                     | 3ヵ月          | 3ヵ月経過したデータをMongoエクスポート（mongo_export_selector_flow.py）にて抽出しAzure File Storageに保存する。<br>その後Mongo削除フロー（mongo_delete_selector_flow.py）にて削除する。 |
 | 3   | レスポンスからのスクレイピング結果<br>scraped_from_response   | 3ヵ月          | 同上  |
 | 4   | ニュースクリップマスター<br>scraped_from_response            | 3ヵ月          | 同上  |
-| 5   | コントローラー<br>controller                                | 3ヵ月          | 同上  |
-| 6   | ドメイン別スクレイパー<br>scraper_by_domain                  | 3ヵ月          | 同上  |
-| 7   | 統計情報の収集<br>stats_info_collect                        | 永続           | 削除は行わない。<br>ただし毎朝初回起動時にMongoエクスポート（mongo_export_selector_flow.py）にてバックアップを行う。 |
-| 8   | 非同期レポート<br>asynchronous_report                       | 永続           | 同上 |
+| 5   | ドメイン別スクレイパー<br>scraper_by_domain                  | 3ヵ月          | 同上  |
+| 6   | 非同期レポート<br>asynchronous_report                       | 3ヵ月          | 同上 |
+| 7   | 統計情報の収集<br>stats_info_collect                        | 3ヵ月          | 同上  |
+| 8   | コントローラー<br>controller                                | 永続           | 削除は行わない。<br>ただし毎朝初回起動時にMongoエクスポート（mongo_export_selector_flow.py）にてバックアップを行う。 |
 
 [目次へ戻る](#目次)
 
