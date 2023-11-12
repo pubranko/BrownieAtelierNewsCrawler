@@ -84,13 +84,13 @@
 
 ## プロジェクトで使用されるGitリポジトリ
 
-| No. | リポジトリ名             | メイン | サブ | 概要 | gitリポジトリー |
-| :-- | :---------------------- | :---: | :--: | :--- | :------------ |
-| 1   | BrownieAtelier<br>ブラウニーアトリエ                        | 〇 |    | ブラウニー工房の主要ブランチ。<br>各種処理の実行には、フレームワーク：Prefect2のFlowを使用。<br>クローリングには、フレームワーク：Scrapyを使用。<br>スクレイピングには、上記フレームワークを使用せずbeautiful soupライブラリーを使用。 | https://github.com/pubranko/BrownieAtelier.git|
-| 2   | BrownieAtelierController<br>ブラウニーアトリエコントローラー | 〇 |    | AzureFunctionにより、ブラウニー工房を格納しているコンテナ、MongoDBコンテナの起動・停止を行う。| https://github.com/pubranko/BrownieAtelierController.git |
-| 3   | BrownieAtelierMongo<br>ブラウニーアトリエMongoDB            |    | 〇 | Gitサブモジュール。MongoDBコンテナへの接続、参照、更新を行う専用モジュール。 | https://github.com/pubranko/BrownieAtelierMongo.git      |
-| 4   | BrownieAtelierNotice<br>ブラウニーアトリエ通知              |    | 〇 | Gitサブモジュール。メールによる送信機能。エラー発生時の通知用モジュール。| https://github.com/pubranko/BrownieAtelierNotice.git     |
-| 5   | BrownieAtelierStorage<br>ブラウニーアトリエストレージ        |    | 〇 | Gitサブモジュール。AzureStoregeへの接続、参照、更新を行う専用モジュール。 | https://github.com/pubranko/BrownieAtelierStorage.git    |
+| No. | リポジトリ名                                               | メイン | サブ  | 概要 | gitリポジトリー |
+| :-- | :-------------------------------------------------------- | :----: | :--: | :--- | :------------ |
+| 1   | BrownieAtelier<br>ブラウニーアトリエ                        | 〇     |      | ブラウニー工房の主要ブランチ。<br>各種処理の実行には、フレームワーク：Prefect2のFlowを使用。<br>クローリングには、フレームワーク：Scrapyを使用。<br>スクレイピングには、上記フレームワークを使用せずbeautiful soupライブラリーを使用。 | https://github.com/pubranko/BrownieAtelier.git|
+| 2   | BrownieAtelierController<br>ブラウニーアトリエコントローラー | 〇     |      | AzureFunctionにより、ブラウニー工房を格納しているコンテナ、MongoDBコンテナの起動・停止を行う。| https://github.com/pubranko/BrownieAtelierController.git |
+| 3   | BrownieAtelierMongo<br>ブラウニーアトリエMongoDB            |        | 〇   | Gitサブモジュール。MongoDBコンテナへの接続、参照、更新を行う専用モジュール。 | https://github.com/pubranko/BrownieAtelierMongo.git      |
+| 4   | BrownieAtelierNotice<br>ブラウニーアトリエ通知              |        | 〇   | Gitサブモジュール。メールによる送信機能。エラー発生時の通知用モジュール。| https://github.com/pubranko/BrownieAtelierNotice.git     |
+| 5   | BrownieAtelierStorage<br>ブラウニーアトリエストレージ        |        | 〇   | Gitサブモジュール。AzureStoregeへの接続、参照、更新を行う専用モジュール。 | https://github.com/pubranko/BrownieAtelierStorage.git    |
 
 [目次へ戻る](#目次)
 
@@ -159,6 +159,8 @@
 | 8   | 非同期レポート<br>asynchronous_report                       | ニュースクロール非同期<br>news_crawl_async                   | クロール対象とクローラーレスポンスが非同期の情報を保存する。                                |
 |     |                                                            | ニュースクリップマスター非同期<br>news_clip_master_async     | クローラーレスポンスとニュースクリップマスターが非同期の情報を保存する。                      |
 |     |                                                            | ソーラーニュースクリップ非同期<br>solr_news_clip_async       | ニュースクリップマスターとソーラーニュースクリップが非同期の情報を保存する。                  |
+
+[目次へ戻る](#目次)
 
 ### Mongoコレクションの削除運用
 | №   | コレクション（※RDBのテーブルに相当）                         | データ<br>保存期間 | データメンテナンス運用  |
