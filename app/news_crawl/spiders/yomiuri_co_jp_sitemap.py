@@ -1,17 +1,4 @@
-from tabnanny import check
-from pydantic import UrlUserInfoError
 from news_crawl.spiders.extensions_class.extensions_sitemap import ExtensionsSitemapSpider
-
-from datetime import datetime
-import pickle
-import scrapy
-
-import urllib.parse
-from urllib.parse import ParseResult
-from scrapy.http import Response,TextResponse
-from news_crawl.items import NewsCrawlItem
-import re
-
 
 
 class YomiuriCoJpSitemapSpider(ExtensionsSitemapSpider):

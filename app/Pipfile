@@ -1,0 +1,33 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+prefect = "*"
+Scrapy = "*"
+scrapy-selenium = "*"
+scrapy-splash = "*"
+selenium = "*"
+pymongo = "*"
+pysolr = "*"
+beautifulsoup4 = "*"
+bs4 = "*"
+pandas = "*"
+numpy = "*"
+pydantic = "*"
+pyperclip = "*"
+fasteners = "*"
+openpyxl = "*"
+python-decouple = "*"
+
+[dev-packages]
+flake8 = "*"
+autopep8 = "*"
+black = "*"
+isort = "*"
+sphinx = "*"
+jupyter = "*"
+
+[requires]
+python_version = "3.10"

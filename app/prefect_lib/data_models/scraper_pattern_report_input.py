@@ -1,6 +1,6 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from typing import Any, Optional, Tuple, Final
+from typing import Any, Optional, Tuple, Final, Literal
 from pydantic import BaseModel, validator, Field
 
 ############################################
@@ -29,19 +29,19 @@ class ScraperPatternReportInput(BaseModel):
     #####################
     # 定数
     #####################
-    START_TIME: str = Field(ScraperPatternReportConst.START_TIME, const=True)
+    START_TIME: str = Literal[f'{ScraperPatternReportConst.START_TIME}']
     '''定数: start_time '''
-    REPORT_TERM: str = Field(ScraperPatternReportConst.REPORT_TERM, const=True)
+    REPORT_TERM: str = Literal[f'{ScraperPatternReportConst.REPORT_TERM}']
     '''定数: report_term '''
-    BASE_DATE: str = Field(ScraperPatternReportConst.BASE_DATE, const=True)
+    BASE_DATE: str = Literal[f'{ScraperPatternReportConst.BASE_DATE}']
     '''定数: base_date '''
-    REPORT_TERM__DAILY: str = Field(ScraperPatternReportConst.REPORT_TERM__DAILY, const=True)
+    REPORT_TERM__DAILY: str = Literal[f'{ScraperPatternReportConst.REPORT_TERM__DAILY}']
     '''区分値: report_term__daily '''
-    REPORT_TERM__WEEKLY: str = Field(ScraperPatternReportConst.REPORT_TERM__WEEKLY, const=True)
+    REPORT_TERM__WEEKLY: str = Literal[f'{ScraperPatternReportConst.REPORT_TERM__WEEKLY}']
     '''区分値: rreport_term__weekly '''
-    REPORT_TERM__MONTHLY: str = Field(ScraperPatternReportConst.REPORT_TERM__MONTHLY, const=True)
+    REPORT_TERM__MONTHLY: str = Literal[f'{ScraperPatternReportConst.REPORT_TERM__MONTHLY}']
     '''区分値: rreport_term__monthly '''
-    REPORT_TERM__YEARLY: str = Field(ScraperPatternReportConst.REPORT_TERM__YEARLY, const=True)
+    REPORT_TERM__YEARLY: str = Literal[f'{ScraperPatternReportConst.REPORT_TERM__YEARLY}']
     '''区分値: rreport_term__yearly '''
 
 

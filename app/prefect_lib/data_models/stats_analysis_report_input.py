@@ -1,7 +1,7 @@
 from copy import deepcopy
 from datetime import datetime, date, time
 from dateutil.relativedelta import relativedelta
-from typing import Any, Optional, Tuple, Final
+from typing import Any, Optional, Tuple, Final, Literal
 from pydantic import BaseModel, validator, Field
 from shared.settings import TIMEZONE
 from prefect_lib.flows import START_TIME
@@ -36,29 +36,29 @@ class StatsAnalysisReportInput(BaseModel):
     #####################
     # 定数
     #####################
-    START_TIME:str = Field(StatsAnalysisReportConst.START_TIME, const=True)
+    START_TIME:str = Literal[f'{StatsAnalysisReportConst.START_TIME}']
     '''定数: start_time '''
-    REPORT_TERM:str = Field(StatsAnalysisReportConst.REPORT_TERM, const=True)
+    REPORT_TERM:str = Literal[f'{StatsAnalysisReportConst.REPORT_TERM}']
     '''定数: report_term '''
-    TOTALLING_TERM:str = Field(StatsAnalysisReportConst.TOTALLING_TERM, const=True)
+    TOTALLING_TERM:str = Literal[f'{StatsAnalysisReportConst.TOTALLING_TERM}']
     '''定数: totalling_term '''
-    BASE_DATE:str = Field(StatsAnalysisReportConst.BASE_DATE, const=True)
+    BASE_DATE:str = Literal[f'{StatsAnalysisReportConst.BASE_DATE}']
     '''定数: base_date '''
-    REPORT_TERM__DAILY:str = Field(StatsAnalysisReportConst.REPORT_TERM__DAILY, const=True)
+    REPORT_TERM__DAILY:str = Literal[f'{StatsAnalysisReportConst.REPORT_TERM__DAILY}']
     '''定数: report_term__daily '''
-    REPORT_TERM__WEEKLY:str = Field(StatsAnalysisReportConst.REPORT_TERM__WEEKLY, const=True)
+    REPORT_TERM__WEEKLY:str = Literal[f'{StatsAnalysisReportConst.REPORT_TERM__WEEKLY}']
     '''定数: report_term__weekly '''
-    REPORT_TERM__MONTHLY:str = Field(StatsAnalysisReportConst.REPORT_TERM__MONTHLY, const=True)
+    REPORT_TERM__MONTHLY:str = Literal[f'{StatsAnalysisReportConst.REPORT_TERM__MONTHLY}']
     '''定数: report_term__monthly '''
-    REPORT_TERM__YEARLY:str = Field(StatsAnalysisReportConst.REPORT_TERM__YEARLY, const=True)
+    REPORT_TERM__YEARLY:str = Literal[f'{StatsAnalysisReportConst.REPORT_TERM__YEARLY}']
     '''定数: report_term__yearly '''
-    TOTALLING_TERM__DAILY:str = Field(StatsAnalysisReportConst.TOTALLING_TERM__DAILY, const=True)
+    TOTALLING_TERM__DAILY:str = Literal[f'{StatsAnalysisReportConst.TOTALLING_TERM__DAILY}']
     '''定数: totalling_term__daily '''
-    TOTALLING_TERM__WEEKLY:str = Field(StatsAnalysisReportConst.TOTALLING_TERM__WEEKLY, const=True)
+    TOTALLING_TERM__WEEKLY:str = Literal[f'{StatsAnalysisReportConst.TOTALLING_TERM__WEEKLY}']
     '''定数: totalling_term__weekly '''
-    TOTALLING_TERM__MONTHLY:str = Field(StatsAnalysisReportConst.TOTALLING_TERM__MONTHLY, const=True)
+    TOTALLING_TERM__MONTHLY:str = Literal[f'{StatsAnalysisReportConst.TOTALLING_TERM__MONTHLY}']
     '''定数: totalling_term__monthly '''
-    TOTALLING_TERM__YEARLY:str = Field(StatsAnalysisReportConst.TOTALLING_TERM__YEARLY, const=True)
+    TOTALLING_TERM__YEARLY:str = Literal[f'{StatsAnalysisReportConst.TOTALLING_TERM__YEARLY}']
     '''定数: totalling_term__yearly '''
 
 

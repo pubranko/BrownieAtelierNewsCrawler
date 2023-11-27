@@ -1,7 +1,6 @@
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
-from typing import Any, Optional, Tuple, Final
-from pydantic import BaseModel, ValidationError, validator, Field
+from typing import Any, Optional, Final, Literal
+from pydantic import BaseModel, Field
 
 CONST__DOMAIN: Final[str] = 'domain'
 CONST__TARGET_START_TIME_FROM: Final[str] = 'target_start_time_from'
@@ -19,15 +18,15 @@ class ScrapyingInput(BaseModel):
     #####################
     # 定数
     #####################
-    DOMAIN: str = Field(CONST__DOMAIN, const=True)
+    DOMAIN: str = Literal[f'{CONST__DOMAIN}']
     '''定数: domain'''
-    TARGET_START_TIME_FROM: str = Field(CONST__TARGET_START_TIME_FROM, const=True)
+    TARGET_START_TIME_FROM: str = Literal[f'{CONST__TARGET_START_TIME_FROM}']
     '''定数: target_start_time_from'''
-    TARGET_START_TIME_TO: str = Field(CONST__TARGET_START_TIME_TO, const=True)
+    TARGET_START_TIME_TO: str = Literal[f'{CONST__TARGET_START_TIME_TO}']
     '''定数: target_start_time_to'''
-    URLS: str = Field(CONST__URLS, const=True)
+    URLS: str = Literal[f'{CONST__URLS}']
     '''定数: urls'''
-    FOLLOWING_PROCESSING_EXECUTION: bool = Field(CONST__FOLLOWING_PROCESSING_EXECUTION, const=True)
+    FOLLOWING_PROCESSING_EXECUTION: bool = Literal[f'{CONST__FOLLOWING_PROCESSING_EXECUTION}']
     '''定数: following_processing_execution'''
 
 

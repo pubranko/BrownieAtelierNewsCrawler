@@ -1,7 +1,7 @@
 from datetime import datetime, date, time
 from dateutil.relativedelta import relativedelta
-from typing import Any, Optional, Tuple, Final
-from pydantic import BaseModel, ValidationError, validator, Field
+from typing import Any, Optional, Tuple, Final, Literal
+from pydantic import BaseModel
 from shared.settings import TIMEZONE
 
 CONST__START_TIME: Final[str] = 'start_time'
@@ -13,7 +13,7 @@ class StatsInfoCollectInput(BaseModel):
     #####################
     # 定数
     #####################
-    BASE_DATE: str = Field(CONST__BASE_DATE, const=True)
+    BASE_DATE: str = Literal[f'{CONST__BASE_DATE}']
     '''定数: base_date'''
 
     def __init__(self, **data: Any):
