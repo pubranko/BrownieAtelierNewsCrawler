@@ -3,7 +3,7 @@ from prefect_lib.flows.regular_observation_controller_update_const import Regula
 
 regular_observation_controller_update_flow(
     register_type = RegularObservationControllerUpdateConst.REGISTER_ADD,
-    # register = RegularObservationControllerUpdateConst.REGISTER_DELETE,
+    # register_type = RegularObservationControllerUpdateConst.REGISTER_DELETE,
     spiders_name=[
         'asahi_com_sitemap',
         'epochtimes_jp_crawl',

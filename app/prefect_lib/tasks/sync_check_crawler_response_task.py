@@ -65,7 +65,8 @@ def sync_check_crawler_response_task(mongo: MongoModel, domain: Optional[str], s
     for log_record in log_records:
 
         # domain別の集計エリアを初期設定
-        response_async_domain_aggregate[log_record[CrawlerLogsModel.DOMAIN]] = 0
+        if not log_record[CrawlerLogsModel.DOMAIN] in response_async_domain_aggregate:
+            response_async_domain_aggregate[log_record[CrawlerLogsModel.DOMAIN]] = 0
 
         # crawl_urls_listからをクロール対象となったurlを抽出
         loc_crawl_urls: list = []

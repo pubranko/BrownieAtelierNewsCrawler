@@ -1,5 +1,5 @@
 from typing import Any, Final
-from pydantic import BaseModel, ValidationError, validator, Field
+from pydantic import BaseModel, validator, Field
 
 
 class StopControllerUpdateConst:

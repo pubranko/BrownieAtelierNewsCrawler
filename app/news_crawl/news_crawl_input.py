@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Any, Optional, Tuple, Final
-from pydantic import BaseModel, ValidationError, validator, Field
+from pydantic import BaseModel, validator, Field
 from urllib.parse import urlparse
 from news_crawl.settings import TIMEZONE
 

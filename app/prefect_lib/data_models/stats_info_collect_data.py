@@ -353,24 +353,25 @@ class StatsInfoCollectData:
 
     def aggregate_result_set(self, select_df: pd.DataFrame, groupby: list, aggregate_base_term: str, result_df: dict[str, pd.DataFrame]):
         ''''''
-        #{'sum': df, 'mean': df, 'min': df, 'max': df}
+        #result_df = {'sum': df, 'mean': df, 'min': df, 'max': df}
         _ = select_df.groupby(by=groupby, as_index=False).sum()
         _[self.AGGREGATE_BASE_TERM] = aggregate_base_term
         result_df[self.AGGREGATE_TYPE__SUM] = pd.concat([result_df[self.AGGREGATE_TYPE__SUM], _]).round(2)
 
-        _ = select_df.groupby(groupby, as_index=False).mean()
+        _ = select_df.groupby(by=groupby, as_index=False).mean(numeric_only=True)
         _[self.AGGREGATE_BASE_TERM] = aggregate_base_term
         result_df[self.AGGREGATE_TYPE__MEAN] = pd.concat([result_df[self.AGGREGATE_TYPE__MEAN], _]).round(2)
 
-        _ = select_df.groupby(groupby, as_index=False).min()
+        _ = select_df.groupby(by=groupby, as_index=False).min()
         _[self.AGGREGATE_BASE_TERM] = aggregate_base_term
         result_df[self.AGGREGATE_TYPE__MIN] = pd.concat([result_df[self.AGGREGATE_TYPE__MIN], _]).round(2)
 
-        _ = select_df.groupby(groupby, as_index=False).max()
+        _ = select_df.groupby(by=groupby, as_index=False).max()
         _[self.AGGREGATE_BASE_TERM] = aggregate_base_term
         result_df[self.AGGREGATE_TYPE__MAX] = pd.concat([result_df[self.AGGREGATE_TYPE__MAX], _]).round(2)
 
 
+    
     stats_image = {
     #     # ログレベル件数
     #     "log_count/CRITICAL": 0,
