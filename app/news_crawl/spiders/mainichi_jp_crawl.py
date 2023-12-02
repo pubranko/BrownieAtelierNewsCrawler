@@ -1,21 +1,23 @@
-import urllib.parse
 import scrapy
 import time
+import urllib.parse
 from datetime import datetime
 from dateutil import parser
-import urllib.parse
 from typing import Any
 from scrapy.http import TextResponse
 from scrapy_selenium import SeleniumRequest
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.action_chains import ActionChains
+
 from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
 from news_crawl.spiders.common.start_request_debug_file_generate import start_request_debug_file_generate, LOC as debug_file__LOC, LASTMOD as debug_file__LASTMOD
 from news_crawl.spiders.common.urls_continued_skip_check import UrlsContinuedSkipCheck
 from news_crawl.spiders.common.url_pattern_skip_check import url_pattern_skip_check
+
 
 
 class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
@@ -100,20 +102,23 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
             WebDriverWait(driver, 60).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, target_next_page_element)))
 
-            # 次のページを読み込む
-            elem: WebElement = driver.find_element_by_css_selector(
-                target_next_page_element)
-            elem.location_once_scrolled_into_view   # 要素までスクロールを移動してボタンをウィンドウに表示させる。
+            # 次のページボタンを選択
+            elem: WebElement = driver.find_element(By.CSS_SELECTOR, target_next_page_element)
+            # 要素までスクロールを移動。※次へボタンをウィンドウに表示させる。
+            driver.execute_script('arguments[0].scrollIntoView();', elem)
             time.sleep(1)
-            elem.click()
 
+            # まだ読み込みが必要なページがあった場合はボタンクリック
+            if load_page < self.page_to:
+                elem.click()
             load_page += 1
 
         # 記事の一覧ページより、各記事へのリンクと最終更新日時を取得
-        url_find_elems = driver.find_elements_by_css_selector(
-            '#article-list > ul > li > a[href]')
-        lastmod_find_elems = driver.find_elements_by_css_selector(
-            '#article-list > ul > li > a > div > div.articlelist-detail > div > span.articletag-date')
+        url_find_elems = driver.find_elements(
+            By.CSS_SELECTOR, '#article-list > ul > li > a[href]')
+        
+        lastmod_find_elems = driver.find_elements(
+            By.CSS_SELECTOR, '#article-list > ul > li > a > div > div.articlelist-detail > div > span.articletag-date')
 
         # 各記事のリンク（element）よりリンクのみ抽出したリストを生成
         links: list = [link.get_attribute("href") for link in url_find_elems]
@@ -130,7 +135,6 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
         # ついでに上記開始〜終了インデックスに合わせて最終更新日時のリストを生成
         select_lastmods: list[datetime] = [ parser.parse(_.text) for _ in lastmod_find_elems[start_link: end_link]]
 
-        self.logger.info(f'=== ページ内の記事件数 = {len(links)}')
         self.logger.info(f'=== 抽出対象の記事件数 = {len(select_links)}')
         # 想定件数とことなる場合はワーニングメール通知（環境によって違うかも、、、）
         assumed_number_of_cases: int = number_of_details_in_page * \

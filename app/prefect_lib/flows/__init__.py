@@ -33,9 +33,5 @@ os.environ['SCRAPY__LOG_FILE'] = LOG_FILE_PATH
 # prefect_logger.addHandler(file_handler)
 # prefect_logger.setLevel(logging.DEBUG)
 
-# DEBUGレベルの場合、余計な"aiosqlite","httpcore"ロガーのログ出力を抑制する。
-logging.getLogger('aiosqlite').setLevel(logging.WARNING)
-logging.getLogger('httpcore').setLevel(logging.WARNING)
-
 # logger = get_run_logger()   # PrefectLogAdapter
 # prefect_logger.info(f'=== 保存用ログファイル: {os.environ.get("SCRAPY__LOG_FILE")}')
