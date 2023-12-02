@@ -122,8 +122,8 @@ def mongo_delete_task(
             logger.info(
                 f'=== ({collection_name}) 削除前の総件数: {str(before_count)} -> 削除件数: {str(delete_count)} -> 削除後の総件数: {str(after_count)}')
 
-            aaa = list(collection.aggregate(aggregate_key='domain'))
-            print(f'==={aaa}')
+            # aaa = list(collection.aggregate(aggregate_key='domain'))
+            # print(f'==={aaa}')
             '''
             [{'_id': 'sankei.com', 'count': 133}, {'_id': 'mainichi.jp', 'count': 38}, {'_id': 'nikkei.com', 'count': 46}, {'_id': 'epochtimes.jp', 'count': 48}, {'_id': 'jp.reuters.com', 'count': 20}, {'_id': 'yomiuri.co.jp', 'count': 27}, {'_id': 'asahi.com', 'count': 1}]
             '''

@@ -2,24 +2,22 @@
 import os
 from typing import Optional
 from importlib import import_module
-
+# from logging import logger,INFO
+import subprocess
 from scrapy import signals
 from scrapy.exceptions import NotConfigured
 from scrapy.http import HtmlResponse
-from selenium.webdriver.support.wait import WebDriverWait
 from scrapy_selenium.http import SeleniumRequest
-
-# カスタム
-from selenium.webdriver.remote.webdriver import WebDriver
-from selenium.webdriver.firefox.options import Options
+from selenium import webdriver
+from selenium.webdriver import FirefoxOptions
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
-###
-
 
 class SeleniumMiddleware:
     """Scrapy middleware handling the requests using selenium"""
 
-    driver: WebDriver
+    driver: webdriver
 
     def __init__(self, driver_name: str, driver_executable_path: str, driver_arguments: list,
                  browser_executable_path:str, profile: Optional[FirefoxProfile]):  # パラメータにプロファイルを追加してみた。
@@ -39,30 +37,28 @@ class SeleniumMiddleware:
 
         webdriver_base_path = f'selenium.webdriver.{driver_name}'
 
-        driver_class_module = import_module(f'{webdriver_base_path}.webdriver')
-        driver_class = getattr(driver_class_module, 'WebDriver')
-
-        driver_options_module = import_module(f'{webdriver_base_path}.options')
-        driver_options_class = getattr(driver_options_module, 'Options')
-
         # カスタム 型ヒント
-        driver_options: Options = driver_options_class()
-        if browser_executable_path:
-            driver_options.binary_location = browser_executable_path
+        driver_options: FirefoxOptions = FirefoxOptions()
+        
         for argument in driver_arguments:
             driver_options.add_argument(argument)
 
         if profile:
             driver_options.profile = profile    # 追加されたパラメータのプロファイルを設定
+        driver_options.log.level = "INFO"
 
-        driver_kwargs = {
-            'executable_path': driver_executable_path,
-            'options': driver_options,
-            'service_log_path': os.path.devnull,    # geckodriver.logを出力させないための設定
-            'service_args': ['--log-level=INFO'],   # seleniumのログをINFOに制限
-        }
+        service=Service(
+            executable_path= None,
+            port= 0,
+            service_args = ['--log', 'info'],
+            log_output= subprocess.DEVNULL,
+            env= None,
+        )
 
-        self.driver = driver_class(**driver_kwargs)
+        self.driver = webdriver.Firefox(
+            options=driver_options,
+            service=service,
+        )
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -82,11 +78,10 @@ class SeleniumMiddleware:
 
         # firefox用のプロファイルを作成してミドルウェアのインスタンス作成時に
         # それを使用するようカスタマイズ
-        set_preferences: dict[str,int] = crawler.settings.get(
-            'SELENIUM_DRIVER_SET_PREFERENCE')
+        set_preferences: dict[str,int] = crawler.settings.get('SELENIUM_DRIVER_SET_PREFERENCE')
         new_profile = FirefoxProfile(profile_directory=crawler.settings.get('SELENIUM_FIREFOX_PROFILE_DIRECTORY'))
-        for set_preference_key, set_preference_value in set_preferences.items():
-            new_profile.set_preference(set_preference_key, set_preference_value)
+        for key, value in set_preferences.items():
+            new_profile.set_preference(key, value)
         # ここで当ミドルウェアのインスタンス化を行っている。
         middleware = cls(
             driver_name=driver_name,

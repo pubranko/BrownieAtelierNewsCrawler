@@ -74,7 +74,7 @@ TELNETCONSOLE_ENABLED = False
 SPIDER_MIDDLEWARES = {
     # 'news_crawl.middlewares.NewsCrawlSpiderMiddleware': 543,
     # Splash用
-    'scrapy_splash.SplashDeduplicateArgsMiddleware': 100,
+    # 'scrapy_splash.SplashDeduplicateArgsMiddleware': 100,
 }
 
 # Enable or disable downloader middlewares
@@ -86,7 +86,7 @@ DOWNLOADER_MIDDLEWARES = {
     # 'scrapy_splash.SplashCookiesMiddleware': 723,
     # 'scrapy_splash.SplashMiddleware': 725,
     #selenium用 -> カスタムバージョン
-    #'news_crawl.scrapy_selenium_custom_middlewares.SeleniumMiddleware': 800,
+    'news_crawl.scrapy_selenium_custom_middlewares.SeleniumMiddleware': 800,
     #selenium用
     #'scrapy_selenium.SeleniumMiddleware': 800,
 
