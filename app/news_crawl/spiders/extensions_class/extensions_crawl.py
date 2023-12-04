@@ -99,11 +99,12 @@ class ExtensionsCrawlSpider(CrawlSpider):
         '''
         super().__init__(*args, **kwargs)
 
-        spider_init(self, *args, **kwargs)
         # Extensionsクラス変数を初期化。インスタンス生成時に初期化しないと各スパイダーで変数を共有してしまう。
         self._crawl_point = {}
         self.crawl_urls_list = []
         self.crawl_target_urls = []
+
+        spider_init(self, *args, **kwargs)
 
         self.pagination_check = PaginationCheck()
 

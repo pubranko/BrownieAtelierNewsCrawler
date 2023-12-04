@@ -18,6 +18,9 @@ from news_crawl.spiders.common.lua_script_get import lua_script_get
 from news_crawl.spiders.common.urls_continued_skip_check import UrlsContinuedSkipCheck
 from news_crawl.spiders.common.url_pattern_skip_check import url_pattern_skip_check
 
+'''
+このソースは現在未使用。
+'''
 
 class JpReutersComCrawlSpider(ExtensionsCrawlSpider):
     name: str = 'jp_reuters_com_crawl'
@@ -113,7 +116,8 @@ class JpReutersComCrawlSpider(ExtensionsCrawlSpider):
                 EC.presence_of_element_located((By.CSS_SELECTOR, next_page_element)))
 
             # ページ内の対象urlを抽出
-            _ = driver.find_elements_by_css_selector('.story-content a[href]')
+            _ = driver.find_elements(By.CSS_SELECTOR, '.story-content a[href]')
+            # _ = driver.find_elements_by_css_selector('.story-content a[href]')
             links: list = [link.get_attribute("href") for link in _]
             self.logger.info(
                 f'=== ページ内の記事件数 = {len(links)}')
@@ -153,8 +157,9 @@ class JpReutersComCrawlSpider(ExtensionsCrawlSpider):
 
             # 次のページを読み込む
             self.page += 1
-            elem: WebElement = driver.find_element_by_css_selector(
-                'div.control-nav > a.control-nav-next')
+            elem: WebElement = driver.find_element(By.CSS_SELECTOR, 'div.control-nav > a.control-nav-next')
+            # elem: WebElement = driver.find_element_by_css_selector(
+            #     'div.control-nav > a.control-nav-next')
             elem.click()
 
         # リスト(self.urls_list)に溜めたurlをリクエストへ登録する。

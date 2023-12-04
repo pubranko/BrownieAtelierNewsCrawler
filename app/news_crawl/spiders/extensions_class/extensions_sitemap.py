@@ -260,9 +260,8 @@ class ExtensionsSitemapSpider(SitemapSpider):
                 self.settings['TIMEZONE'])
 
             if entries.type == self.SITEMAP_TYPE__SITEMAPINDEX:
-                # sitemap側と実際のソースは常に一致するわけではなさそう。
-                # バッファとして2日間分範囲を広げてチェックする。
-                if self.lastmod_term.skip_check(date_lastmod + timedelta(days=2)):
+                # 親sitemap側のlastmodと子サイトマップ側のlastmodはは常に一致するわけではなさそう。
+                if self.lastmod_term.skip_check(date_lastmod):
                     crwal_flg = False
                 if self.lastmod_continued.skip_check(date_lastmod):
                     crwal_flg = False
