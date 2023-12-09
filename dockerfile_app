@@ -1,5 +1,5 @@
 #FROM openjdk:11-stretch
-FROM brownie_atelier_base:0.13
+FROM brownie_atelier_base:0.14
 
 #LABELでメタ情報を入れることができる
 #LABEL maintainer="Martijn Koster \"mak-docker@greenhills.co.uk\""

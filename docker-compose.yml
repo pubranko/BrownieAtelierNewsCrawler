@@ -5,7 +5,7 @@ version: '3.1'
 services:
 
     brownie_atelier:
-        image: brownie_atelier_app:0.13
+        image: brownie_atelier_app:${IMAGE_TAG}
         container_name: brownie_atelier_app
         # restart: always
         volumes:

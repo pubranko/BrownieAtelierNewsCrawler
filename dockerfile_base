@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 #LABELでメタ情報を入れることができる
 LABEL maintainer="BrownieAtelier-base-test"
@@ -23,19 +23,32 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 ############################################################
 # リポジトリ一覧を更新、インストール済みのパッケージ更新
 # 必要なアプリをインストール
-RUN apt-get update
-RUN apt update
-RUN apt -y upgrade
-RUN apt -y install build-essential libssl-dev wget sudo git firefox
+RUN apt-get update && apt update && apt -y upgrade
+RUN apt -y install build-essential libssl-dev wget sudo git software-properties-common
+
+# deb版firefoxをインストールするための設定
+RUN add-apt-repository ppa:mozillateam/ppa
+RUN echo ' \
+Package: firefox* \
+Pin: release o=LP-PPA-mozillateam \
+Pin-Priority: 1001 \
+\
+Package: firefox* \
+Pin: release o=Ubuntu* \
+Pin-Priority: -1 \
+' | sudo tee /etc/apt/preferences.d/mozilla-firefox
+RUN apt update && apt -y install firefox
 
 # Selenium用にgeckodriverを取得して配置。不要になったダウンロードファイル削除
-RUN wget -P /usr/local/bin/ "https://github.com/mozilla/geckodriver/releases/download/v0.31.0/geckodriver-v0.31.0-linux64.tar.gz"
-RUN tar -zxvf /usr/local/bin/geckodriver-v0.31.0-linux64.tar.gz -C /usr/local/bin
-RUN rm /usr/local/bin/geckodriver-v0.31.0-linux64.tar.gz
+# RUN wget -P /usr/local/bin/ "https://github.com/mozilla/geckodriver/releases/download/v0.31.0/geckodriver-v0.31.0-linux64.tar.gz"
+RUN wget -P /usr/local/bin/ "https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz"
+RUN tar -zxvf /usr/local/bin/geckodriver-v0.33.0-linux64.tar.gz -C /usr/local/bin
+RUN rm /usr/local/bin/geckodriver-v0.33.0-linux64.tar.gz
 
 # pythonまわりのインストール
-RUN apt -y install python3.9
-RUN apt -y install python3.9-venv
+# RUN apt -y install python3.9
+RUN apt -y install python3.10-venv
+RUN apt -y install python3-pip
 RUN apt -y install python3-selenium
 
 # 更新時に使われたが、その後不要となったものの一括削除
@@ -78,11 +91,18 @@ RUN git config --global --add safe.directory /home/${NORMAL_USER}/BrownieAtelier
 
 # アプリ内でpython仮想環境構築
 WORKDIR /home/${NORMAL_USER}
-RUN python3.9 -m venv .venv
+RUN python3 -m venv .venv
 RUN "." .venv/bin/activate
 RUN .venv/bin/pip install --upgrade pip
 # pythonライブラリ系インストール
 RUN /home/${NORMAL_USER}/.venv/bin/pip install -r /home/${NORMAL_USER}/BrownieAtelier/app/requirements.txt
+
+
+# RUN export PATH="$PATH:/home/${NORMAL_USER}/.local/bin"
+# 仮想環境を有効化
+# RUN python3 -m pipenv shell
+# Pipfile.lockからインストール
+# RUN python3 -m pipenv sync
 
 # mongoDB接続用ca/pemファイルの格納ディレクトリ作成
 RUN mkdir /home/${NORMAL_USER}/mongo-key

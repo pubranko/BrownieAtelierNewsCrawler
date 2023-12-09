@@ -1,3 +1,9 @@
+'''
+各フローを登録する。
+・事前にPREFECT_API_URLの向き先をローカルかPrefect Cloudか設定しておくこと。
+・ローカル: prefect config set PREFECT_API_URL="http://127.0.0.1:4200/api"
+・Cloud:   prefect config set PREFECT_API_URL="https://api.prefect.cloud/api/accounts/[ACCOUNT-ID]/workspaces/[WORKSPACE-ID]"
+'''
 import os
 from prefect.deployments import Deployment
 from prefect.server.schemas.schedules import CronSchedule, IntervalSchedule, RRuleSchedule
@@ -24,12 +30,12 @@ from prefect_lib.flows.stats_analysis_report_flow import stats_analysis_report_f
 from prefect_lib.flows.scraper_pattern_report_flow import scraper_pattern_report_flow
 
 # 必要な引数定義
+from prefect_lib.data_models.stats_analysis_report_input import StatsAnalysisReportConst
+from prefect_lib.data_models.scraper_pattern_report_input import ScraperPatternReportConst
 from BrownieAtelierMongo.collection_models.scraped_from_response_model import ScrapedFromResponseModel
 from BrownieAtelierMongo.collection_models.crawler_response_model import CrawlerResponseModel
 from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
 from BrownieAtelierMongo.collection_models.asynchronous_report_model import AsynchronousReportModel
-from prefect_lib.data_models.stats_analysis_report_input import StatsAnalysisReportConst
-from prefect_lib.data_models.scraper_pattern_report_input import ScraperPatternReportConst
 from BrownieAtelierMongo.collection_models.news_clip_master_model import NewsClipMasterModel
 from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 from BrownieAtelierMongo.collection_models.stats_info_collect_model import StatsInfoCollectModel
