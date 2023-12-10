@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # python仮想環境を有効化
-. $HOME/.venv/bin/activate
+# . $HOME/.venv/bin/activate
+python3 -m pipenv shell
 
 # prefect APIの向き先を指定生成
 prefect config set PREFECT_API_URL=$PREFECT__API_URL

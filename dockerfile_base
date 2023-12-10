@@ -46,10 +46,11 @@ RUN tar -zxvf /usr/local/bin/geckodriver-v0.33.0-linux64.tar.gz -C /usr/local/bi
 RUN rm /usr/local/bin/geckodriver-v0.33.0-linux64.tar.gz
 
 # pythonまわりのインストール
-# RUN apt -y install python3.9
+# RUN apt -y install python3.9 pipenv
 RUN apt -y install python3.10-venv
 RUN apt -y install python3-pip
 RUN apt -y install python3-selenium
+RUN pip install pipenv
 
 # 更新時に使われたが、その後不要となったものの一括削除
 # キャッシュされているがインストールされていないdebファイルを削除
@@ -90,19 +91,21 @@ RUN git clone --recursive ${GIT_REMOTE_REPOSITORY} -b ${BRANCH}
 RUN git config --global --add safe.directory /home/${NORMAL_USER}/BrownieAtelier
 
 # アプリ内でpython仮想環境構築
-WORKDIR /home/${NORMAL_USER}
-RUN python3 -m venv .venv
-RUN "." .venv/bin/activate
-RUN .venv/bin/pip install --upgrade pip
+# WORKDIR /home/${NORMAL_USER}
+# RUN python3 -m venv .venv
+# RUN "." .venv/bin/activate
+# RUN .venv/bin/pip install --upgrade pip
+# RUN .venv/bin/pip install pipenv
 # pythonライブラリ系インストール
-RUN /home/${NORMAL_USER}/.venv/bin/pip install -r /home/${NORMAL_USER}/BrownieAtelier/app/requirements.txt
-
+# RUN /home/${NORMAL_USER}/.venv/bin/pip install -r /home/${NORMAL_USER}/BrownieAtelier/app/requirements.txt
 
 # RUN export PATH="$PATH:/home/${NORMAL_USER}/.local/bin"
 # 仮想環境を有効化
 # RUN python3 -m pipenv shell
 # Pipfile.lockからインストール
-# RUN python3 -m pipenv sync
+WORKDIR /home/${NORMAL_USER}/BrownieAtelier/app
+# RUN /home/${NORMAL_USER}/.venv/bin/python -m pipenv sync
+RUN python3 -m pipenv sync
 
 # mongoDB接続用ca/pemファイルの格納ディレクトリ作成
 RUN mkdir /home/${NORMAL_USER}/mongo-key
