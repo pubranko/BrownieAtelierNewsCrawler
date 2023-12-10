@@ -1,8 +1,10 @@
 '''
 各フローを登録する。
-・事前にPREFECT_API_URLの向き先をローカルかPrefect Cloudか設定しておくこと。
-・ローカル: prefect config set PREFECT_API_URL="http://127.0.0.1:4200/api"
-・Cloud:   prefect config set PREFECT_API_URL="https://api.prefect.cloud/api/accounts/[ACCOUNT-ID]/workspaces/[WORKSPACE-ID]"
+以下の操作を事前に行っておくこと。
+・prefect cloud login --key xxx
+・export PREFECT_HOME= xxx
+・localの場合 → prefect config set PREFECT_API_URL="http://127.0.0.1:4200/api"
+・Cloudの場合 → prefect config set PREFECT_API_URL="https://api.prefect.cloud/api/accounts/[ACCOUNT-ID]/workspaces/[WORKSPACE-ID]"
 '''
 import os
 from prefect.deployments import Deployment
@@ -40,7 +42,8 @@ from BrownieAtelierMongo.collection_models.news_clip_master_model import NewsCli
 from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 from BrownieAtelierMongo.collection_models.stats_info_collect_model import StatsInfoCollectModel
 
-
+prefect_home = PREFECT_HOME.value()
+print(f'=== prefect_home = {prefect_home}')
 prefect_api_url = PREFECT_API_URL.value()
 print(f'=== prefect_api_url = {prefect_api_url}')
 
@@ -67,21 +70,25 @@ deployment__manual_crawling_flow = Deployment.build_from_flow(
     name='manual',
     tags=['manual', 'crawl-scrape'],
     version="0.1", apply=True, is_schedule_active=False, work_pool_name=work_pool_name, path=path,)
+print(f'deployment__manual_crawling_flow 完了')
 deployment__manual_scrapying_flow = Deployment.build_from_flow(
     flow=manual_scrapying_flow,
     name='manual',
     tags=['manual', 'crawl-scrape'],
     version="0.1", apply=True, is_schedule_active=False, work_pool_name=work_pool_name, path=path,)
+print(f'deployment__manual_scrapying_flow 完了')
 deployment__manual_news_clip_master_save_flow = Deployment.build_from_flow(
     flow=manual_news_clip_master_save_flow,
     name='manual',
     tags=['manual', 'crawl-scrape'],
     version="0.1", apply=True, is_schedule_active=False, work_pool_name=work_pool_name, path=path,)
+print(f'deployment__manual_news_clip_master_save_flow 完了')
 deployment__first_observation_flow = Deployment.build_from_flow(
     flow=first_observation_flow,
     name='manual',
     tags=['manual', 'crawl-scrape'],
     version="0.1", apply=True, is_schedule_active=False, work_pool_name=work_pool_name, path=path,)
+print(f'deployment__first_observation_flow 完了')
 deployment__regular_observation_flow = Deployment.build_from_flow(
     flow=regular_observation_flow,
     name='daily',
@@ -89,6 +96,7 @@ deployment__regular_observation_flow = Deployment.build_from_flow(
     # 毎日 6時〜24時の間、3時間毎、毎時1分に起動
     schedule=CronSchedule(cron='1 0,6-21/3 * * *', timezone='Asia/Tokyo'),
     version="0.1", apply=True, is_schedule_active=False, work_pool_name=work_pool_name, path=path,)
+print(f'deployment__regular_observation_flow 完了')
 ###################
 # register
 ###################
@@ -97,16 +105,19 @@ deployment__scraper_info_by_domain_flow = Deployment.build_from_flow(
     name='manual',
     tags=['manual', 'register'],
     version="0.1", apply=True, is_schedule_active=False, work_pool_name=work_pool_name, path=path,)
+print(f'deployment__scraper_info_by_domain_flow 完了')
 deployment__regular_observation_controller_update_flow = Deployment.build_from_flow(
     flow=regular_observation_controller_update_flow,
     name='manual',
     tags=['manual', 'register'],
     version="0.1", apply=True, is_schedule_active=False, work_pool_name=work_pool_name, path=path,)
+print(f'deployment__regular_observation_controller_update_flow 完了')
 deployment__stop_controller_update_flow = Deployment.build_from_flow(
     flow=stop_controller_update_flow,
     name='manual',
     tags=['manual', 'register'],
     version="0.1", apply=True, is_schedule_active=False, work_pool_name=work_pool_name, path=path,)
+print(f'deployment__stop_controller_update_flow 完了')
 ###################
 # check
 ###################
@@ -117,6 +128,7 @@ deployment__crawl_sync_check_flow = Deployment.build_from_flow(
     schedule=CronSchedule(
         cron='50 5 * * *', timezone='Asia/Tokyo'),   # 毎日 5時50分に起動
     version="0.1", apply=True, is_schedule_active=False, work_pool_name=work_pool_name, path=path,)
+print(f'deployment__crawl_sync_check_flow 完了')
 ###################
 # mongodb
 ###################
@@ -125,16 +137,19 @@ deployment__mongo_delete_selector_flow = Deployment.build_from_flow(
     name='manual',
     tags=['manual', 'mongodb'],
     version="0.1", apply=True, is_schedule_active=False, work_pool_name=work_pool_name, path=path,)
+print(f'deployment__mongo_delete_selector_flow 完了')
 deployment__mongo_export_selector_flow = Deployment.build_from_flow(
     flow=mongo_export_selector_flow,
     name='manual',
     tags=['manual', 'mongodb'],
     version="0.1", apply=True, is_schedule_active=False, work_pool_name=work_pool_name, path=path,)
+print(f'deployment__mongo_export_selector_flow 完了')
 deployment__mongo_import_selector_flow = Deployment.build_from_flow(
     flow=mongo_import_selector_flow,
     name='manual',
     tags=['manual', 'mongodb'],
     version="0.1", apply=True, is_schedule_active=False, work_pool_name=work_pool_name, path=path,)
+print(f'deployment__mongo_import_selector_flow 完了')
 deployment__mongo_delete_selector_flow_daily = Deployment.build_from_flow(
     flow=mongo_delete_selector_flow,
     name='daily',
@@ -147,6 +162,7 @@ deployment__mongo_delete_selector_flow_daily = Deployment.build_from_flow(
     schedule=CronSchedule(
         cron='51 5 * * *', timezone='Asia/Tokyo'),     # 毎日 5時51分に起動
     version="0.1", apply=True, is_schedule_active=False, work_pool_name=work_pool_name, path=path,)
+print(f'deployment__mongo_delete_selector_flow_daily 完了')
 deployment__mongo_delete_selector_flow_monthly = Deployment.build_from_flow(
     flow=mongo_delete_selector_flow,
     name='monthly',
@@ -163,6 +179,7 @@ deployment__mongo_delete_selector_flow_monthly = Deployment.build_from_flow(
     schedule=CronSchedule(
         cron='51 5 1 * *', timezone='Asia/Tokyo'),       # 月初 5時51分に起動
     version="0.1", apply=True, is_schedule_active=False, work_pool_name=work_pool_name, path=path,)
+print(f'deployment__mongo_delete_selector_flow_monthly 完了')
 deployment__mongo_export_selector_flow = Deployment.build_from_flow(
     flow=mongo_export_selector_flow,
     name='monthly',
@@ -182,7 +199,7 @@ deployment__mongo_export_selector_flow = Deployment.build_from_flow(
         period_month_to=1,
         crawler_response__registered=False,),
     version="0.1", apply=True, is_schedule_active=False, work_pool_name=work_pool_name, path=path,)
-
+print(f'deployment__mongo_export_selector_flow 完了')
 ###################
 # report
 ###################
@@ -194,6 +211,7 @@ deployment__stats_info_collect_flow = Deployment.build_from_flow(
     schedule=CronSchedule(
         cron='52 5 * * *', timezone='Asia/Tokyo'),       # 毎日 5時51分に起動
     version="0.1", apply=True, is_schedule_active=False, work_pool_name=work_pool_name, path=path,)
+print(f'deployment__stats_info_collect_flow 完了')
 deployment__stats_analysis_report_flow = Deployment.build_from_flow(
     flow=stats_analysis_report_flow,
     name='weekly',
@@ -204,6 +222,7 @@ deployment__stats_analysis_report_flow = Deployment.build_from_flow(
     # 日曜日 5時55分に起動。上記stats_info_collect_flow後に動かす必要あり
     schedule=CronSchedule(cron='55 5 * * 0', timezone='Asia/Tokyo'),
     version="0.1", apply=True, is_schedule_active=False, work_pool_name=work_pool_name, path=path,)
+print(f'deployment__stats_analysis_report_flow 完了')
 deployment__scraper_pattern_report_flow = Deployment.build_from_flow(
     flow=scraper_pattern_report_flow,
     name='weekly',
@@ -213,3 +232,4 @@ deployment__scraper_pattern_report_flow = Deployment.build_from_flow(
     schedule=CronSchedule(
         cron='53 5 * * 0', timezone='Asia/Tokyo'),       # 日曜日 5時53分に起動
     version="0.1", apply=True, is_schedule_active=False, work_pool_name=work_pool_name, path=path,)
+print(f'deployment__scraper_pattern_report_flow 完了')

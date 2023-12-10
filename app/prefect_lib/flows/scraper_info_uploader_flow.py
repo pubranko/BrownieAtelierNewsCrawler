@@ -4,7 +4,7 @@ import json
 import logging
 from logging import Logger
 from typing import Any
-from pydantic_core import ValidationError
+from pydantic import ValidationError
 from prefect import flow, task, get_run_logger
 from prefect.states import State
 from prefect.futures import PrefectFuture
