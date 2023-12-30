@@ -2,7 +2,7 @@
 
 # python仮想環境を有効化
 cd $HOME/BrownieAtelier/
-. $HOME/.venv/bin/activate
+. .venv/bin/activate
 
 # prefect APIの向き先を指定生成
 prefect config set PREFECT_API_URL=$PREFECT__API_URL
