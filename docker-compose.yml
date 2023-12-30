@@ -8,6 +8,8 @@ services:
         image: brownie_atelier_app:${IMAGE_TAG}
         container_name: brownie_atelier_app
         # restart: always
+        networks:
+            - default
         volumes:
             - ${LOCAL_MONGO_KEY_DIR}:$HOME/mongo-key
         command: ${DOCKER_COMPOSE_COMMAND}
@@ -50,3 +52,9 @@ services:
             PYTHONPATH: ${CONTAINER_HOME}/BrownieAtelier/.venv/bin/
             # gitリモートリポジトリ
             GIT_REMOTE_REPOSITORY: ${GIT_REMOTE_REPOSITORY}
+
+# 既存のネットワークbrownie-atelier-netを利用する。
+networks:
+  default:
+    external:
+      name: brownie-atelier-net

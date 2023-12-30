@@ -21,6 +21,11 @@ WORKDIR /home/${NORMAL_USER}/BrownieAtelier
 RUN git pull origin ${BRANCH}
 RUN git submodule update --recursive
 
+# Pipfile.lockからインストール（更新があった場合）
+WORKDIR /home/${NORMAL_USER}/BrownieAtelier
+RUN python3 -m pipenv sync
+
+
 # テスト環境用ブランチ調整 #############################################
 # RUN git checkout ${BRANCH}
 # RUN git pull origin ${BRANCH}

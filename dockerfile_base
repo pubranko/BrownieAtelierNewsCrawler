@@ -103,8 +103,9 @@ RUN git config --global --add safe.directory /home/${NORMAL_USER}/BrownieAtelier
 # 仮想環境を有効化
 # RUN python3 -m pipenv shell
 # Pipfile.lockからインストール
-WORKDIR /home/${NORMAL_USER}/BrownieAtelier/app
+WORKDIR /home/${NORMAL_USER}/BrownieAtelier
 # RUN /home/${NORMAL_USER}/.venv/bin/python -m pipenv sync
+RUN export PIPENV_VENV_IN_PROJECT=1
 RUN python3 -m pipenv sync
 
 # mongoDB接続用ca/pemファイルの格納ディレクトリ作成
