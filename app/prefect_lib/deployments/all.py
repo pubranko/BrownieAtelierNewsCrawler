@@ -7,7 +7,7 @@
 ・Cloudの場合 → prefect config set PREFECT_API_URL="https://api.prefect.cloud/api/accounts/[ACCOUNT-ID]/workspaces/[WORKSPACE-ID]"
 '''
 import os
-from prefect.deployments import Deployment
+from prefect.deployments.deployments import Deployment
 from prefect.server.schemas.schedules import CronSchedule, IntervalSchedule, RRuleSchedule
 from prefect.settings import PREFECT_HOME, PREFECT_API_URL
 # crawl-scrape系
