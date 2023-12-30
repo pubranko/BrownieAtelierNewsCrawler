@@ -34,7 +34,7 @@ services:
             PREFECT_LOGGING_LEVEL: "INFO"
             PREFECT_LOGGING_SERVER_LEVEL: "INFO"
             PREFECT_LOGGING_INTERNAL_LEVEL: "INFO"
-            PREFECT__DATA_DIR_PATH: "${CONTAINER_HOME}/BrownieAtelier/data_dir"
+            PREFECT__DATA: "${CONTAINER_HOME}/BrownieAtelier/data"
             PREFECT__LOGGING__FORMAT: "%(asctime)s %(levelname)s [%(name)s] : %(message)s"  #たぶんいらない
             PREFECT__LOGGING__DATEFMT: "%Y-%m-%d %H:%M:%S"  #たぶんいらない
             # Scrapyのコンフィグファイル(フレームワーク仕様)

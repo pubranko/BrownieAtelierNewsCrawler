@@ -228,8 +228,8 @@ RETRY_ENABLED = True
 RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408, 429]
 
 # 排他制御用のワークディレクトリ設定
-from shared.settings import DATA_DIR
-EXCLUSIVE_WORK = os.path.join(DATA_DIR, 'exclusive_work')
+from shared.settings import DATA
+EXCLUSIVE_WORK = os.path.join(DATA, 'exclusive_work')
 
 
 '''デフォルトセッティングのパス

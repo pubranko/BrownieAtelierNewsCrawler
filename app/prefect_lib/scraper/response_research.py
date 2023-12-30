@@ -23,7 +23,7 @@ from shared.timezone_recovery import timezone_recovery
 from prefect_lib.scraper.article_scraper import scraper as artcle_scraper
 from prefect_lib.scraper.publish_date_scraper import scraper as publish_date_scraper
 from prefect_lib.scraper.title_scraper import scraper as title_scraper
-from shared.settings import DATA_DIR__DEBUG_FILE_DIR
+from shared.settings import DATA__DEBUG_FILE_DIR
 
 '''
 URLを直接指定し、レスポンスの中身を調査するためのソース。
@@ -75,7 +75,7 @@ for record in records:
     #print('\n\n\n',soup.select_one('html'))
 
     path: str = os.path.join(
-        DATA_DIR__DEBUG_FILE_DIR, f'response_data.html')
+        DATA__DEBUG_FILE_DIR, f'response_data.html')
     with open(path, 'w') as file:
         file.write(str(soup.select_one('html')))
 

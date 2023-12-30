@@ -135,11 +135,11 @@
 **/.vscode/task.json
 **/app/news_crawl/exclusive_work/*
 # **/app/.flows/* これはコンテナ内にコピーする必要があるもの。
-**/data_dir/backup_files/*
-**/data_dir/debug/*
-**/data_dir/direct_crawl_files/*
-**/data_dir/login_info/*
-**/data_dir/logs/*
-**/data_dir/*report*
-#!/data_dir/scraper_info_by_domain/
+**/data/backup_files/*
+**/data/debug/*
+**/data/direct_crawl_files/*
+**/data/login_info/*
+**/data/logs/*
+**/data/*report*
+#!/data/scraper_info_by_domain/
 

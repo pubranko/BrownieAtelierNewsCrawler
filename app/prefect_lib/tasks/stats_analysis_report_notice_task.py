@@ -1,6 +1,6 @@
 import os
 from prefect import task, get_run_logger
-from shared.settings import DATA_DIR
+from shared.settings import DATA
 
 from prefect_lib.flows import START_TIME
 from prefect_lib.data_models.stats_analysis_report_input import StatsAnalysisReportInput
@@ -18,7 +18,7 @@ def stats_analysis_report_notice_task(
 
     # レポートファイルを保存
     file_name: str = 'stats_analysis_report.xlsx'
-    file_path = os.path.join(DATA_DIR, file_name)
+    file_path = os.path.join(DATA, file_name)
     stats_analysis_report_excel.workbook.save(file_path)
 
     logger.info(
