@@ -9,6 +9,7 @@ from scrapy.exceptions import NotConfigured
 from scrapy.http import HtmlResponse
 from scrapy_selenium.http import SeleniumRequest
 from selenium import webdriver
+from selenium.webdriver.firefox.webdriver import WebDriver
 from selenium.webdriver import FirefoxOptions
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.firefox.service import Service
@@ -17,7 +18,7 @@ from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
 class SeleniumMiddleware:
     """Scrapy middleware handling the requests using selenium"""
 
-    driver: webdriver
+    driver: WebDriver
 
     def __init__(self, driver_name: str, driver_executable_path: str, driver_arguments: list,
                  browser_executable_path:str, profile: Optional[FirefoxProfile]):  # パラメータにプロファイルを追加してみた。
@@ -45,10 +46,10 @@ class SeleniumMiddleware:
 
         if profile:
             driver_options.profile = profile    # 追加されたパラメータのプロファイルを設定
-        driver_options.log.level = "INFO"
+        # driver_options.log.level = "INFO"
 
         service=Service(
-            executable_path= None,
+            executable_path= driver_executable_path,
             port= 0,
             service_args = ['--log', 'info'],
             log_output= subprocess.DEVNULL,
@@ -121,7 +122,7 @@ class SeleniumMiddleware:
             )
 
         if request.wait_until:
-            WebDriverWait(self.driver, request.wait_time).until(
+            WebDriverWait(self.driver, float(request.wait_time or 0)).until(
                 request.wait_until
             )
 
