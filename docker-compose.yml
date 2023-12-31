@@ -11,6 +11,7 @@ services:
         networks:
             - default
         volumes:
+            - $PWD/data:$HOME/BrownieAtelier/data
             - ${LOCAL_MONGO_KEY_DIR}:$HOME/mongo-key
         command: ${DOCKER_COMPOSE_COMMAND}
         # command: bash $HOME/BrownieAtelier/sh/prefect_agent_start.sh
