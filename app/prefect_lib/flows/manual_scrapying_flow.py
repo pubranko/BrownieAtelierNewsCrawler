@@ -9,6 +9,7 @@ from prefect_lib.tasks.end_task import end_task
 from prefect_lib.flows.init_flow import init_flow
 from prefect_lib.tasks.scrapying_task import scrapying_task
 from prefect_lib.tasks.news_clip_master_save_task import news_clip_master_save_task
+from prefect_lib.flows import START_TIME
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 
 
@@ -40,7 +41,7 @@ def manual_scrapying_flow(
 
             if following_processing_execution:
                 # 後続処理実施指定がある場合、スクレイピング結果をニュースクリップマスターへ保存
-                news_clip_master_save_task(mongo, domain, target_start_time_from, target_start_time_to)
+                news_clip_master_save_task(mongo, domain, START_TIME, START_TIME)
 
         except Exception as e:
             # 例外をキャッチしてログ出力等の処理を行う

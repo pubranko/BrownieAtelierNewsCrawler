@@ -61,38 +61,38 @@ def news_clip_master_save_task(
         ).skip(skip).limit(limit)
 
         for record in records:
-            # データチェック
-            if not scraped_record_error_check(record):
-                # 重複チェック
-                filter={'$and': [
-                        {NewsClipMasterModel.URL: record[ScrapedFromResponseModel.URL]},
-                        {NewsClipMasterModel.TITLE: record[ScrapedFromResponseModel.TITLE]},
-                        {NewsClipMasterModel.ARTICLE: record[ScrapedFromResponseModel.ARTICLE]},
-                    ]}
-                news_clip_records = news_clip_master.find(filter=filter)
+            # # データチェック
+            # if not scraped_record_error_check(record):
+            # 重複チェック
+            filter={'$and': [
+                    {NewsClipMasterModel.URL: record[ScrapedFromResponseModel.URL]},
+                    {NewsClipMasterModel.TITLE: record[ScrapedFromResponseModel.TITLE]},
+                    {NewsClipMasterModel.ARTICLE: record[ScrapedFromResponseModel.ARTICLE]},
+                ]}
+            news_clip_records = news_clip_master.find(filter=filter)
 
-                # 重複するレコードがなければ保存する。
-                if news_clip_master.count(filter) == 0:
-                    # record[news_clip_master.SCRAPED_SAVE_START_TIME] = start_time
-                    _ = {}
-                    _[NewsClipMasterModel.SCRAPED_SAVE_START_TIME] = START_TIME
-                    _.update(record)
-                    news_clip_master.insert_one(_)
-                    logger.info(f'=== news_clip_master への登録 : {record[ScrapedFromResponseModel.URL]}')
+            # 重複するレコードがなければ保存する。
+            if news_clip_master.count(filter) == 0:
+                # record[news_clip_master.SCRAPED_SAVE_START_TIME] = start_time
+                _ = {}
+                _[NewsClipMasterModel.SCRAPED_SAVE_START_TIME] = START_TIME
+                _.update(record)
+                news_clip_master.insert_one(_)
+                logger.info(f'=== news_clip_master への登録 : {record[ScrapedFromResponseModel.URL]}')
 
-                    news_clip_master_register:str = CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER__COMPLETE #'登録完了'
-                    crawler_response.news_clip_master_register_result(record[ScrapedFromResponseModel.URL],
-                                                                      record[ScrapedFromResponseModel.RESPONSE_TIME],
-                                                                      news_clip_master_register)
-                else:
-                    for news_clip_record in news_clip_records:
-                        if news_clip_record[NewsClipMasterModel.RESPONSE_TIME] == record[ScrapedFromResponseModel.RESPONSE_TIME]:
-                            logger.info(
-                                f'=== news_clip_master への登録処理済みデータのためスキップ : {record[ScrapedFromResponseModel.URL]}')
-                        else:
-                            news_clip_master_register:str = CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER__SKIP #'登録内容に差異なしのため不要'
-                            crawler_response.news_clip_master_register_result(record[ScrapedFromResponseModel.URL],
-                                                                              record[ScrapedFromResponseModel.RESPONSE_TIME],
-                                                                              news_clip_master_register)
-                            logger.info(
-                                f'=== news_clip_master の登録内容に変更がないためスキップ : {record[ScrapedFromResponseModel.URL]}')
+                news_clip_master_register:str = CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER__COMPLETE #'登録完了'
+                crawler_response.news_clip_master_register_result(record[ScrapedFromResponseModel.URL],
+                                                                    record[ScrapedFromResponseModel.RESPONSE_TIME],
+                                                                    news_clip_master_register)
+            else:
+                for news_clip_record in news_clip_records:
+                    if news_clip_record[NewsClipMasterModel.RESPONSE_TIME] == record[ScrapedFromResponseModel.RESPONSE_TIME]:
+                        logger.info(
+                            f'=== news_clip_master への登録処理済みデータのためスキップ : {record[ScrapedFromResponseModel.URL]}')
+                    else:
+                        news_clip_master_register:str = CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER__SKIP #'登録内容に差異なしのため不要'
+                        crawler_response.news_clip_master_register_result(record[ScrapedFromResponseModel.URL],
+                                                                            record[ScrapedFromResponseModel.RESPONSE_TIME],
+                                                                            news_clip_master_register)
+                        logger.info(
+                            f'=== news_clip_master の登録内容に変更がないためスキップ : {record[ScrapedFromResponseModel.URL]}')
