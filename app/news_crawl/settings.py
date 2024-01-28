@@ -86,7 +86,7 @@ DOWNLOADER_MIDDLEWARES = {
     # 'scrapy_splash.SplashCookiesMiddleware': 723,
     # 'scrapy_splash.SplashMiddleware': 725,
     #selenium用 -> カスタムバージョン
-    'news_crawl.scrapy_selenium_custom_middlewares.SeleniumMiddleware': 800,
+    # 'news_crawl.scrapy_selenium_custom_middlewares.SeleniumMiddleware': 800,
     #selenium用
     #'scrapy_selenium.SeleniumMiddleware': 800,
 

@@ -23,6 +23,10 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
     custom_settings: dict = {
         'DEPTH_LIMIT': 0,
         'DEPTH_STATS_VERBOSE': True,
+        'DOWNLOADER_MIDDLEWARES': {
+            #selenium用 -> カスタムバージョン
+            'news_crawl.scrapy_selenium_custom_middlewares.SeleniumMiddleware': 800,
+        }
     }
 
     _crawl_point: dict = {}

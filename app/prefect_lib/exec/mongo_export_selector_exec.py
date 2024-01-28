@@ -21,4 +21,20 @@ mongo_export_selector_flow(
     period_month_to=3,  # 月次エクスポートを行うデータの基準年月
     crawler_response__registered=True,   # crawler_responseの場合、登録済みになったレコードのみエクスポートする場合True、登録済み以外のレコードも含めてエクスポートする場合False
 )
-
+'''
+{
+  "collections_name": [
+    "crawler_response",
+    "scraped_from_response",
+    "news_clip_master",
+    "crawler_logs",
+    "asynchronous_report",
+    "controller"
+  ],
+  "prefix": "test",
+  "suffix": "20240128",
+  "period_month_from": 1,
+  "period_month_to": 0,
+  "crawler_response__registered": false
+}
+'''

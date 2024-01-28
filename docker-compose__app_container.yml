@@ -36,7 +36,7 @@ services:
             # PREFECT_LOGGING_INTERNAL_LEVEL: "INFO"
             PREFECT__DATA: "/home/${CONTAINER_USER}/BrownieAtelier/data"
             # Scrapyの環境設定
-            SCRAPY_SETTINGS_MODULE: "news_crawl.settings"
+            # SCRAPY_SETTINGS_MODULE: "news_crawl.settings"
             SCRAPY__LOG_LEVEL: "INFO"
             # Brownie atelier noticeの設定 (email)
             BROWNIE_ATELIER_NOTICE__SMTP_HOST : ${BROWNIE_ATELIER_NOTICE__SMTP_HOST}

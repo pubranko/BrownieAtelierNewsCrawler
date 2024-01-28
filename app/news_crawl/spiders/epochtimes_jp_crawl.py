@@ -33,6 +33,10 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
     custom_settings: dict = {
         'DEPTH_LIMIT': 0,
         'DEPTH_STATS_VERBOSE': True,
+        'DOWNLOADER_MIDDLEWARES': {
+            #selenium用 -> カスタムバージョン
+            'news_crawl.scrapy_selenium_custom_middlewares.SeleniumMiddleware': 800,
+        }
     }
 
     _crawl_point: dict = {}
@@ -238,8 +242,8 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
             password = yaml_file[self.allowed_domains[0]]['password']
 
         try:
-            elem: WebElement = driver.find_element_by_css_selector(
-                '#mypage')  # ログイン前なら存在
+            # elem: WebElement = driver.find_element_by_css_selector('#mypage')  # ログイン前なら存在
+            elem: WebElement = driver.find_element(By.CSS_SELECTOR, '#mypage') # ログイン前なら存在
         except NoSuchElementException:  # 既にログイン中ならpass
             pass
         else:
@@ -258,12 +262,14 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
                 EC.presence_of_element_located((By.CSS_SELECTOR, '#ymkemail')))
             elem.send_keys(user)
             # パスワード入力
-            elem: WebElement = driver.find_element_by_css_selector(
-                '#ymkpassword')
+            elem: WebElement = driver.find_element(By.CSS_SELECTOR, '#ymkpassword')
+            # elem: WebElement = driver.find_element_by_css_selector(
+            #     '#ymkpassword')
             elem.send_keys(password)
             # ログインボタン押下
-            elem: WebElement = driver.find_element_by_css_selector(
-                '#ymk-login-btn')
+            elem: WebElement = driver.find_element(By.CSS_SELECTOR, '#ymk-login-btn')
+            # elem: WebElement = driver.find_element_by_css_selector(
+            #     '#ymk-login-btn')
             elem.click()
 
             # iframeから出る
@@ -295,8 +301,9 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
                 EC.presence_of_element_located((By.CSS_SELECTOR, next_page_element)))
 
             # ページ内の対象urlを抽出
-            _ = driver.find_elements_by_css_selector(
-                f'.main_content > .left_col > .posts_list .post_title > a[href]')
+            _ = driver.find_elements(By.CSS_SELECTOR, f'.main_content > .left_col > .posts_list .post_title > a[href]')
+            # _ = driver.find_elements_by_css_selector(
+            #     f'.main_content > .left_col > .posts_list .post_title > a[href]')
             links: list = [link.get_attribute("href") for link in _]
             self.logger.info(
                 f'=== ページ内の記事件数 = {len(links)}')
@@ -338,8 +345,9 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
             self.page += 1
             if self.page <= self.page_to:
                 # 要素を表示するようスクロールしてクリック
-                elem: WebElement = driver.find_element_by_css_selector(
-                    next_page_element)
+                elem: WebElement = driver.find_element(By.CSS_SELECTOR, next_page_element)
+                # elem: WebElement = driver.find_element_by_css_selector(
+                #     next_page_element)
                 elem.send_keys(Keys.END)    # endキーを押下して画面最下部へ移動
                 elem.click()                # 画面に表示された対象のボタンを押下(表示されていないと押下できない)
 
