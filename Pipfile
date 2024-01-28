@@ -29,6 +29,7 @@ azure-keyvault-secrets = "*"
 azure-mgmt-containerinstance = "*"
 azure-mgmt-core = "*"
 azure-mgmt-resource = "*"
+azure-storage-queue = "*"
 psutil = "*"
 
 [dev-packages]

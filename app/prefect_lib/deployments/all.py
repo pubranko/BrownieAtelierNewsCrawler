@@ -7,6 +7,7 @@
 ・Cloudの場合 → prefect config set PREFECT_API_URL="https://api.prefect.cloud/api/accounts/[ACCOUNT-ID]/workspaces/[WORKSPACE-ID]"
 '''
 import os
+from decouple import config, AutoConfig
 from prefect.deployments.deployments import Deployment
 from prefect.server.schemas.schedules import CronSchedule, IntervalSchedule, RRuleSchedule
 from prefect.settings import PREFECT_HOME, PREFECT_API_URL
@@ -55,7 +56,8 @@ elif prefect_api_url.startswith('http://127.0.0.1'):
 elif prefect_api_url.startswith('http://localhost'):
     path = os.getcwd()
 else:
-    path = '/home/mikuras/BrownieAtelier/app'
+    # コンテナー内で実行する際のカレントディレクトリ
+    path = f'/home/{str(config("CONTAINER_USER"))}/BrownieAtelier/app'
 print(f'=== path = {path}')
 
 work_pool_name = 'brownie-atelier-agent-pool'

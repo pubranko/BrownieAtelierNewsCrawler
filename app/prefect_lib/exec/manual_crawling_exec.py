@@ -5,14 +5,14 @@ from prefect_lib.flows.manual_crawling_flow import manual_crawling_flow
 
 manual_crawling_flow(
     spider_names=[
-        "sankei_com_sitemap",
-        "asahi_com_sitemap",
-        "kyodo_co_jp_sitemap",
-        "yomiuri_co_jp_sitemap",
-        "jp_reuters_com_sitemap",
+        # "sankei_com_sitemap",
+        # "asahi_com_sitemap",
+        # "kyodo_co_jp_sitemap",
+        # "yomiuri_co_jp_sitemap",
+        # "jp_reuters_com_sitemap",
 
-        "epochtimes_jp_crawl",
-        "mainichi_jp_crawl",
+        # "epochtimes_jp_crawl",
+        # "mainichi_jp_crawl",
         "nikkei_com_crawl"
     ],
     
@@ -20,9 +20,9 @@ manual_crawling_flow(
         debug = True,
         # continued = True,
         # crawl_point_non_update = True,
-        page_span_from = 1,
+        page_span_from = 2,
         page_span_to = 2,
-        lastmod_term_minutes_from = 120,
+        lastmod_term_minutes_from = 60,
         lastmod_term_minutes_to = 0,
         # direct_crawl_urls = [],
         # url_pattern =  'https://www.yomiuri.co.jp/national/20220430-OYT1T50050',
@@ -51,7 +51,7 @@ manual_crawling_flow(
         "asahi_com_sitemap",
         "kyodo_co_jp_sitemap",
         "yomiuri_co_jp_sitemap",
-        "jp_reuters_com_crawl",
+        "jp_reuters_com_sitemap",
         "epochtimes_jp_crawl",
         "mainichi_jp_crawl",
         "nikkei_com_crawl"

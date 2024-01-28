@@ -1,44 +1,27 @@
-#FROM openjdk:11-stretch
-FROM brownie_atelier_base:0.14
+ARG BASE_TAG
+FROM brownie_atelier_base:${BASE_TAG}
 
 #LABELでメタ情報を入れることができる
-#LABEL maintainer="Martijn Koster \"mak-docker@greenhills.co.uk\""
-#LABEL repository="https://github.com/docker-solr/docker-solr"
-LABEL maintainer="BrownieAtelier"
+LABEL maintainer="BrownieAtelierApp"
 
-ARG NORMAL_USER
-ARG GIT_REMOTE_REPOSITORY
-ARG BRANCH
+ARG CONTAINER_USER
+ARG GIT_BRANCH
 
 # リポジトリ一覧を更新、インストール済みのパッケージ更新
-RUN echo ${NORMAL_PASS} | sudo -S apt-get update
-RUN echo ${NORMAL_PASS} | sudo -S apt update
-RUN echo ${NORMAL_PASS} | sudo -S apt -y upgrade
+RUN echo ${CONTAINER_USER} | sudo -S apt-get update
+RUN echo ${CONTAINER_USER} | sudo -S apt update
+RUN echo ${CONTAINER_USER} | sudo -S apt -y upgrade
 
 # アプリ用ディレクトリへ移動
-WORKDIR /home/${NORMAL_USER}/BrownieAtelier
+WORKDIR /home/${CONTAINER_USER}/BrownieAtelier
 # リモートリポジトリよりpullを実行し最新ソースを取得する。
-RUN git pull origin ${BRANCH}
+RUN git pull origin ${GIT_BRANCH}
 RUN git submodule update --recursive
 
 # Pipfile.lockからインストール（更新があった場合）
-WORKDIR /home/${NORMAL_USER}/BrownieAtelier
+WORKDIR /home/${CONTAINER_USER}/BrownieAtelier
 RUN python3 -m pipenv sync
-
-
-# テスト環境用ブランチ調整 #############################################
-# RUN git checkout ${BRANCH}
-# RUN git pull origin ${BRANCH}
-# WORKDIR /home/${NORMAL_USER}/BrownieAtelier/BrownieAtelierMongo
-# RUN git checkout develop
-# RUN git pull origin ${BRANCH}
-# WORKDIR /home/${NORMAL_USER}/BrownieAtelier/BrownieAtelierNotice
-# RUN git checkout develop
-# RUN git pull origin ${BRANCH}
-# WORKDIR /home/${NORMAL_USER}/BrownieAtelier/BrownieAtelierStorage
-# RUN git checkout develop
-# RUN git pull origin ${BRANCH}
-########################################################################
+RUN .venv/bin/pip list
 
 ENTRYPOINT []
 CMD []

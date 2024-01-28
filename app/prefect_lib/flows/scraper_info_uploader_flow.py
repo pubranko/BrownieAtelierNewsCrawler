@@ -18,9 +18,6 @@ from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import ScraperInfoByDomainModel
 from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import ScraperInfoByDomainConst
 
-from shared.settings import LOG_FORMAT, LOG_DATEFORMAT
-from prefect_lib.flows import LOG_FILE_PATH
-
 
 '''
 mongoDBのインポートを行う。

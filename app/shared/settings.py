@@ -9,7 +9,7 @@ from decouple import config, AutoConfig
 TIMEZONE = timezone(timedelta(hours=9), 'JST')
 '''タイムゾーン'''
 
-DATA = os.path.abspath(str(config('PREFECT__DATA', default='data')))
+DATA = os.path.abspath(str(config('PREFECT__DATA', default='../data')))
 '''データ類の保存ベースディレクトリ'''
 
 DATA__LOGS = os.path.join(DATA, 'logs')

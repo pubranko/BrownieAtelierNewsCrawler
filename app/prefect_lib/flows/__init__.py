@@ -7,7 +7,6 @@ from datetime import datetime
 # from prefect import get_run_logger
 
 from shared.settings import TIMEZONE, DATA__LOGS
-from shared.settings import LOG_FORMAT, LOG_DATEFORMAT
 from prefect_lib.flows import *
 
 # from prefect_lib.flows import LOG_FILE_PATH

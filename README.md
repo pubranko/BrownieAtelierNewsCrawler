@@ -96,8 +96,8 @@
 ## プロジェクトで作成・使用するdockerリポジトリ一覧
 | No. | イメージ名                        | コンテナー名         | イメージリポジトリリンク                      | イメージリポジト補足説明                                |
 | :-- | :------------------------------- | :------------------ | :------------------------------------------ | :---------------------------------------------------- |
-| 1   | mikuras/brownie_atelier_app:0.13 | Brownie-atelier-app | https://hub.docker.com/repositories/mikuras | ブラウニー工房のアプリをUbuntu20.04へ格納したイメージ<br>※プライベートリポジトリ |
-| 2   | mongo:5.0.10-focal               | mongo-azure-db      | https://hub.docker.com/_/mongo              | MongoDB公式イメージ                                   |
+| 1   | mikuras/brownie_atelier_app:0.14 | Brownie-atelier-app | https://hub.docker.com/repositories/mikuras | ブラウニー工房のアプリをUbuntu20.04へ格納したイメージ    |
+| 2   | mongo:7.0.4-jammy                | mongo-azure-db      | https://hub.docker.com/_/mongo              | MongoDB公式イメージ                                   |
 
 [目次へ戻る](#目次)
 

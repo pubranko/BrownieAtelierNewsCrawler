@@ -1,0 +1,15 @@
+version: '3.1'
+
+services:
+    brownie_atelier_app:
+        build:
+            context: .
+            dockerfile: dockerfile_app
+            args:
+                ## dockerfile_appで参照するbase側のイメージタグ
+                BASE_TAG: ${BASE_TAG}
+                # コンテナ内の一般ユーザー、パスワード
+                CONTAINER_USER: ${CONTAINER_USER}
+                # ブラウニー工房のgitリモートリポジトリーのブランチ
+                GIT_BRANCH: ${GIT_BRANCH}
+        image: brownie_atelier_app:${APP_TAG}

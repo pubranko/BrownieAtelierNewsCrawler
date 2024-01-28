@@ -5,7 +5,7 @@ version: '3.1'
 services:
 
     brownie_atelier:
-        image: brownie_atelier_app:${IMAGE_TAG}
+        image: brownie_atelier_app:${APP_TAG}
         container_name: brownie_atelier_app
         # restart: always
         networks:
@@ -25,34 +25,25 @@ services:
             BROWNIE_ATELIER_MONGO__MONGO_TLS: ${BROWNIE_ATELIER_MONGO__MONGO_TLS}
             BROWNIE_ATELIER_MONGO__MONGO_TLS_CA_FILE: ${BROWNIE_ATELIER_MONGO__MONGO_TLS_CA_FILE}
             BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE: ${BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE}
-            # prefectの認証(フレームワーク仕様)
-            # PRECECT_AUTH: ${PRECECT_AUTH}
             # prefectの環境設定
-            PREFECT_HOME: "${CONTAINER_HOME}/BrownieAtelier/"
+            CONTAINER_USER: "/home/${CONTAINER_USER}/BrownieAtelier/"
             PREFECT__API_URL: ${PREFECT__API_URL}
             PREFECT__API_KEY: ${PREFECT__API_KEY}
             PREFECT__WORK_SPACE: ${PREFECT__WORK_SPACE}
-            PREFECT_LOGGING_LEVEL: "INFO"
-            PREFECT_LOGGING_SERVER_LEVEL: "INFO"
-            PREFECT_LOGGING_INTERNAL_LEVEL: "INFO"
-            PREFECT__DATA: "${CONTAINER_HOME}/BrownieAtelier/data"
-            PREFECT__LOGGING__FORMAT: "%(asctime)s %(levelname)s [%(name)s] : %(message)s"  #たぶんいらない
-            PREFECT__LOGGING__DATEFMT: "%Y-%m-%d %H:%M:%S"  #たぶんいらない
-            # Scrapyのコンフィグファイル(フレームワーク仕様)
-            SCRAPY_SETTINGS_MODULE: "news_crawl.settings"
+            PREFECT__WORK_POOL: ${PREFECT__WORK_POOL}
+            # PREFECT_LOGGING_LEVEL: "INFO"
+            # PREFECT_LOGGING_SERVER_LEVEL: "INFO"
+            # PREFECT_LOGGING_INTERNAL_LEVEL: "INFO"
+            PREFECT__DATA: "/home/${CONTAINER_USER}/BrownieAtelier/data"
             # Scrapyの環境設定
+            SCRAPY_SETTINGS_MODULE: "news_crawl.settings"
             SCRAPY__LOG_LEVEL: "INFO"
-            # Brownie atelier noticeの設定
-            # Email接続情報
+            # Brownie atelier noticeの設定 (email)
             BROWNIE_ATELIER_NOTICE__SMTP_HOST : ${BROWNIE_ATELIER_NOTICE__SMTP_HOST}
             BROWNIE_ATELIER_NOTICE__SMTP_PORT : ${BROWNIE_ATELIER_NOTICE__SMTP_PORT}
             BROWNIE_ATELIER_NOTICE__FROM_EMAIL : ${BROWNIE_ATELIER_NOTICE__FROM_EMAIL}
             BROWNIE_ATELIER_NOTICE__TO_EMAIL : ${BROWNIE_ATELIER_NOTICE__TO_EMAIL}
             BROWNIE_ATELIER_NOTICE__PASSWORD : ${BROWNIE_ATELIER_NOTICE__PASSWORD}
-            # pythonパス
-            PYTHONPATH: ${CONTAINER_HOME}/BrownieAtelier/.venv/bin/
-            # gitリモートリポジトリ
-            GIT_REMOTE_REPOSITORY: ${GIT_REMOTE_REPOSITORY}
 
 # 既存のネットワークbrownie-atelier-netを利用する。
 networks:
