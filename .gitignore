@@ -146,3 +146,8 @@ test_aria/*
 #!/data/scraper_info_by_domain/
 profiles.toml
 memo_store.toml
+# mongo-dbコンテナ用
+mongodb/data/mongo-db/*
+mongodb/log/mongodb/mongod.log
+mongodb/mongo-conf/mongod_tls.conf
+mongodb/mongo-conf/mongod_azure.conf

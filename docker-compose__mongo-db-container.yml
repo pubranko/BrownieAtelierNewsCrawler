@@ -1,0 +1,37 @@
+version: '3.1'
+##############################################
+# 本番環境用(tls指定あり)
+##############################################
+services:
+
+    mongo:
+        # image: mongo:5.0.10-focal
+        image: mongo:7.0.1-jammy
+        container_name: mongo-v7
+        # restart: always
+        ports:
+            - "47017:27017"
+        networks:
+            - default
+        volumes:
+            - $PWD/mongodb/data/mongo-db:/data/mongo-db
+            - $PWD/mongodb/mongo-conf/mongod_tls.conf:/etc/mongod_tls.conf              # コンフィグファイルの保管場所
+            - /home/mikuras/001_ミクラス工房/002_KeyStore/07_mongodb_local:/etc/mongo-key                # ca/tls keyファイルの保管場所
+            - $PWD/mongodb/log/mongodb:/var/log/mongodb            # ログの保管場所(ローカル側の権限を777へ変更要)
+            - $PWD/mongodb/init:/docker-entrypoint-initdb.d
+        # networks:
+        #     - news-clip-network
+        command: --config /etc/mongod_tls.conf
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: HatsuneMikuTryMongo
+            MONGO_INITDB_ROOT_PASSWORD: MajikaruMiiiiiraaaai39
+            BROWNIE_ATELIER_MONGO__MONGO_USE_DB: ${BROWNIE_ATELIER_MONGO__MONGO_USE_DB}
+            BROWNIE_ATELIER_MONGO__MONGO_USER: ${BROWNIE_ATELIER_MONGO__MONGO_USER}
+            BROWNIE_ATELIER_MONGO__MONGO_PASS: ${BROWNIE_ATELIER_MONGO__MONGO_PASS}
+
+
+# 既存のネットワークbrownie-atelier-netを利用する。
+networks:
+  default:
+    external:
+      name: brownie-atelier-net

@@ -26,7 +26,6 @@ services:
             BROWNIE_ATELIER_MONGO__MONGO_TLS_CA_FILE: ${BROWNIE_ATELIER_MONGO__MONGO_TLS_CA_FILE}
             BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE: ${BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE}
             # prefectの環境設定
-            CONTAINER_USER: "/home/${CONTAINER_USER}/BrownieAtelier/"
             PREFECT__API_URL: ${PREFECT__API_URL}
             PREFECT__API_KEY: ${PREFECT__API_KEY}
             PREFECT__WORK_SPACE: ${PREFECT__WORK_SPACE}
@@ -37,7 +36,7 @@ services:
             PREFECT__DATA: "/home/${CONTAINER_USER}/BrownieAtelier/data"
             # Scrapyの環境設定
             # SCRAPY_SETTINGS_MODULE: "news_crawl.settings"
-            SCRAPY__LOG_LEVEL: "INFO"
+            SCRAPY__LOG_LEVEL: ${SCRAPY__LOG_LEVEL}
             # Brownie atelier noticeの設定 (email)
             BROWNIE_ATELIER_NOTICE__SMTP_HOST : ${BROWNIE_ATELIER_NOTICE__SMTP_HOST}
             BROWNIE_ATELIER_NOTICE__SMTP_PORT : ${BROWNIE_ATELIER_NOTICE__SMTP_PORT}
