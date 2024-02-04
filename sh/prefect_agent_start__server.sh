@@ -6,10 +6,7 @@
 cd $PWD
 . .venv/bin/activate
 
-# prefect APIの指定が無ければデフォルト値を設定
-if [ -z $PREFECT_API_URL ]; then
-    export PREFECT_API_URL="http://127.0.0.1:4200/api"
-fi
+# prefect APIの接続先を設定
 prefect config set PREFECT_API_URL=$PREFECT_API_URL
 
 # prefectエージェント起動前にappディレクトリへ移動
