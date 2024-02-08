@@ -10,11 +10,13 @@ services:
         # restart: always
         networks:
             - default
+        extra_hosts:
+            # - "host.docker.internal:host-gateway"         # windows上のサービスに接続する場合
+            - "host.docker.internal:${HOST_OS_IP_ADDRESS}"  # wsl2上のサービスに接続する場合
         volumes:
             - $PWD/data:$HOME/BrownieAtelier/data
             - ${LOCAL_MONGO_KEY_DIR}:$HOME/mongo-key
         command: ${CONTAINER_START_COMMAND}
-        # command: bash $HOME/BrownieAtelier/sh/prefect_agent_start.sh
         environment:
             # mongoDB接続情報
             BROWNIE_ATELIER_MONGO__MONGO_SERVER: ${BROWNIE_ATELIER_MONGO__MONGO_SERVER}
@@ -32,7 +34,7 @@ services:
             BROWNIE_ATELIER_NOTICE__TO_EMAIL: ${BROWNIE_ATELIER_NOTICE__TO_EMAIL}
             BROWNIE_ATELIER_NOTICE__PASSWORD: ${BROWNIE_ATELIER_NOTICE__PASSWORD}
             # prefectの環境設定
-            PREFECT__API_URL: ${PREFECT__API_URL}
+            PREFECT_API_URL: ${PREFECT_API_URL}
             PREFECT__API_KEY: ${PREFECT__API_KEY}
             PREFECT__WORK_SPACE: ${PREFECT__WORK_SPACE}
             PREFECT__WORK_POOL: ${PREFECT__WORK_POOL}
