@@ -18,8 +18,6 @@ WORKDIR /home/${CONTAINER_USER}/BrownieAtelier
 RUN git pull origin ${GIT_BRANCH}
 RUN git submodule update --recursive
 
-# mongoDB初期化ツールを配置
-RUN cp /home/${CONTAINER_USER}/BrownieAtelier/mongodb/init/create-user.js base_image_build.d
 # シェルに実行権限を付与
 WORKDIR /home/${CONTAINER_USER}/BrownieAtelier/sh
 RUN chmod 755 ./*
