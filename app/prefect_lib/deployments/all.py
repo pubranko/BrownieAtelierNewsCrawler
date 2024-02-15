@@ -45,9 +45,9 @@ from BrownieAtelierMongo.collection_models.controller_model import ControllerMod
 from BrownieAtelierMongo.collection_models.stats_info_collect_model import StatsInfoCollectModel
 
 prefect_home = PREFECT_HOME.value()
-print(f'=== prefect_home = {prefect_home}')
+print(f'=== {prefect_home =}')
 prefect_api_url = PREFECT_API_URL.value()
-print(f'=== prefect_api_url = {prefect_api_url}')
+print(f'=== {prefect_api_url = }')
 
 if not(prefect_api_url):
     raise ValueError(
@@ -61,9 +61,10 @@ elif prefect_api_url.startswith('http://0.0.0.0'):
 else:
     # コンテナー内で実行する際のカレントディレクトリ
     path = f'/home/{str(config("CONTAINER_USER"))}/BrownieAtelier/app'
-print(f'=== path = {path}')
+print(f'=== {path = }')
 
 work_pool_name = str(config('PREFECT__WORK_POOL', default='default-agent-pool'))
+print(f'=== {work_pool_name = }')
 
 ###################
 # crawl-scrape
