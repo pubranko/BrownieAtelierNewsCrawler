@@ -1,13 +1,13 @@
 # Brawnie Atlier（ブラウニー工房）
 ## 目次
-- Brawnie Atlier（ブラウニー工房）
+### Brawnie Atlier（ブラウニー工房）
   - [システム概要](#システム概要)
   - [当資料の基準日](#当資料の基準日)
   - [主要技術](#主要技術)
   - [システム概要図](#システム概要図)
   - [システム概要図のアクション番号について](#システム概要図のアクション番号について)
   - [プロジェクトで使用されるGitリポジトリ](#プロジェクトで使用されるgitリポジトリ)
-  - [プロジェクトで作成・使用するdockerリポジトリ一覧](#プロジェクトで作成使用するdockerリポジトリ一覧)
+  - [プロジェクトで作成/使用するdockerリポジトリ一覧](#プロジェクトで作成使用するdockerリポジトリ一覧)
   - [現在実装済みのFlowの一覧](#現在実装済みのflowの一覧)
     - [各種登録系](#各種登録系)
     - [ニュースクロール・スクレイピング系](#ニュースクロールスクレイピング系)
@@ -29,12 +29,12 @@
 5. 収集した情報をマイクロソフトのCopilotに分析させ、様々なレポートを生成させWEB上で参照できるサービスを提供する（構想中）。
 
 ## 当資料の基準日
-2023/12/2時点の情報となります。
+2024/2/19時点の情報となります。
 
 ## 主要技術
 1. 言語(python3.9～)
 2. フレームワーク<br>Prefect2 ([ https://orion-docs.prefect.io/2.10.9/ ](https://orion-docs.prefect.io/2.10.9/)) <br> Scrapy ([ https://docs.scrapy.org/en/2.6/ ](https://docs.scrapy.org/en/2.6/))
-3. DB<br>MongoDB ([ https://www.mongodb.com/docs/v5.0/ ](https://www.mongodb.com/docs/v5.0/) )<br>Apache Solr ([ https://solr.apache.org/ ](https://solr.apache.org/))
+3. DB<br>MongoDB ([ https://www.mongodb.com/docs/v7.0/ ](https://www.mongodb.com/docs/v7.0/) )<br>Apache Solr ([ https://solr.apache.org/ ](https://solr.apache.org/))
 4. Docker, Docker Compose <br>([ https://docs.docker.jp/ ](https://docs.docker.jp/))
 5. Azure Container Instances <br> ([ https://azure.microsoft.com/ja-jp/products/container-instances ](https://azure.microsoft.com/ja-jp/products/container-instances))
 6. Azure Functions (Httpトリガー、Timerトリガー、BLOBトリガー) <br> ([ https://azure.microsoft.com/ja-jp/products/functions ](https://azure.microsoft.com/ja-jp/products/functions))
@@ -50,6 +50,8 @@
 [目次へ戻る](#目次)
 
 ## システム概要図のアクション番号について
+<details><div>
+
 | No.  | デプロイ | 保守運用 | 処理実行 | アクション内容|
 | :--: | :-----: | :-----: | :-----: | :------------------------------------------------------ |
 | A1   | 〇      |         |         | 自作したFlowを、Prefect社が運用しているPrefectCloudに登録する。|
@@ -79,6 +81,8 @@
 | A16  |         |         | ◎      | 各Flowでエラーが発生した場合、メールを送信する。|
 | A17  |         |         | ◎      | ローカル端末にメールを送信する。|
 
+</div></details>
+
 [目次へ戻る](#目次)
 
 ## プロジェクトで使用されるGitリポジトリ
@@ -93,16 +97,18 @@
 
 [目次へ戻る](#目次)
 
-## プロジェクトで作成・使用するdockerリポジトリ一覧
+## プロジェクトで作成/使用するdockerリポジトリ一覧
 | No. | イメージ名                        | コンテナー名         | イメージリポジトリリンク                      | イメージリポジト補足説明                                |
 | :-- | :------------------------------- | :------------------ | :------------------------------------------ | :---------------------------------------------------- |
-| 1   | mikuras/brownie_atelier_app:0.14 | Brownie-atelier-app | https://hub.docker.com/repositories/mikuras | ブラウニー工房のアプリをUbuntu20.04へ格納したイメージ    |
+| 1   | mikuras/brownie_atelier_app:0.15 | Brownie-atelier-app | https://hub.docker.com/repositories/mikuras | ブラウニー工房のアプリをUbuntu22.04へ格納したイメージ    |
 | 2   | mongo:7.0.4-jammy                | mongo-azure-db      | https://hub.docker.com/_/mongo              | MongoDB公式イメージ                                   |
 
 [目次へ戻る](#目次)
 
 ## 現在実装済みのFlowの一覧
 ### 各種登録系
+<details><div>
+
 | No.        | Flow一覧                                      | 処理概要|
 | :--------- | :-------------------------------------------- | :------|
 | Register-1 | regular_observation_controller_update_flow.py | 定期観測用のスパイダーを登録する。<br>定期観測に使用しないスパイダーはここでは登録しない。<br>登録先MongoDBコレクション(controller)。|
@@ -137,10 +143,15 @@
 | :--------- | :-------------------------------------------- | :------|
 | Check-1    | crawl_sync_check_flow.py                      | クロール対象となったURLとクローラーレスポンス（crawler_response）の同期が取れているかチェック。<br>クローラーレスポンス（crawler_response）とニュースクリップマスター（news_clip_master）の同期が取れているかチェック。 |
 
+</div></details>
+
+
 [目次へ戻る](#目次)
 
 ## MongoDBのコレクション
 ### Mongoコレクション一覧
+<details><div>
+
 | №   | コレクション（※RDBのテーブルに相当）                         | レコードタイプ                                            | コレクションの用途                                                                         |
 | :-- | :--------------------------------------------------------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
 | 1   | クローラーログ<br>crawler_logs                              | スパイダーレポート<br>spider_reports                       | クロール時、クロール対象となったURLやScrapyの統計情報を保存する。                             |
@@ -159,9 +170,13 @@
 |     |                                                            | ニュースクリップマスター非同期<br>news_clip_master_async     | クローラーレスポンスとニュースクリップマスターが非同期の情報を保存する。                      |
 |     |                                                            | ソーラーニュースクリップ非同期<br>solr_news_clip_async       | ニュースクリップマスターとソーラーニュースクリップが非同期の情報を保存する。                  |
 
+</div></details>
+
 [目次へ戻る](#目次)
 
 ### Mongoコレクションの削除運用
+<details><div>
+
 | №   | コレクション（※RDBのテーブルに相当）                         | データ<br>保存期間 | データメンテナンス運用  |
 | :-- | :-------------------------------------------------------   | :-------------: | :----------------------- |
 | 1   | クローラーログ<br>crawler_logs                              | 1日            | 毎朝初回起動時に一括削除。<br>レスポンスからニュースクリップマスターへの保存する際の中間ワークであるため保存不要。 |
@@ -172,6 +187,8 @@
 | 6   | 非同期レポート<br>asynchronous_report                       | 3ヵ月          | 同上 |
 | 7   | 統計情報の収集<br>stats_info_collect                        | 3ヵ月          | 同上  |
 | 8   | コントローラー<br>controller                                | 永続           | 削除は行わない。<br>ただし毎朝初回起動時にMongoエクスポート（mongo_export_selector_flow.py）にてバックアップを行う。 |
+
+</div></details>
 
 [目次へ戻る](#目次)
 
