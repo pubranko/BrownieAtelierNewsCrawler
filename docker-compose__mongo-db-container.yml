@@ -1,0 +1,37 @@
+version: '3.1'
+##############################################
+# 本番環境用(tls指定あり)
+##############################################
+services:
+
+    mongo:
+        # image: mongo:5.0.10-focal
+        image: mongo:${MONGO_TAG}
+        container_name: mongo-container
+        # restart: always
+        ports:
+            - "47017:27017"
+        networks:
+            - default
+        volumes:
+            - ${BROWNIE_ATELIER_MONGO__MONGO_STORAGE_DIR}/data:/data/mongo-db       # mongoDBのデータ保管場所(ローカル側の権限を777へ変更要)
+            - ${BROWNIE_ATELIER_MONGO__MONGO_STORAGE_DIR}/log:/var/log/mongodb      # ログの保管場所(ローカル側の権限を777へ変更要)
+            - ${BROWNIE_ATELIER_MONGO__MONGO_KEY_DIR}:/etc/mongo-key                # ca/tls keyファイルの保管場所
+            - $PWD/mongodb/mongo-conf/${BROWNIE_ATELIER_MONGO__MONGO_CONF}:/etc/mongo-conf/${BROWNIE_ATELIER_MONGO__MONGO_CONF}  # コンフィグファイルの保管場所
+            - $PWD/mongodb/init/create-user.js:/docker-entrypoint-initdb.d/create-user.js
+        # networks:
+        #     - news-clip-network
+        command: --config /etc/mongo-conf/${BROWNIE_ATELIER_MONGO__MONGO_CONF}
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: ${BROWNIE_ATELIER_MONGO__MONGO_INITDB_ROOT_USERNAME}
+            MONGO_INITDB_ROOT_PASSWORD: ${BROWNIE_ATELIER_MONGO__MONGO_INITDB_ROOT_PASSWORD}
+            BROWNIE_ATELIER_MONGO__MONGO_USE_DB: ${BROWNIE_ATELIER_MONGO__MONGO_USE_DB}
+            BROWNIE_ATELIER_MONGO__MONGO_USER: ${BROWNIE_ATELIER_MONGO__MONGO_USER}
+            BROWNIE_ATELIER_MONGO__MONGO_PASS: ${BROWNIE_ATELIER_MONGO__MONGO_PASS}
+
+
+# 既存のネットワークbrownie-atelier-netを利用する。
+networks:
+  default:
+    external:
+      name: brownie-atelier-net

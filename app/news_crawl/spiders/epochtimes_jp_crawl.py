@@ -19,12 +19,13 @@ from news_crawl.items import NewsCrawlItem
 from news_crawl.spiders.common.url_pattern_skip_check import url_pattern_skip_check
 from shared.login_info_get import login_info_get
 
+base_start_url:str = 'https://www.epochtimes.jp/latest'
 
 class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
     name: str = 'epochtimes_jp_crawl'
     allowed_domains: list = ['epochtimes.jp']
     start_urls: list = [
-        'https://www.epochtimes.jp/latest',     # 新着
+        base_start_url,     # 新着
     ]
     _domain_name: str = 'epochtimes_jp'         # 各種処理で使用するドメイン名の一元管理
     _spider_version: float = 1.0
@@ -32,10 +33,14 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
     custom_settings: dict = {
         'DEPTH_LIMIT': 0,
         'DEPTH_STATS_VERBOSE': True,
+        'DOWNLOADER_MIDDLEWARES': {
+            #selenium用 -> カスタムバージョン
+            'news_crawl.scrapy_selenium_custom_middlewares.SeleniumMiddleware': 800,
+        }
     }
 
-    # _crawl_point: dict = {}
-    # '''次回クロールポイント情報 (ExtensionsCrawlSpiderの同項目をオーバーライド必須)'''
+    _crawl_point: dict = {}
+    '''次回クロールポイント情報 (ExtensionsCrawlSpiderの同項目をオーバーライド必須)'''
 
     # rules = (
     #     Rule(LinkExtractor(
@@ -60,11 +65,16 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
         self.url_continued = UrlsContinuedSkipCheck(
             self._crawl_point, self.start_urls[0], self.news_crawl_input.continued)
 
-        # start_urlsを再構築
-        # 例）https://www.epochtimes.jp/latest
-        #     -> https://www.epochtimes.jp/latest/1, https://www.epochtimes.jp/latest/2
-        # page_range = range(self.start_page, self.end_page + 1)
-        # self.start_urls = [f'{self.start_urls[0]}/{p}' for p in page_range]
+        if self.url_continued.continued:
+            # 前回の続きからクロールする場合、start_urlsのページより順にクロールする。
+            pass
+        else:
+            # 前回の続き以外は指定ページの範囲でクロールする。
+            # start_urlsを再構築
+            # 例）https://www.epochtimes.jp/latest
+            #     -> https://www.epochtimes.jp/latest/1, https://www.epochtimes.jp/latest/2
+            page_range = range(self.page_from, self.page_to + 1)
+            self.start_urls = [f'{self.start_urls[0]}/{p}' for p in page_range]
 
     def start_requests(self):
         ''' '''
@@ -75,70 +85,129 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
                     callback=self.parse_start_response_selenium)
         else:
             for url in self.start_urls:
-                yield scrapy.Request(
-                    url=url,
-                    callback=self.parse_start_response)
+                if self.url_continued.continued:
+                    # 前回の続きからクロールする場合
+                    yield scrapy.Request(
+                        url=url,
+                        callback=self.parse_start_response_continued_crawl_mode)
+                else:
+                    # 指定ページの範囲でクロール
+                    yield scrapy.Request(
+                        url=url,
+                        callback=self.parse_start_response_page_crawl_mode)
 
-    def parse_start_response(self, response: TextResponse):
+    def parse_start_response_continued_crawl_mode(self, response: TextResponse):
         ''' (拡張メソッド)
         取得したレスポンスよりDBへ書き込み
         '''
-        while self.page <= self.page_to:
-            self.logger.info(
-                f'=== parse_start_response 現在解析中のURL = {response.url}')
+        self.logger.info(
+            f'=== parse_start_response 現在解析中のURL = {response.url}')
 
+        # ページ内の対象urlを抽出
+        links = response.css(
+            f'.main_content > .left_col > .posts_list .post_title > a[href]::attr(href)').getall()
+        self.logger.info(
+            f'=== ページ内の記事件数 = {len(links)}')
+        # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
+        if not len(links) == 30:
+            self.logger.warning(
+                f'=== parse_start_response 1ページ内で取得できた件数が想定の30件と異なる。確認要。 ( {len(links)} 件)')
+
+        for link in links:
+            # 相対パスの場合絶対パスへ変換。また%エスケープされたものはUTF-8へ変換
+            url: str = urllib.parse.unquote(response.urljoin(link))
+            self.all_urls_list.append(
+                {debug_file__LOC: url, debug_file__LASTMOD: ''})
+
+            # 前回からの続きの指定がある場合、
+            # 前回取得したurlが確認できたら確認済み（削除）にする。
+            if self.url_continued.skip_check(url):
+                pass
+            elif url_pattern_skip_check(url, self.news_crawl_input.url_pattern):
+                pass
+            else:
+                # クロール対象のURL情報を保存
+                self.crawl_urls_list.append(
+                    {self.CRAWL_URLS_LIST__LOC: url, self.CRAWL_URLS_LIST__LASTMOD: '', self.CRAWL_URLS_LIST__SOURCE_URL: response.url})
+                # self.crawl_target_urls.append(url)
+
+        # debug指定がある場合、現ページの３０件をデバック用ファイルに保存
+        start_request_debug_file_generate(
+            self.name, response.url, self.all_urls_list[-30:], self.news_crawl_input.debug)
+
+        if self.url_continued.skip_flg == True:
+            # 前回の10件のurlが全て確認できたら前回以降に追加された記事は全て取得完了と考えられるためクロール対象のURLはすべて取得済みとする。
+            self.logger.info(
+                f'=== parse_start_response 前回の続きまで再取得完了 ({response.url})', )
+            self.page = self.page_to + 1
+            # break
+
+            # クロール対象のURLのリクエストを開始
+            for _ in self.crawl_urls_list:
+                yield scrapy.Request(response.urljoin(_[self.CRAWL_POINT__LOC]), callback=self.parse_news,)
+
+            # 次回向けに1ページ目の10件をcontrollerへ保存する
+            self._crawl_point[self.start_urls[0]] = {
+                self.CRAWL_POINT__URLS: self.all_urls_list[0:self.url_continued.check_count],
+                self.CRAWL_POINT__CRAWLING_START_TIME: self.news_crawl_input.crawling_start_time
+            }
+        else:
+            # 前回の10件のurlがまだ未取得であれば次のページに対してもクロールさせる。
             next_page_url = f'{self.start_urls[0]}/{self.page + 1}'
+            yield scrapy.Request(url=next_page_url, callback=self.parse_start_response_continued_crawl_mode)
 
-            # ページ内の対象urlを抽出
-            links = response.css(
-                f'.main_content > .left_col > .posts_list .post_title > a[href]::attr(href)').getall()
-            self.logger.info(
-                f'=== ページ内の記事件数 = {len(links)}')
-            # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
-            if not len(links) == 30:
-                self.logger.warning(
-                    f'=== parse_start_response 1ページ内で取得できた件数が想定の30件と異なる。確認要。 ( {len(links)} 件)')
+        # # 次のページを読み込む
+        # self.page += 1
+        # if self.page <= self.page_to:
+        #     next_page_url = f'{self.start_urls[0]}/{self.page + 1}'
+        #     # 要素を表示するようスクロールしてクリック
+        #     yield scrapy.Request(url=next_page_url, callback=self.parse_start_response_continued_crawl_mode)
 
-            for link in links:
-                # 相対パスの場合絶対パスへ変換。また%エスケープされたものはUTF-8へ変換
-                url: str = urllib.parse.unquote(response.urljoin(link))
-                self.all_urls_list.append(
-                    {debug_file__LOC: url, debug_file__LASTMOD: ''})
-                # 前回からの続きの指定がある場合、
-                # 前回取得したurlが確認できたら確認済み（削除）にする。
 
-                if self.url_continued.skip_check(url):
-                    pass
-                elif url_pattern_skip_check(url, self.news_crawl_input.url_pattern):
-                    pass
-                else:
-                    # クロール対象のURL情報を保存
-                    self.crawl_urls_list.append(
-                        {self.CRAWL_URLS_LIST__LOC: url, self.CRAWL_URLS_LIST__LASTMOD: '', self.CRAWL_URLS_LIST__SOURCE_URL: response.url})
-                    self.crawl_target_urls.append(url)
+    def parse_start_response_page_crawl_mode(self, response: TextResponse):
+        ''' (拡張メソッド)
+        取得したレスポンスよりDBへ書き込み
+        '''
+        # while self.page <= self.page_to:
+        self.logger.info(
+            f'=== parse_start_response 現在解析中のURL = {response.url}')
 
-            # debug指定がある場合、現ページの３０件をデバック用ファイルに保存
-            start_request_debug_file_generate(
-                self.name, response.url, self.all_urls_list[-30:], self.news_crawl_input.debug)
+        # ページ内の対象urlを抽出
+        links = response.css(
+            f'.main_content > .left_col > .posts_list .post_title > a[href]::attr(href)').getall()
+        self.logger.info(
+            f'=== ページ内の記事件数 = {len(links)}')
+        # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
+        if not len(links) == 30:
+            self.logger.warning(
+                f'=== parse_start_response 1ページ内で取得できた件数が想定の30件と異なる。確認要。 ( {len(links)} 件)')
 
-            # 前回からの続きの指定がある場合、前回の10件のurlが全て確認できたら前回以降に追加された記事は全て取得完了と考えられるため終了する。
-            if self.url_continued.skip_flg == True:
-                self.logger.info(
-                    f'=== parse_start_response 前回の続きまで再取得完了 ({response.url})', )
-                self.page = self.page_to + 1
-                break
+        for link in links:
+            # 相対パスの場合絶対パスへ変換。また%エスケープされたものはUTF-8へ変換
+            url: str = urllib.parse.unquote(response.urljoin(link))
+            self.all_urls_list.append(
+                {debug_file__LOC: url, debug_file__LASTMOD: ''})
 
-            # 次のページを読み込む
-            self.page += 1
-            if self.page <= self.page_to:
-                # 要素を表示するようスクロールしてクリック
-                yield scrapy.Request(url=next_page_url, callback=self.parse_start_response)
+            if url_pattern_skip_check(url, self.news_crawl_input.url_pattern):
+                pass
+            else:
+                # クロール対象のURL情報を保存
+                self.crawl_urls_list.append(
+                    {self.CRAWL_URLS_LIST__LOC: url, self.CRAWL_URLS_LIST__LASTMOD: '', self.CRAWL_URLS_LIST__SOURCE_URL: response.url})
+                # self.crawl_target_urls.append(url)
+                # クロール対象のURLのリクエストを開始      
+                yield scrapy.Request(response.urljoin(url), callback=self.parse_news,)
 
-        # リスト(self.urls_list)に溜めたurlをリクエストへ登録する。
-        for _ in self.crawl_urls_list:
-            yield scrapy.Request(response.urljoin(_[self.CRAWL_POINT__LOC]), callback=self.parse_news,)
-        # 次回向けに1ページ目の10件をcontrollerへ保存する
-        self._crawl_point[self.start_urls[0]] = {
+        # debug指定がある場合、現ページの３０件をデバック用ファイルに保存
+        start_request_debug_file_generate(
+            self.name, response.url, self.all_urls_list[-30:], self.news_crawl_input.debug)
+
+        # # クロール対象のURLのリクエストを開始
+        # for _ in self.crawl_urls_list:
+        #     yield scrapy.Request(response.urljoin(_[self.CRAWL_POINT__LOC]), callback=self.parse_news,)
+
+        # 次回向けに今回の1ページ目(self.page_from)の10件をcontrollerへ保存する
+        self._crawl_point[base_start_url] = {
             self.CRAWL_POINT__URLS: self.all_urls_list[0:self.url_continued.check_count],
             self.CRAWL_POINT__CRAWLING_START_TIME: self.news_crawl_input.crawling_start_time
         }
@@ -173,8 +242,8 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
             password = yaml_file[self.allowed_domains[0]]['password']
 
         try:
-            elem: WebElement = driver.find_element_by_css_selector(
-                '#mypage')  # ログイン前なら存在
+            # elem: WebElement = driver.find_element_by_css_selector('#mypage')  # ログイン前なら存在
+            elem: WebElement = driver.find_element(By.CSS_SELECTOR, '#mypage') # ログイン前なら存在
         except NoSuchElementException:  # 既にログイン中ならpass
             pass
         else:
@@ -193,12 +262,14 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
                 EC.presence_of_element_located((By.CSS_SELECTOR, '#ymkemail')))
             elem.send_keys(user)
             # パスワード入力
-            elem: WebElement = driver.find_element_by_css_selector(
-                '#ymkpassword')
+            elem: WebElement = driver.find_element(By.CSS_SELECTOR, '#ymkpassword')
+            # elem: WebElement = driver.find_element_by_css_selector(
+            #     '#ymkpassword')
             elem.send_keys(password)
             # ログインボタン押下
-            elem: WebElement = driver.find_element_by_css_selector(
-                '#ymk-login-btn')
+            elem: WebElement = driver.find_element(By.CSS_SELECTOR, '#ymk-login-btn')
+            # elem: WebElement = driver.find_element_by_css_selector(
+            #     '#ymk-login-btn')
             elem.click()
 
             # iframeから出る
@@ -230,8 +301,9 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
                 EC.presence_of_element_located((By.CSS_SELECTOR, next_page_element)))
 
             # ページ内の対象urlを抽出
-            _ = driver.find_elements_by_css_selector(
-                f'.main_content > .left_col > .posts_list .post_title > a[href]')
+            _ = driver.find_elements(By.CSS_SELECTOR, f'.main_content > .left_col > .posts_list .post_title > a[href]')
+            # _ = driver.find_elements_by_css_selector(
+            #     f'.main_content > .left_col > .posts_list .post_title > a[href]')
             links: list = [link.get_attribute("href") for link in _]
             self.logger.info(
                 f'=== ページ内の記事件数 = {len(links)}')
@@ -255,7 +327,7 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
                     # クロール対象のURL情報を保存
                     self.crawl_urls_list.append(
                         {self.CRAWL_URLS_LIST__LOC: url, self.CRAWL_URLS_LIST__LASTMOD: '', self.CRAWL_URLS_LIST__SOURCE_URL: driver.current_url})
-                    self.crawl_target_urls.append(url)
+                    # self.crawl_target_urls.append(url)
 
             # debug指定がある場合、現ページの３０件をデバック用ファイルに保存
             #   末尾から３０件と指定しているが、最後のページまで行った場合、前ページ分が混ざるかも、、、どこかで直そう。
@@ -273,8 +345,9 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
             self.page += 1
             if self.page <= self.page_to:
                 # 要素を表示するようスクロールしてクリック
-                elem: WebElement = driver.find_element_by_css_selector(
-                    next_page_element)
+                elem: WebElement = driver.find_element(By.CSS_SELECTOR, next_page_element)
+                # elem: WebElement = driver.find_element_by_css_selector(
+                #     next_page_element)
                 elem.send_keys(Keys.END)    # endキーを押下して画面最下部へ移動
                 elem.click()                # 画面に表示された対象のボタンを押下(表示されていないと押下できない)
 

@@ -19,8 +19,11 @@ def crawling_task(news_crawl_input: NewsCrawlInput, crawling_target_spiders: lis
     '''
     logger = get_run_logger()   # PrefectLogAdapter
 
-    runner = CrawlerRunner(settings=get_project_settings())
+    scrapy_settings = get_project_settings()    # Scrapyの設定（news_crawl.settings.py）を取得
+    runner = CrawlerRunner(settings=scrapy_settings)
     configure_logging(install_root_handler=True)   # Scrapy側でrootロガーへ追加
+    scrapy_logger = logging.getLogger("scrapy")     # ここでscrapyのトップロガーのレベルを設定しないとdebugになってしまう。
+    scrapy_logger.setLevel(logging.getLevelName(scrapy_settings.get('LOG_LEVEL')))
 
     for spider_info in crawling_target_spiders:
         runner.crawl(spider_info['class_instans'], **news_crawl_input.__dict__)

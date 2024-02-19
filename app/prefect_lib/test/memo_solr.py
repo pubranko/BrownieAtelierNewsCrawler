@@ -3,8 +3,8 @@ from datetime import datetime
 
 import requests
 
-#c ='/home/mikuras/004_atelier/002_Brownie/solr-keystore.pem'
-#c ='/home/mikuras/004_atelier/002_Brownie/solr-keystore.pem'
+#c ='~/004_atelier/002_Brownie/solr-keystore.pem'
+#c ='~/004_atelier/002_Brownie/solr-keystore.pem'
 solr = pysolr.Solr(
     'https://localhost:8983/solr/mycore/',
     timeout=10,

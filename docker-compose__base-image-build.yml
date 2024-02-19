@@ -1,0 +1,22 @@
+version: '3.1'
+
+services:
+    brownie_atelier_base:
+        build:
+            context: .
+            dockerfile: dockerfile_base
+            args:
+                ## dockerfile_baseで参照するubuntuイメージのタグ
+                UBUNTU_TAG: ${UBUNTU_TAG}
+                # コンテナー内rootユーザーパスワード
+                CONTAINER_ROOT_PASS: ${CONTAINER_ROOT_PASS}
+                # コンテナ内の一般ユーザー、パスワード
+                CONTAINER_USER: ${CONTAINER_USER}
+                CONTAINER_USER_PASS: ${CONTAINER_USER_PASS}
+                # ブラウニー工房のgitリモートリポジトリー
+                GIT_REMOTE_REPOSITORY: ${GIT_REMOTE_REPOSITORY}
+                # 上記リポジトリーのgitブランチ
+                GIT_BRANCH: ${GIT_BRANCH}
+                # Firefox の gecko driver
+                GECKO_DRIVER: ${GECKO_DRIVER}
+        image: brownie_atelier_base:${BASE_TAG}

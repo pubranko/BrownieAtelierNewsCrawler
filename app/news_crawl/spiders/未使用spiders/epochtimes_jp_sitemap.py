@@ -4,6 +4,7 @@ import re
 
 
 class EpochtimesJpSitemapSpider(ExtensionsSitemapSpider):
+    '''現在未使用'''
     name = 'epochtimes_jp_sitemap'
     allowed_domains = ['epochtimes.jp']
     sitemap_urls: list = [

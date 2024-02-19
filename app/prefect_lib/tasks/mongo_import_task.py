@@ -5,7 +5,7 @@ import glob
 
 from typing import Union
 from prefect import task, get_run_logger
-from shared.settings import DATA_DIR__BACKUP_BASE_DIR
+from shared.settings import DATA__BACKUP_BASE_DIR
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from BrownieAtelierMongo.collection_models.crawler_response_model import CrawlerResponseModel
 from BrownieAtelierMongo.collection_models.scraped_from_response_model import ScrapedFromResponseModel
@@ -32,7 +32,7 @@ def mongo_import_task(
     import_file_name_list: list[str] = []
 
     for collection_name in collections_name:
-        file_path:str = os.path.join(DATA_DIR__BACKUP_BASE_DIR, folder_name, collection_name)
+        file_path:str = os.path.join(DATA__BACKUP_BASE_DIR, folder_name, collection_name)
         if os.path.exists(file_path):
             import_file_name_list.append(collection_name)
             import_files_info[collection_name] =  file_path   # ファイル名(コレクション名)をkey、インポートファイルフルパスをvalueとする。

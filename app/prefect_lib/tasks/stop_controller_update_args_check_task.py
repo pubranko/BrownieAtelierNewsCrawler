@@ -1,5 +1,5 @@
 from prefect import task, get_run_logger
-from pydantic_core import ValidationError
+from pydantic import ValidationError
 from prefect_lib.data_models.stop_controller_update_input import StopControllerUpdateInput
 
 

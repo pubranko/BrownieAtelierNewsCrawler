@@ -1,0 +1,53 @@
+version: '3.1'
+##############################################
+# 本番環境用(tls指定あり)
+##############################################
+services:
+
+    brownie_atelier:
+        image: brownie_atelier_app:${APP_TAG}
+        container_name: brownie_atelier_app
+        # restart: always
+        networks:
+            - default
+        extra_hosts:
+            # - "host.docker.internal:host-gateway"         # windows上のサービスに接続する場合
+            - "host.docker.internal:${HOST_OS_IP_ADDRESS}"  # wsl2上のサービスに接続する場合
+        volumes:
+            - $PWD/data:$HOME/BrownieAtelier/data
+            - ${LOCAL_MONGO_KEY_DIR}:$HOME/mongo-key
+        command: ${CONTAINER_START_COMMAND}
+        environment:
+            # mongoDB接続情報
+            BROWNIE_ATELIER_MONGO__MONGO_SERVER: ${BROWNIE_ATELIER_MONGO__MONGO_SERVER}
+            BROWNIE_ATELIER_MONGO__MONGO_PORT: ${BROWNIE_ATELIER_MONGO__MONGO_PORT}
+            BROWNIE_ATELIER_MONGO__MONGO_USE_DB: ${BROWNIE_ATELIER_MONGO__MONGO_USE_DB}
+            BROWNIE_ATELIER_MONGO__MONGO_USER: ${BROWNIE_ATELIER_MONGO__MONGO_USER}
+            BROWNIE_ATELIER_MONGO__MONGO_PASS: ${BROWNIE_ATELIER_MONGO__MONGO_PASS}
+            BROWNIE_ATELIER_MONGO__MONGO_TLS: ${BROWNIE_ATELIER_MONGO__MONGO_TLS}
+            BROWNIE_ATELIER_MONGO__MONGO_TLS_CA_FILE: ${BROWNIE_ATELIER_MONGO__MONGO_TLS_CA_FILE}
+            BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE: ${BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE}
+            # Brownie atelier noticeの設定 (email)
+            BROWNIE_ATELIER_NOTICE__SMTP_HOST: ${BROWNIE_ATELIER_NOTICE__SMTP_HOST}
+            BROWNIE_ATELIER_NOTICE__SMTP_PORT: ${BROWNIE_ATELIER_NOTICE__SMTP_PORT}
+            BROWNIE_ATELIER_NOTICE__FROM_EMAIL: ${BROWNIE_ATELIER_NOTICE__FROM_EMAIL}
+            BROWNIE_ATELIER_NOTICE__TO_EMAIL: ${BROWNIE_ATELIER_NOTICE__TO_EMAIL}
+            BROWNIE_ATELIER_NOTICE__PASSWORD: ${BROWNIE_ATELIER_NOTICE__PASSWORD}
+            # prefectの環境設定
+            PREFECT_API_URL: ${PREFECT_API_URL}
+            PREFECT__API_KEY: ${PREFECT__API_KEY}
+            PREFECT__WORK_SPACE: ${PREFECT__WORK_SPACE}
+            PREFECT__WORK_POOL: ${PREFECT__WORK_POOL}
+            # PREFECT_LOGGING_LEVEL: "INFO"
+            # PREFECT_LOGGING_SERVER_LEVEL: "INFO"
+            # PREFECT_LOGGING_INTERNAL_LEVEL: "INFO"
+            PREFECT__DATA: "/home/${CONTAINER_USER}/BrownieAtelier/data"
+            # Scrapyの環境設定
+            # SCRAPY_SETTINGS_MODULE: "news_crawl.settings"
+            SCRAPY__LOG_LEVEL: ${SCRAPY__LOG_LEVEL}
+
+# 既存のネットワークbrownie-atelier-netを利用する。
+networks:
+  default:
+    external:
+      name: brownie-atelier-net

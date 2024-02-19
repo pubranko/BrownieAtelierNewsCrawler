@@ -86,7 +86,7 @@ DOWNLOADER_MIDDLEWARES = {
     # 'scrapy_splash.SplashCookiesMiddleware': 723,
     # 'scrapy_splash.SplashMiddleware': 725,
     #selenium用 -> カスタムバージョン
-    'news_crawl.scrapy_selenium_custom_middlewares.SeleniumMiddleware': 800,
+    # 'news_crawl.scrapy_selenium_custom_middlewares.SeleniumMiddleware': 800,
     #selenium用
     #'scrapy_selenium.SeleniumMiddleware': 800,
 
@@ -228,8 +228,8 @@ RETRY_ENABLED = True
 RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408, 429]
 
 # 排他制御用のワークディレクトリ設定
-from shared.settings import DATA_DIR
-EXCLUSIVE_WORK = os.path.join(DATA_DIR, 'exclusive_work')
+from shared.settings import DATA
+EXCLUSIVE_WORK = os.path.join(DATA, 'exclusive_work')
 
 
 '''デフォルトセッティングのパス

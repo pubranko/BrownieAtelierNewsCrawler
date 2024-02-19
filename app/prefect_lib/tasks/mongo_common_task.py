@@ -2,7 +2,7 @@ import os
 from datetime import datetime, date, time
 from dateutil.relativedelta import relativedelta
 from prefect import task, get_run_logger
-from shared.settings import TIMEZONE, DATA_DIR__BACKUP_BASE_DIR
+from shared.settings import TIMEZONE, DATA__BACKUP_BASE_DIR
 from prefect_lib.flows import START_TIME
 
 
@@ -44,7 +44,7 @@ def mongo_common_task(
     end_period_yyyy_mm: str = period_to.strftime('%Y-%m')
 
     folder_name:str = f'{pre}{start_period_yyyy_mm}_{end_period_yyyy_mm}{suf}'
-    dir_path = os.path.join(DATA_DIR__BACKUP_BASE_DIR, folder_name)
+    dir_path = os.path.join(DATA__BACKUP_BASE_DIR, folder_name)
 
     logger.info(f'=== 結果 : {dir_path} {period_from} {period_to}')
 

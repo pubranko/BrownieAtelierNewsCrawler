@@ -22,6 +22,10 @@ def init_flow():
     logging.getLogger('aiosqlite').setLevel(logging.WARNING)
     logging.getLogger('httpcore').setLevel(logging.WARNING)
     # 不要なhttpxのログを抑制
-    logging.getLogger('httpx').setLevel(logging.INFO)
+    logging.getLogger('httpx').setLevel(logging.WARNING)
+    # 不要なcharset_normalizerのログを抑制
+    logging.getLogger('charset_normalizer').setLevel(logging.WARNING)
+    # 不要なwebsockets.clientのログを抑制
+    logging.getLogger('websockets.client').setLevel(logging.WARNING)
     logger = get_run_logger()   # PrefectLogAdapter
     logger.info(f'=== 保存用ログファイル: {os.environ.get("SCRAPY__LOG_FILE")}')

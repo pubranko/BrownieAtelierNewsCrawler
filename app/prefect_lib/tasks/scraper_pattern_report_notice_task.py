@@ -1,7 +1,7 @@
 import os
 from prefect import task, get_run_logger
 from openpyxl import Workbook
-from shared.settings import DATA_DIR
+from shared.settings import DATA
 
 from prefect_lib.flows import START_TIME
 from prefect_lib.data_models.scraper_pattern_report_input import ScraperPatternReportInput
@@ -16,7 +16,7 @@ def scraper_pattern_report_notice_task(scraper_pattern_report_input: ScraperPatt
 
     # レポートファイルを保存
     file_name: str = 'scraper_pattern_analysis_report.xlsx'
-    file_path = os.path.join(DATA_DIR, file_name)
+    file_path = os.path.join(DATA, file_name)
     workbook.save(file_path)
 
     logger.info(

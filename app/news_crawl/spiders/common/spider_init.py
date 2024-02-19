@@ -15,7 +15,6 @@ if TYPE_CHECKING:  # 型チェック時のみインポート
     from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
     #from news_crawl.spiders.extensions_class.extensions_xml_feed import ExtensionsXmlFeedSpider
 
-from logging import Logger,LoggerAdapter
 def spider_init(
     spider: Union[ExtensionsSitemapSpider, ExtensionsCrawlSpider],
     *args, **kwargs
@@ -23,8 +22,6 @@ def spider_init(
     '''spider共通の初期処理'''
     domain_name: str = spider._domain_name
     spider_name: str = spider.name
-    # logger = logging.getLogger(spider.name)
-    #logger: LoggerAdapter = spider.logger
 
     spider.logger.info(
         f'=== spider_init : {spider_name} 開始')
@@ -33,6 +30,9 @@ def spider_init(
     spider.mongo = MongoModel(spider.logger.logger)     # MongoModelではLoggerAdapterではなくLoggerで定義している。そのためとりあえずLoggerを渡すよう対応中
     # コントローラーモデルを生成
     controller = ControllerModel(spider.mongo)
+    # コントローラーよりクロールポイントを取得し、各スパイダーのクラス変数へ保存
+    spider._crawl_point = controller.crawl_point_get(
+        domain_name, spider.name)
 
     # 引数の保存＆チェックを行う
     spider.news_crawl_input = NewsCrawlInput(**kwargs)

@@ -4,7 +4,7 @@ import json
 import logging
 from logging import Logger
 from typing import Any
-from pydantic_core import ValidationError
+from pydantic import ValidationError
 from prefect import flow, task, get_run_logger
 from prefect.states import State
 from prefect.futures import PrefectFuture
@@ -13,13 +13,10 @@ from prefect_lib.tasks.init_task import init_task
 from prefect_lib.tasks.end_task import end_task
 # from prefect_lib.flows.common_flow import common_flow
 from prefect_lib.flows.init_flow import init_flow
-from shared.settings import DATA_DIR__SCRAPER_INFO_BY_DOMAIN_DIR
+from shared.settings import DATA__SCRAPER_INFO_BY_DOMAIN_DIR
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import ScraperInfoByDomainModel
 from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import ScraperInfoByDomainConst
-
-from shared.settings import LOG_FORMAT, LOG_DATEFORMAT
-from prefect_lib.flows import LOG_FILE_PATH
 
 
 '''
@@ -39,19 +36,19 @@ def scraper_info_by_domain_task(scraper_info_by_domain_files: list, mongo: Mongo
 
     get_files: list = []
     if len(scraper_info_by_domain_files) == 0:
-        path = os.path.join(DATA_DIR__SCRAPER_INFO_BY_DOMAIN_DIR, '*.json')
+        path = os.path.join(DATA__SCRAPER_INFO_BY_DOMAIN_DIR, '*.json')
         get_files = glob.glob(path)
         if len(get_files) == 0:
             # raise ENDRUN(state=state.Failed())
-            raise IOError(f'対象ディレクトリにファイルが見つかりませんでした。ディレクトリにファイルを格納してください。 (ディレクトリ= {DATA_DIR__SCRAPER_INFO_BY_DOMAIN_DIR})')
+            raise IOError(f'対象ディレクトリにファイルが見つかりませんでした。ディレクトリにファイルを格納してください。 (ディレクトリ= {DATA__SCRAPER_INFO_BY_DOMAIN_DIR})')
         else:
             logger.info(
                 f'=== ファイル指定なし → 全ファイル対象 : {get_files}')
     else:
         for file in scraper_info_by_domain_files:
-            file_path = os.path.join(DATA_DIR__SCRAPER_INFO_BY_DOMAIN_DIR, file)
+            file_path = os.path.join(DATA__SCRAPER_INFO_BY_DOMAIN_DIR, file)
             if os.path.exists(file_path):
-                raise IOError(f'対象ディレクトリにファイルが見つかりませんでした。ファイル名に誤りがある可能性があります。 (ディレクトリ= {DATA_DIR__SCRAPER_INFO_BY_DOMAIN_DIR}, ファイル名= {file})')
+                raise IOError(f'対象ディレクトリにファイルが見つかりませんでした。ファイル名に誤りがある可能性があります。 (ディレクトリ= {DATA__SCRAPER_INFO_BY_DOMAIN_DIR}, ファイル名= {file})')
             get_files.append(file_path)
 
 

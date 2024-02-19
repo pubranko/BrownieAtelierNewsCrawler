@@ -9,23 +9,23 @@ from decouple import config, AutoConfig
 TIMEZONE = timezone(timedelta(hours=9), 'JST')
 '''タイムゾーン'''
 
-DATA_DIR = os.path.abspath(str(config('PREFECT__DATA_DIR_PATH', default='data_dir')))
+DATA = os.path.abspath(str(config('PREFECT__DATA', default='../data')))
 '''データ類の保存ベースディレクトリ'''
 
-DATA_DIR__LOGS = os.path.join(DATA_DIR, 'logs')
+DATA__LOGS = os.path.join(DATA, 'logs')
 '''ログの一時保存先'''
-DATA_DIR__BACKUP_BASE_DIR:str = os.path.join(DATA_DIR, 'backup_files')
+DATA__BACKUP_BASE_DIR:str = os.path.join(DATA, 'backup_files')
 '''バックアップファイルを保存するベースディレクトリパス'''
-DATA_DIR__DEBUG_FILE_DIR:str = os.path.join(DATA_DIR, 'debug')
+DATA__DEBUG_FILE_DIR:str = os.path.join(DATA, 'debug')
 '''デバック用ファイルの保存先'''
-DATA_DIR__DIRECT_CRAWL_FILES_DIR:str = os.path.join(DATA_DIR, 'direct_crawl_files')
+DATA__DIRECT_CRAWL_FILES_DIR:str = os.path.join(DATA, 'direct_crawl_files')
 '''ダイレクトクロール用のファイルの格納先'''
-DATA_DIR__SCRAPER_INFO_BY_DOMAIN_DIR:str = os.path.join(DATA_DIR, 'scraper_info_by_domain')
+DATA__SCRAPER_INFO_BY_DOMAIN_DIR:str = os.path.join(DATA, 'scraper_info_by_domain')
 '''ドメイン別スクレイパーファイルの格納先'''
 
-DATA_DIR__LOGIN_INFO:str = os.path.join(DATA_DIR, 'login_info')
+DATA__LOGIN_INFO:str = os.path.join(DATA, 'login_info')
 '''クロール時にログインが必要なサイトのログイン情報の格納先ディレクトリ'''
-DATA_DIR__LOGIN_INFO_YML:str = 'login_info.yml'
+DATA__LOGIN_INFO_YML:str = 'login_info.yml'
 '''クロール時にログインが必要なサイトのログイン情報の格納先ファイル名(yml)'''
 
 PREFECT_LIB__TASK_DIR: Final[str] = 'prefect_lib/task'
