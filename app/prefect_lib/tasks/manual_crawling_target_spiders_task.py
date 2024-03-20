@@ -1,14 +1,18 @@
 from typing import Any
-from prefect import task, get_run_logger
+
+from prefect import get_run_logger, task
 from shared.directory_search_spiders import DirectorySearchSpiders
 
+
 @task
-def manual_crawling_target_spiders_task(spider_names: list[str]) -> list[dict[str, Any]]:
-    '''
+def manual_crawling_target_spiders_task(
+    spider_names: list[str],
+) -> list[dict[str, Any]]:
+    """
     scrapyによるクロールを実行するための対象スパイダー情報の一覧を生成する。
-    '''
-    logger = get_run_logger()   # PrefectLogAdapter
-    logger.info(f'=== 引数 : spider_names={spider_names}')
+    """
+    logger = get_run_logger()  # PrefectLogAdapter
+    logger.info(f"=== 引数 : spider_names={spider_names}")
 
     # threads: list[threading.Thread] = []
     directory_search_spiders = DirectorySearchSpiders()
@@ -28,9 +32,12 @@ def manual_crawling_target_spiders_task(spider_names: list[str]) -> list[dict[st
     # 引数で渡されたスパイダーが存在しなかった場合、エラー情報をログに出力して停止させる
     if len(error_spider_names):
         logger.error(
-            f'=== scrapy crwal run : 指定されたspider_nameは存在しませんでした : {error_spider_names}')
+            f"=== scrapy crwal run : 指定されたspider_nameは存在しませんでした : {error_spider_names}"
+        )
         raise ValueError(error_spider_names)
 
-    crawling_target_spiders:list[dict[str, Any]] = directory_search_spiders.spiders_info_list_get(args_spiders_name)
+    crawling_target_spiders: list[
+        dict[str, Any]
+    ] = directory_search_spiders.spiders_info_list_get(args_spiders_name)
 
-    return  crawling_target_spiders
+    return crawling_target_spiders

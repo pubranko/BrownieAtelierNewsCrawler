@@ -1,38 +1,48 @@
 from __future__ import annotations  # ExtensionsSitemapSpiderの循環参照を回避するため
-from typing import Union, TYPE_CHECKING, Any
-from scrapy.exceptions import CloseSpider
+
+from typing import TYPE_CHECKING, Any, Union
+
+from BrownieAtelierMongo.collection_models.controller_model import \
+    ControllerModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
-from news_crawl.spiders.common.start_request_debug_file_init import start_request_debug_file_init
-from news_crawl.spiders.common.crawling_domain_duplicate_check import CrawlingDomainDuplicatePrevention
-from news_crawl.spiders.common.lastmod_term_skip_check import LastmodTermSkipCheck
-from news_crawl.spiders.common.lastmod_continued_skip_check import LastmodContinuedSkipCheck
 from news_crawl.news_crawl_input import NewsCrawlInput
+from news_crawl.spiders.common.crawling_domain_duplicate_check import \
+    CrawlingDomainDuplicatePrevention
+from news_crawl.spiders.common.lastmod_continued_skip_check import \
+    LastmodContinuedSkipCheck
+from news_crawl.spiders.common.lastmod_term_skip_check import \
+    LastmodTermSkipCheck
+from news_crawl.spiders.common.start_request_debug_file_init import \
+    start_request_debug_file_init
+from scrapy.exceptions import CloseSpider
 from shared.resource_check import resource_check
 
 if TYPE_CHECKING:  # 型チェック時のみインポート
-    from news_crawl.spiders.extensions_class.extensions_sitemap import ExtensionsSitemapSpider
-    from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
-    #from news_crawl.spiders.extensions_class.extensions_xml_feed import ExtensionsXmlFeedSpider
+    from news_crawl.spiders.extensions_class.extensions_crawl import \
+        ExtensionsCrawlSpider
+    from news_crawl.spiders.extensions_class.extensions_sitemap import \
+        ExtensionsSitemapSpider
+
+    # from news_crawl.spiders.extensions_class.extensions_xml_feed import ExtensionsXmlFeedSpider
+
 
 def spider_init(
-    spider: Union[ExtensionsSitemapSpider, ExtensionsCrawlSpider],
-    *args, **kwargs
+    spider: Union[ExtensionsSitemapSpider, ExtensionsCrawlSpider], *args, **kwargs
 ):
-    '''spider共通の初期処理'''
+    """spider共通の初期処理"""
     domain_name: str = spider._domain_name
     spider_name: str = spider.name
 
-    spider.logger.info(
-        f'=== spider_init : {spider_name} 開始')
+    spider.logger.info(f"=== spider_init : {spider_name} 開始")
 
     # MongoDBオープン
-    spider.mongo = MongoModel(spider.logger.logger)     # MongoModelではLoggerAdapterではなくLoggerで定義している。そのためとりあえずLoggerを渡すよう対応中
+    spider.mongo = MongoModel(
+        spider.logger.logger
+    )  # MongoModelではLoggerAdapterではなくLoggerで定義している。そのためとりあえずLoggerを渡すよう対応中
     # コントローラーモデルを生成
     controller = ControllerModel(spider.mongo)
     # コントローラーよりクロールポイントを取得し、各スパイダーのクラス変数へ保存
-    spider._crawl_point = controller.crawl_point_get(
-        domain_name, spider.name)
+    spider._crawl_point = controller.crawl_point_get(domain_name, spider.name)
 
     # 引数の保存＆チェックを行う
     spider.news_crawl_input = NewsCrawlInput(**kwargs)
@@ -44,32 +54,30 @@ def spider_init(
 
     # 同一ドメインへの多重クローリングを防止
     crawling_domain_control = CrawlingDomainDuplicatePrevention()
-    duplicate_check = crawling_domain_control.execution(
-        domain_name)
+    duplicate_check = crawling_domain_control.execution(domain_name)
     if not duplicate_check:
-        raise CloseSpider('同一ドメインへの多重クローリングとなるため中止')
+        raise CloseSpider("同一ドメインへの多重クローリングとなるため中止")
 
     resource: dict = resource_check(spider.logger)
     # CPUチェック
-    if float(str(resource['cpu_percent'])) > 90:
-        spider.logger.warning('=== CPU使用率が90%を超えています。')
+    if float(str(resource["cpu_percent"])) > 90:
+        spider.logger.warning("=== CPU使用率が90%を超えています。")
     # メモリチェック
-    if float(str(resource['memory_percent'])) > 85:
-        spider.logger.warning('=== メモリー使用率が85%を超えています。')
-    elif float(str(resource['memory_percent'])) > 95:
-        raise CloseSpider('=== メモリー使用率が95%を超えたためスパイダーを停止します。')
+    if float(str(resource["memory_percent"])) > 85:
+        spider.logger.warning("=== メモリー使用率が85%を超えています。")
+    elif float(str(resource["memory_percent"])) > 95:
+        raise CloseSpider("=== メモリー使用率が95%を超えたためスパイダーを停止します。")
     # スワップメモリチェック
-    if float(str(resource['swap_memory_percent'])) > 85:
-        spider.logger.warning('=== スワップメモリー使用率が85%を超えています。')
-    elif float(str(resource['swap_memory_percent'])) > 95:
-        raise CloseSpider('=== スワップメモリー使用率が95%を超えたためスパイダーを停止します。')
+    if float(str(resource["swap_memory_percent"])) > 85:
+        spider.logger.warning("=== スワップメモリー使用率が85%を超えています。")
+    elif float(str(resource["swap_memory_percent"])) > 95:
+        raise CloseSpider("=== スワップメモリー使用率が95%を超えたためスパイダーを停止します。")
 
     spider.logger.info(
-        f'=== __init__ : 開始時間({spider.news_crawl_input.crawling_start_time.isoformat()})')
-    spider.logger.info(
-        f'=== __init__ : 引数({kwargs})')
-    spider.logger.info(
-        f'=== __init__ : 今回向けクロールポイント情報 \n {spider._crawl_point}')
+        f"=== __init__ : 開始時間({spider.news_crawl_input.crawling_start_time.isoformat()})"
+    )
+    spider.logger.info(f"=== __init__ : 引数({kwargs})")
+    spider.logger.info(f"=== __init__ : 今回向けクロールポイント情報 \n {spider._crawl_point}")
 
     start_request_debug_file_init(spider, spider.news_crawl_input.debug)
 
@@ -78,7 +86,8 @@ def spider_init(
         spider,
         spider.news_crawl_input.crawling_start_time,
         spider.news_crawl_input.lastmod_term_minutes_from,
-        spider.news_crawl_input.lastmod_term_minutes_to)
+        spider.news_crawl_input.lastmod_term_minutes_to,
+    )
 
     # 前回の続きからクロールする
     spider.lastmod_continued = LastmodContinuedSkipCheck(
@@ -86,4 +95,5 @@ def spider_init(
         spider_name,
         domain_name,
         controller,
-        spider.logger)
+        spider.logger,
+    )

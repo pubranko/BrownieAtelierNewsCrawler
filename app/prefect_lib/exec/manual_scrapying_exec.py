@@ -1,7 +1,7 @@
 from datetime import datetime
-from shared.settings import TIMEZONE
-from prefect_lib.flows.manual_scrapying_flow import manual_scrapying_flow
 
+from prefect_lib.flows.manual_scrapying_flow import manual_scrapying_flow
+from shared.settings import TIMEZONE
 
 manual_scrapying_flow(
     # domain='sankei_com_sitemap',
@@ -32,7 +32,7 @@ manual_scrapying_flow(
 #     # following_processing_execution='Yes',    # 後続処理実行(news_clip_masterへの登録,solrへの登録)
 # ))
 
-'''
+"""
 {
     "domain": "nikkei.com",
     "target_start_time_from": "2024-01-02T14:00:00+09:00",
@@ -48,4 +48,4 @@ manual_scrapying_flow(
 }
 
 
-'''
+"""
