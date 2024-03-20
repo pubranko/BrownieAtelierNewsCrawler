@@ -7,25 +7,32 @@ from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogs
 from shared.resource_check import resource_check
 
 if TYPE_CHECKING:  # 型チェック時のみインポート
-    from news_crawl.spiders.extensions_class.extensions_sitemap import ExtensionsSitemapSpider
-    from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
-    #from news_crawl.spiders.extensions_class.extensions_xml_feed import ExtensionsXmlFeedSpider
+    from news_crawl.spiders.extensions_class.extensions_sitemap import (
+        ExtensionsSitemapSpider,
+    )
+    from news_crawl.spiders.extensions_class.extensions_crawl import (
+        ExtensionsCrawlSpider,
+    )
+
+    # from news_crawl.spiders.extensions_class.extensions_xml_feed import ExtensionsXmlFeedSpider
 
 
 def spider_closed(
     spider: Union[ExtensionsSitemapSpider, ExtensionsCrawlSpider],
 ):
-    '''spider共通の終了処理'''
+    """spider共通の終了処理"""
     stats: MemoryStatsCollector = spider.crawler.stats
 
     if spider.news_crawl_input.crawl_point_non_update:
-        spider.logger.info(
-            '=== closed : 次回クロールポイント情報の更新Skip')
+        spider.logger.info("=== closed : 次回クロールポイント情報の更新Skip")
     else:
         controller = ControllerModel(spider.mongo)
-        controller.crawl_point_update(spider._domain_name, spider.name, spider._crawl_point)
+        controller.crawl_point_update(
+            spider._domain_name, spider.name, spider._crawl_point
+        )
         spider.logger.info(
-            f'=== closed : controllerに次回クロールポイント情報を保存 \n {spider._crawl_point}')
+            f"=== closed : controllerに次回クロールポイント情報を保存 \n {spider._crawl_point}"
+        )
 
     resource_check(spider.logger)
 
@@ -37,8 +44,8 @@ def spider_closed(
         spider.allowed_domains[0],
         spider.name,
         stats,
-        spider.crawl_urls_list,)
-
+        spider.crawl_urls_list,
+    )
 
     spider.mongo.close()
-    spider.logger.info(f'=== Spider closed: {spider.name}')
+    spider.logger.info(f"=== Spider closed: {spider.name}")

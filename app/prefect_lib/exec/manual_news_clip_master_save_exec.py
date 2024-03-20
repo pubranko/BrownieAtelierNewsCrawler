@@ -1,6 +1,8 @@
 from datetime import datetime
 from shared.settings import TIMEZONE
-from prefect_lib.flows.manual_news_clip_master_save_flow import manual_news_clip_master_save_flow
+from prefect_lib.flows.manual_news_clip_master_save_flow import (
+    manual_news_clip_master_save_flow,
+)
 
 
 manual_news_clip_master_save_flow(
@@ -9,7 +11,6 @@ manual_news_clip_master_save_flow(
     target_start_time_from=datetime(2023, 5, 31, 20, 0, 0, 0).astimezone(TIMEZONE),
     target_start_time_to=datetime(2023, 5, 31, 23, 59, 0, 0).astimezone(TIMEZONE),
 )
-
 
 
 # from datetime import datetime

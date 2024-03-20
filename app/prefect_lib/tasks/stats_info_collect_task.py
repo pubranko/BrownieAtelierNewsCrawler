@@ -13,12 +13,14 @@ from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogs
 
 
 @task
-def stats_info_collect_task(mongo: MongoModel, stats_info_collect_input: StatsInfoCollectInput) -> StatsInfoCollectData:
-    '''
+def stats_info_collect_task(
+    mongo: MongoModel, stats_info_collect_input: StatsInfoCollectInput
+) -> StatsInfoCollectData:
+    """
     クローラーログより取得したスパイダーレポートをクローラーログの集計用クラスへ流し込みデータフレームを生成する。
     生成したデータフレームクラスを返す。
-    '''
-    logger = get_run_logger()   # PrefectLogAdapter
+    """
+    logger = get_run_logger()  # PrefectLogAdapter
 
     # クローラーログの集計用クラス（データフレーム）初期化
     stats_info_collect_data = StatsInfoCollectData()
@@ -28,28 +30,27 @@ def stats_info_collect_task(mongo: MongoModel, stats_info_collect_input: StatsIn
     base_date_from, base_date_to = stats_info_collect_input.base_date_get(START_TIME)
     conditions: list = []
     conditions.append(
-        {CrawlerLogsModel.RECORD_TYPE: CrawlerLogsModel.RECORD_TYPE__SPIDER_REPORTS})
-    conditions.append(
-        {CrawlerLogsModel.START_TIME: {'$gte': base_date_from}})
-    conditions.append(
-        {CrawlerLogsModel.START_TIME: {'$lt': base_date_to}})
+        {CrawlerLogsModel.RECORD_TYPE: CrawlerLogsModel.RECORD_TYPE__SPIDER_REPORTS}
+    )
+    conditions.append({CrawlerLogsModel.START_TIME: {"$gte": base_date_from}})
+    conditions.append({CrawlerLogsModel.START_TIME: {"$lt": base_date_to}})
 
-    filter: dict = {'$and': conditions}
+    filter: dict = {"$and": conditions}
 
     count = crawler_logs.count(filter=filter)
     crawler_logs_records: Cursor = crawler_logs.find(
         filter=filter,
         # idやcrawl_urls_listは不要
-        projection={'_id': 0, crawler_logs.CRAWL_URLS_LIST: 0}  # 不要項目を除外して取得
+        projection={"_id": 0, crawler_logs.CRAWL_URLS_LIST: 0},  # 不要項目を除外して取得
     )
-    logger.info(
-        f'=== クローラーログ対象件数({count})')
+    logger.info(f"=== クローラーログ対象件数({count})")
 
     # クローラーログより取得したスパイダーレポートをクローラーログの集計用クラスへ流し込みデータフレームを生成する。
     for crawler_logs_record in crawler_logs_records:
         stats_info_collect_data.spider_stats_store(
             timezone_recovery(crawler_logs_record[CrawlerLogsModel.START_TIME]),
             crawler_logs_record[CrawlerLogsModel.SPIDER_NAME],
-            crawler_logs_record[CrawlerLogsModel.STATS])
+            crawler_logs_record[CrawlerLogsModel.STATS],
+        )
 
     return stats_info_collect_data

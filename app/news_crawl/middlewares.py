@@ -55,7 +55,7 @@ class NewsCrawlSpiderMiddleware:
             yield r
 
     def spider_opened(self, spider):
-        spider.logger.info(f'Spider opened: {spider.name}')
+        spider.logger.info(f"Spider opened: {spider.name}")
 
 
 class NewsCrawlDownloaderMiddleware:
@@ -74,9 +74,9 @@ class NewsCrawlDownloaderMiddleware:
         # Called for each request that goes through the downloader
         # middleware.
 
-        #print('=== ミドルウェア：process_request url : ', request.url)
-        #print(request.__dict__.keys())
-        #中身：dict_keys(['_encoding', 'method', '_url', '_body', 'priority', 'callback', 'errback', 'cookies', 'headers', 'dont_filter', '_meta', '_cb_kwargs', 'flags'])
+        # print('=== ミドルウェア：process_request url : ', request.url)
+        # print(request.__dict__.keys())
+        # 中身：dict_keys(['_encoding', 'method', '_url', '_body', 'priority', 'callback', 'errback', 'cookies', 'headers', 'dont_filter', '_meta', '_cb_kwargs', 'flags'])
 
         # Must either:
         # - return None: continue processing this request
@@ -90,7 +90,7 @@ class NewsCrawlDownloaderMiddleware:
         # Called with the response returned from the downloader.
         # print('=== ミドルウェア：process_response url : ', response.url)
         # print(request.__dict__.keys())
-        #print(print(vars(response)))
+        # print(print(vars(response)))
 
         # Must either;
         # - return a Response object
@@ -109,4 +109,4 @@ class NewsCrawlDownloaderMiddleware:
         pass
 
     def spider_opened(self, spider):
-        spider.logger.info(f'Spider opened: {spider.name}')
+        spider.logger.info(f"Spider opened: {spider.name}")

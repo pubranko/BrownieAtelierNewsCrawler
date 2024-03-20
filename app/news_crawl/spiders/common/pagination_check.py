@@ -1,18 +1,23 @@
 import re
 from urllib.parse import urlparse, parse_qs
 from urllib.parse import ParseResult
-from logging import Logger,LoggerAdapter
+from logging import Logger, LoggerAdapter
 
 
-class PaginationCheck():
-
+class PaginationCheck:
     # ページネーションで追加済みのurlリスト
     pagination_selected_urls: set[str] = set()
 
-    def check(self, link_url: str, crawl_target_urls: list, logger: LoggerAdapter, spider_name: str) -> bool:
-        '''
+    def check(
+        self,
+        link_url: str,
+        crawl_target_urls: list,
+        logger: LoggerAdapter,
+        spider_name: str,
+    ) -> bool:
+        """
         チェックしたいurl(link_url)に対して、既にクロール対象となったurl(crawl_target_urls)の別ページかチェックを行う。
-        '''
+        """
         check_flg: bool = False  # ページネーションのリンクの場合、Trueとする。
         # チェック対象のurlを解析
         link_parse: ParseResult = urlparse(link_url)
@@ -39,32 +44,34 @@ class PaginationCheck():
                     # パスの末尾にページが付与されているケースの場合、追加リクエストの対象とする。
                     # 例）https://www.sankei.com/article/20210321-VW5B7JJG7JKCBG5J6REEW6ZTBM/
                     #     https://www.sankei.com/article/20210321-VW5B7JJG7JKCBG5J6REEW6ZTBM/2/
-                    _ = re.compile(r'/[0-9]{1,3}/*$')
+                    _ = re.compile(r"/[0-9]{1,3}/*$")
                     if re.search(_, link_parse.path):
                         # pathの末尾のページ情報を削除
                         # 例）〜OYT1T50226/2/ -> 〜OYT1T50226
-                        link_type1 = _.sub('', link_parse.path)
+                        link_type1 = _.sub("", link_parse.path)
                         # 末尾のスラッシュがあれば削除
-                        _ = re.compile(r'/$')
-                        crawl_type1 = _.sub('', crawl_target_parse.path)
+                        _ = re.compile(r"/$")
+                        crawl_type1 = _.sub("", crawl_target_parse.path)
                         # ページ情報部を除いて比較し一致した場合
                         if crawl_type1 == link_type1:
                             logger.info(
-                                f'=== {spider_name} ページネーション(type1) : {link_url}')
+                                f"=== {spider_name} ページネーション(type1) : {link_url}"
+                            )
                             check_flg = True
 
                     # 拡張子除去後の末尾にページが付与されているケースの場合、追加リクエストの対象とする。
                     # 例）https://www.sankei.com/politics/news/210521/plt2105210030-n1.html
                     #     https://www.sankei.com/politics/news/210521/plt2105210030-n2.html
-                    _ = re.compile(r'[^0-9][0-9]{1,3}\.(html|htm)$')
+                    _ = re.compile(r"[^0-9][0-9]{1,3}\.(html|htm)$")
                     if re.search(_, link_parse.path):
                         # 例）〜n1.html -> 〜n
-                        link_type2 = _.sub('', link_parse.path)
-                        crawl_type2 = _.sub('', crawl_target_parse.path)
+                        link_type2 = _.sub("", link_parse.path)
+                        crawl_type2 = _.sub("", crawl_target_parse.path)
                         # 末尾の拡張子やページ情報を除いて比較し一致した場合
                         if crawl_type2 == link_type2:
                             logger.info(
-                                f'=== {spider_name} ページネーション(type2) : {link_url}')
+                                f"=== {spider_name} ページネーション(type2) : {link_url}"
+                            )
                             check_flg = True
 
                 # クエリーにページが付与されているケースの場合、追加リクエストの対象とする。
@@ -79,12 +86,13 @@ class PaginationCheck():
                 #     https://webronza.asahi.com/national/articles/2022042000004.html?page=2&m=n&g=h
                 if crawl_target_parse.path == link_parse.path:
                     # リンクのクエリーにページ指定と思われるkeyの存在チェック （複数該当することは無いことを祈る、、、）
-                    page_keys = ['page', 'pagination', 'pager', 'p']
+                    page_keys = ["page", "pagination", "pager", "p"]
                     link_query_selected_items: list[tuple] = []
                     for link_query_key, link_query_value in link_query.items():
                         if link_query_key in page_keys:
                             link_query_selected_items.append(
-                                (link_query_key, link_query_value))
+                                (link_query_key, link_query_value)
+                            )
 
                     # linkにpege系クエリーがあった場合、
                     for link_query_selected_item in link_query_selected_items:
@@ -93,14 +101,18 @@ class PaginationCheck():
                             # keyが一致
                             if link_query_selected_item[0] in same_path_query:
                                 # valueが一致(同一ページ)した場合は対象外
-                                if link_query_selected_item[1][0] == same_path_query[link_query_selected_item[0]][0]:
+                                if (
+                                    link_query_selected_item[1][0]
+                                    == same_path_query[link_query_selected_item[0]][0]
+                                ):
                                     check_flg = False
                                 # page=1は対象外
                                 elif link_query_selected_item[1][0] == str(1):
                                     check_flg = False
                         if check_flg:
                             logger.info(
-                                f'=== {spider_name} ページネーション(type3) : {link_url}')
+                                f"=== {spider_name} ページネーション(type3) : {link_url}"
+                            )
 
         # クロール対象となったurlを保存
         if check_flg:

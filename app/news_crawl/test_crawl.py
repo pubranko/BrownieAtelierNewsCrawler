@@ -4,10 +4,10 @@ from scrapy.utils.project import get_project_settings
 
 
 args = sys.argv
-#args 
+# args
 
-#execute(argv=['scrapy','crawl', args[1]])
+# execute(argv=['scrapy','crawl', args[1]])
 try:
     execute(argv=args[1:])
 except:
-    print('=== 例外が発生した、、、')
+    print("=== 例外が発生した、、、")

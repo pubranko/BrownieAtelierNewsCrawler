@@ -18,35 +18,33 @@ from BrownieAtelierStorage.models.controller_blob_model import ControllerBlobMod
 from BrownieAtelierStorage.settings import AZURE_STORAGE__CONNECTION_STRING
 
 
-@flow(
-    name='Regular observation flow',
-    task_runner=SequentialTaskRunner())
+@flow(name="Regular observation flow", task_runner=SequentialTaskRunner())
 def regular_observation_flow():
     init_flow()
 
     # ロガー取得
-    logger = get_run_logger()   # PrefectLogAdapter
+    logger = get_run_logger()  # PrefectLogAdapter
     # 初期処理
     init_task_result: PrefectFuture = init_task.submit()
 
-    any:Any = init_task_result.get_state()
-    state:State = any
+    any: Any = init_task_result.get_state()
+    state: State = any
     if state.is_completed():
         mongo: MongoModel = init_task_result.result()
 
         try:
             # クローラー用引数を生成、クロール対象スパイダーを生成し、クローリングを実行する。
-            news_crawl_input: NewsCrawlInput = crawling_input_create_task(dict(
-                crawling_start_time = START_TIME,
-                continued = True))
+            news_crawl_input: NewsCrawlInput = crawling_input_create_task(
+                dict(crawling_start_time=START_TIME, continued=True)
+            )
             crawling_target_spiders = regular_observation_task(mongo)
             if len(crawling_target_spiders):
                 crawling_task(news_crawl_input, crawling_target_spiders)
 
                 # クロール結果のスクレイピングを実施
-                scrapying_task(mongo, '', [], START_TIME, START_TIME)
+                scrapying_task(mongo, "", [], START_TIME, START_TIME)
                 # スクレイピング結果をニュースクリップマスターへ保存
-                news_clip_master_save_task(mongo,'', START_TIME, START_TIME)
+                news_clip_master_save_task(mongo, "", START_TIME, START_TIME)
 
                 # 定期観測終了後コンテナーを停止させる。
                 #   azure functions BLOBトリガーを動かすためのBLOBファイルを削除＆作成を実行する。
@@ -58,11 +56,10 @@ def regular_observation_flow():
 
         except Exception as e:
             # 例外をキャッチしてログ出力等の処理を行う
-            logger.error(f'=== {e}')
+            logger.error(f"=== {e}")
         finally:
             # 後続の処理を実行する
             end_task(mongo)
 
     else:
-        logger.error(f'=== init_taskが正常に完了しなかったため、後続タスクの実行を中止しました。')
-
+        logger.error(f"=== init_taskが正常に完了しなかったため、後続タスクの実行を中止しました。")

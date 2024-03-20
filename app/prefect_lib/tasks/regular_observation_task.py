@@ -4,12 +4,13 @@ from shared.directory_search_spiders import DirectorySearchSpiders
 from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 
+
 @task
-def regular_observation_task(mongo:MongoModel) -> list[dict[str, Any]]:
-    '''
+def regular_observation_task(mongo: MongoModel) -> list[dict[str, Any]]:
+    """
     scrapyによるクロールを実行するための対象スパイダー情報の一覧を生成する。
-    '''
-    logger = get_run_logger()   # PrefectLogAdapter
+    """
+    logger = get_run_logger()  # PrefectLogAdapter
 
     directory_search_spiders = DirectorySearchSpiders()
     controller: ControllerModel = ControllerModel(mongo)
@@ -24,22 +25,27 @@ def regular_observation_task(mongo:MongoModel) -> list[dict[str, Any]]:
     for spider_name in directory_search_spiders.spiders_name_list_get():
         spider_info = directory_search_spiders.spiders_info[spider_name]
         crawl_point_record: dict = controller.crawl_point_get(
-            spider_info[directory_search_spiders.DOMAIN_NAME], spider_name,)
+            spider_info[directory_search_spiders.DOMAIN_NAME],
+            spider_name,
+        )
 
         domain = spider_info[directory_search_spiders.DOMAIN]
         if domain in stop_domain:
             logger.info(
-                f'=== Stop domainの指定によりクロール中止 : ドメイン({domain}) : spider_name({spider_name})')
+                f"=== Stop domainの指定によりクロール中止 : ドメイン({domain}) : spider_name({spider_name})"
+            )
         elif not spider_name in spider_name_set:
             logger.info(
-                f'=== 定期観測に登録がないスパイダーは対象外 : ドメイン({domain}) : spider_name({spider_name})')
+                f"=== 定期観測に登録がないスパイダーは対象外 : ドメイン({domain}) : spider_name({spider_name})"
+            )
         elif len(crawl_point_record) == 0:
             logger.info(
-                f'=== クロールポイントがない（初回未実行）スパイダーは対象外 : ドメイン({domain}) : spider_name({spider_name})')
+                f"=== クロールポイントがない（初回未実行）スパイダーは対象外 : ドメイン({domain}) : spider_name({spider_name})"
+            )
         else:
             crawling_target_spiders.append(spider_info)
             crawling_target_spiders_name.append(spider_name)
 
-    logger.info(f'=== 定期観測対象スパイダー : {str(crawling_target_spiders_name)}')
+    logger.info(f"=== 定期観測対象スパイダー : {str(crawling_target_spiders_name)}")
 
     return crawling_target_spiders
