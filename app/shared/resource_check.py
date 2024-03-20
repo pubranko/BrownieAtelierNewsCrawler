@@ -1,8 +1,9 @@
-import sys
-import psutil
 import logging
-from typing import Union
+import sys
 from logging import Logger, LoggerAdapter
+from typing import Union
+
+import psutil
 
 
 def resource_check(logger: Union[Logger, LoggerAdapter]) -> dict:

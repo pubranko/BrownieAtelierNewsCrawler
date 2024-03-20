@@ -1,20 +1,20 @@
 """This module contains the ``SeleniumMiddleware`` scrapy middleware"""
 import os
-from typing import Optional
-from importlib import import_module
-
 # from logging import logger,INFO
 import subprocess
+from importlib import import_module
+from typing import Optional
+
 from scrapy import signals
 from scrapy.exceptions import NotConfigured
 from scrapy.http import HtmlResponse
 from scrapy_selenium.http import SeleniumRequest
 from selenium import webdriver
-from selenium.webdriver.firefox.webdriver import WebDriver
 from selenium.webdriver import FirefoxOptions
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
+from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.firefox.webdriver import WebDriver
+from selenium.webdriver.support.wait import WebDriverWait
 
 
 class SeleniumMiddleware:

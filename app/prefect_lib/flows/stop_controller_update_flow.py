@@ -1,18 +1,21 @@
-from typing import Final, Any
-from prefect import flow, task, get_run_logger
-from prefect.states import State
-from prefect.futures import PrefectFuture
-from prefect.task_runners import SequentialTaskRunner
-from prefect_lib.tasks.init_task import init_task
-from prefect_lib.tasks.end_task import end_task
-from prefect_lib.flows.init_flow import init_flow
+from typing import Any, Final
+
+from BrownieAtelierMongo.collection_models.controller_model import \
+    ControllerModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
-from prefect_lib.flows.stop_controller_update_const import StopControllerUpdateConst
-from prefect_lib.tasks.stop_controller_update_task import stop_controller_update_task
-from prefect_lib.tasks.stop_controller_update_args_check_task import (
-    stop_controller_update_args_check_task,
-)
+from prefect import flow, get_run_logger, task
+from prefect.futures import PrefectFuture
+from prefect.states import State
+from prefect.task_runners import SequentialTaskRunner
+from prefect_lib.flows.init_flow import init_flow
+from prefect_lib.flows.stop_controller_update_const import \
+    StopControllerUpdateConst
+from prefect_lib.tasks.end_task import end_task
+from prefect_lib.tasks.init_task import init_task
+from prefect_lib.tasks.stop_controller_update_args_check_task import \
+    stop_controller_update_args_check_task
+from prefect_lib.tasks.stop_controller_update_task import \
+    stop_controller_update_task
 
 
 @flow(

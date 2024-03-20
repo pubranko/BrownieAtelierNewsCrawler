@@ -1,8 +1,9 @@
 from datetime import datetime
-from shared.settings import TIMEZONE
 
 # from prefect_lib.flow.scraper_pattern_report_flow import flow
-from prefect_lib.flows.scraper_pattern_report_flow import scraper_pattern_report_flow
+from prefect_lib.flows.scraper_pattern_report_flow import \
+    scraper_pattern_report_flow
+from shared.settings import TIMEZONE
 
 # flow.run(parameters=dict(
 #     report_term='daily',

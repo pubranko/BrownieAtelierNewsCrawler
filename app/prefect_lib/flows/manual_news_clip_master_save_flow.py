@@ -1,14 +1,16 @@
-from typing import Optional, Any
 from datetime import datetime
-from prefect import flow, get_run_logger
-from prefect.states import State
-from prefect.futures import PrefectFuture
-from prefect.task_runners import SequentialTaskRunner
-from prefect_lib.tasks.init_task import init_task
-from prefect_lib.tasks.end_task import end_task
-from prefect_lib.flows.init_flow import init_flow
-from prefect_lib.tasks.news_clip_master_save_task import news_clip_master_save_task
+from typing import Any, Optional
+
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
+from prefect import flow, get_run_logger
+from prefect.futures import PrefectFuture
+from prefect.states import State
+from prefect.task_runners import SequentialTaskRunner
+from prefect_lib.flows.init_flow import init_flow
+from prefect_lib.tasks.end_task import end_task
+from prefect_lib.tasks.init_task import init_task
+from prefect_lib.tasks.news_clip_master_save_task import \
+    news_clip_master_save_task
 
 
 @flow(name="Manual news clip master save flow", task_runner=SequentialTaskRunner())

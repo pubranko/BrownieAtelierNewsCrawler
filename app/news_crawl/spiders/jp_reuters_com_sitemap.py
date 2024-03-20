@@ -1,10 +1,11 @@
 import sys
-from scrapy.exceptions import CloseSpider
-from news_crawl.spiders.extensions_class.extensions_sitemap import (
-    ExtensionsSitemapSpider,
-)
 from datetime import timedelta
-from news_crawl.spiders.common.term_days_Calculation import term_days_Calculation
+
+from news_crawl.spiders.common.term_days_Calculation import \
+    term_days_Calculation
+from news_crawl.spiders.extensions_class.extensions_sitemap import \
+    ExtensionsSitemapSpider
+from scrapy.exceptions import CloseSpider
 
 
 class JpReutersComSitemapSpider(ExtensionsSitemapSpider):

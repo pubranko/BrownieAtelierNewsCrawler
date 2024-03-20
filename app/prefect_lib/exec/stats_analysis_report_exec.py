@@ -1,7 +1,9 @@
 from datetime import date
-from prefect_lib.data_models.stats_analysis_report_input import StatsAnalysisReportConst
-from prefect_lib.flows.stats_analysis_report_flow import stats_analysis_report_flow
 
+from prefect_lib.data_models.stats_analysis_report_input import \
+    StatsAnalysisReportConst
+from prefect_lib.flows.stats_analysis_report_flow import \
+    stats_analysis_report_flow
 
 """基準日(0:00:00)〜翌日(0:00:00)までの期間が対象となる。"""
 stats_analysis_report_flow(

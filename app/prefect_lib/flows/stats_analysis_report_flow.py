@@ -1,28 +1,26 @@
-from typing import Optional, Any
 from datetime import date
-from prefect import flow, get_run_logger
-from prefect.states import State
-from prefect.futures import PrefectFuture
-from prefect.task_runners import SequentialTaskRunner
+from typing import Any, Optional
 
-from prefect_lib.tasks.init_task import init_task
-from prefect_lib.tasks.end_task import end_task
-from prefect_lib.flows.init_flow import init_flow
-from prefect_lib.tasks.stats_analysis_report_args_check_task import (
-    stats_analysis_report_args_check_task,
-)
-from prefect_lib.tasks.stats_analysis_report_data_frame_task import (
-    stats_analysis_report_data_frame_task,
-)
-from prefect_lib.tasks.stats_analysis_report_create_task import (
-    stats_analysis_report_create_task,
-)
-from prefect_lib.tasks.stats_analysis_report_notice_task import (
-    stats_analysis_report_notice_task,
-)
-from prefect_lib.data_models.stats_analysis_report_excel import StatsAnalysisReportExcel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from prefect_lib.data_models.stats_analysis_report_input import StatsAnalysisReportConst
+from prefect import flow, get_run_logger
+from prefect.futures import PrefectFuture
+from prefect.states import State
+from prefect.task_runners import SequentialTaskRunner
+from prefect_lib.data_models.stats_analysis_report_excel import \
+    StatsAnalysisReportExcel
+from prefect_lib.data_models.stats_analysis_report_input import \
+    StatsAnalysisReportConst
+from prefect_lib.flows.init_flow import init_flow
+from prefect_lib.tasks.end_task import end_task
+from prefect_lib.tasks.init_task import init_task
+from prefect_lib.tasks.stats_analysis_report_args_check_task import \
+    stats_analysis_report_args_check_task
+from prefect_lib.tasks.stats_analysis_report_create_task import \
+    stats_analysis_report_create_task
+from prefect_lib.tasks.stats_analysis_report_data_frame_task import \
+    stats_analysis_report_data_frame_task
+from prefect_lib.tasks.stats_analysis_report_notice_task import \
+    stats_analysis_report_notice_task
 
 StatsAnalysisReportConst.REPORT_TERM__WEEKLY
 StatsAnalysisReportConst.TOTALLING_TERM__DAILY

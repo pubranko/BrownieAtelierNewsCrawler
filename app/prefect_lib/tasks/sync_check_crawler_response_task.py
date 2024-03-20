@@ -1,18 +1,16 @@
 from datetime import datetime
 from typing import Any, Optional
-from pymongo.cursor import Cursor
-from prefect import task, get_run_logger
 
+from BrownieAtelierMongo.collection_models.asynchronous_report_model import \
+    AsynchronousReportModel
+from BrownieAtelierMongo.collection_models.crawler_logs_model import \
+    CrawlerLogsModel
+from BrownieAtelierMongo.collection_models.crawler_response_model import \
+    CrawlerResponseModel
+from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
+from prefect import get_run_logger, task
 from prefect_lib.flows import START_TIME
-from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.asynchronous_report_model import (
-    AsynchronousReportModel,
-)
-from BrownieAtelierMongo.collection_models.crawler_response_model import (
-    CrawlerResponseModel,
-)
-from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
-from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
+from pymongo.cursor import Cursor
 from shared.timezone_recovery import timezone_recovery
 
 

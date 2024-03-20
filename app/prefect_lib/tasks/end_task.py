@@ -1,17 +1,16 @@
 import os
 import re
-from typing import Union
 from logging import Logger, LoggerAdapter
-from prefect import task
-from prefect import get_run_logger
-from shared.resource_check import resource_check
-from prefect_lib.flows import START_TIME, LOG_FILE_PATH
+from typing import Any, Union
+
+from BrownieAtelierMongo.collection_models.crawler_logs_model import \
+    CrawlerLogsModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from BrownieAtelierNotice.mail_send import mail_send
-from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
+from prefect import get_run_logger, task
 from prefect.context import FlowRunContext
-
+from prefect_lib.flows import LOG_FILE_PATH, START_TIME
+from shared.resource_check import resource_check
 
 """
 mongoDBのインポートを行う。
@@ -76,12 +75,15 @@ def end_task(mongo: MongoModel):
             }
         )
 
+    from prefect.flows import Flow
+
     # ロガー取得
     logger = get_run_logger()  # PrefectLogAdapter
     flow_context = FlowRunContext.get()
     if flow_context:
-        # flow_name = flow_context.flow_run.name
-        flow_name = flow_context.flow.name
+        any: Any = flow_context.flow
+        flow: Flow = any
+        flow_name = flow.name
         # print(f'=== flow名確認! {flow_context.flow_run.name}  :  {flow_context.flow.name}')
         logger.info(f"=== end_task開始:  {START_TIME}, {LOG_FILE_PATH}, {flow_name}")
     else:

@@ -1,15 +1,18 @@
-import pandas as pd
 from copy import deepcopy
 from datetime import datetime
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal
 from typing import Any, Final
+
+import pandas as pd
 from openpyxl import Workbook
-from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.cell import Cell
 from openpyxl.chart.bar_chart import BarChart
-from openpyxl.styles import PatternFill, Border, Side, Alignment, Protection, Font
+from openpyxl.styles import (Alignment, Border, Font, PatternFill, Protection,
+                             Side)
 from openpyxl.utils import get_column_letter
-from prefect_lib.data_models.stats_info_collect_data import StatsInfoCollectData
+from openpyxl.worksheet.worksheet import Worksheet
+from prefect_lib.data_models.stats_info_collect_data import \
+    StatsInfoCollectData
 
 
 class StatsAnalysisReportExcel:

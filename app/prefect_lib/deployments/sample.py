@@ -1,14 +1,12 @@
 from typing import Any
-from prefect_lib.flows.scraper_info_uploader_flow import scraper_info_by_domain_flow
-from prefect.deployments import Deployment
-from prefect.server import schemas
-from prefect.server.schemas.schedules import (
-    IntervalSchedule,
-    CronSchedule,
-    RRuleSchedule,
-)
-from shared.settings import TIMEZONE
 
+from prefect.deployments.deployments import Deployment
+from prefect.server import schemas
+from prefect.server.schemas.schedules import (CronSchedule, IntervalSchedule,
+                                              RRuleSchedule)
+from prefect_lib.flows.scraper_info_uploader_flow import \
+    scraper_info_by_domain_flow
+from shared.settings import TIMEZONE
 
 scraper_info_by_domain_flow.flow_run_name
 

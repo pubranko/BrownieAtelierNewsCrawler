@@ -1,10 +1,11 @@
-import os
 import logging
+import os
 from logging import Logger
 from typing import Any
-from shared.settings import LOG_FORMAT, LOG_DATEFORMAT
-from prefect_lib.flows import LOG_FILE_PATH
+
 from prefect import get_run_logger
+from prefect_lib.flows import LOG_FILE_PATH
+from shared.settings import LOG_DATEFORMAT, LOG_FORMAT
 
 
 def init_flow():

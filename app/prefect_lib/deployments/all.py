@@ -8,66 +8,60 @@
 ・Cloudの場合 → prefect config set PREFECT_API_URL="https://api.prefect.cloud/api/accounts/[ACCOUNT-ID]/workspaces/[WORKSPACE-ID]"
 """
 import os
-from decouple import config, AutoConfig
+
+from BrownieAtelierMongo.collection_models.asynchronous_report_model import \
+    AsynchronousReportModel
+from BrownieAtelierMongo.collection_models.controller_model import \
+    ControllerModel
+from BrownieAtelierMongo.collection_models.crawler_logs_model import \
+    CrawlerLogsModel
+from BrownieAtelierMongo.collection_models.crawler_response_model import \
+    CrawlerResponseModel
+from BrownieAtelierMongo.collection_models.news_clip_master_model import \
+    NewsClipMasterModel
+from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
+    ScrapedFromResponseModel
+from BrownieAtelierMongo.collection_models.stats_info_collect_model import \
+    StatsInfoCollectModel
+from decouple import AutoConfig, config
 from prefect.deployments.deployments import Deployment
-from prefect.server.schemas.schedules import (
-    CronSchedule,
-    IntervalSchedule,
-    RRuleSchedule,
-)
-from prefect.settings import PREFECT_HOME, PREFECT_API_URL
-
-# crawl-scrape系
-from prefect_lib.flows.manual_crawling_flow import manual_crawling_flow
-from prefect_lib.flows.manual_scrapying_flow import manual_scrapying_flow
-from prefect_lib.flows.manual_news_clip_master_save_flow import (
-    manual_news_clip_master_save_flow,
-)
-from prefect_lib.flows.first_observation_flow import first_observation_flow
-from prefect_lib.flows.regular_observation_flow import regular_observation_flow
-
-# mongodb系
-from prefect_lib.flows.mongo_delete_selector_flow import mongo_delete_selector_flow
-from prefect_lib.flows.mongo_export_selector_flow import mongo_export_selector_flow
-from prefect_lib.flows.mongo_import_selector_flow import mongo_import_selector_flow
-
-# register系
-from prefect_lib.flows.scraper_info_uploader_flow import scraper_info_by_domain_flow
-from prefect_lib.flows.regular_observation_controller_update_flow import (
-    regular_observation_controller_update_flow,
-)
-from prefect_lib.flows.stop_controller_update_flow import stop_controller_update_flow
-
+from prefect.server.schemas.schedules import (CronSchedule, IntervalSchedule,
+                                              RRuleSchedule)
+from prefect.settings import PREFECT_API_URL, PREFECT_HOME
+from prefect_lib.data_models.scraper_pattern_report_input import \
+    ScraperPatternReportConst
+# 必要な引数定義
+from prefect_lib.data_models.stats_analysis_report_input import \
+    StatsAnalysisReportConst
 # check系
 from prefect_lib.flows.crawl_sync_check_flow import crawl_sync_check_flow
-
+from prefect_lib.flows.first_observation_flow import first_observation_flow
+# crawl-scrape系
+from prefect_lib.flows.manual_crawling_flow import manual_crawling_flow
+from prefect_lib.flows.manual_news_clip_master_save_flow import \
+    manual_news_clip_master_save_flow
+from prefect_lib.flows.manual_scrapying_flow import manual_scrapying_flow
+# mongodb系
+from prefect_lib.flows.mongo_delete_selector_flow import \
+    mongo_delete_selector_flow
+from prefect_lib.flows.mongo_export_selector_flow import \
+    mongo_export_selector_flow
+from prefect_lib.flows.mongo_import_selector_flow import \
+    mongo_import_selector_flow
+from prefect_lib.flows.regular_observation_controller_update_flow import \
+    regular_observation_controller_update_flow
+from prefect_lib.flows.regular_observation_flow import regular_observation_flow
+# register系
+from prefect_lib.flows.scraper_info_uploader_flow import \
+    scraper_info_by_domain_flow
+from prefect_lib.flows.scraper_pattern_report_flow import \
+    scraper_pattern_report_flow
+from prefect_lib.flows.stats_analysis_report_flow import \
+    stats_analysis_report_flow
 # report系
 from prefect_lib.flows.stats_info_collect_flow import stats_info_collect_flow
-from prefect_lib.flows.stats_analysis_report_flow import stats_analysis_report_flow
-from prefect_lib.flows.scraper_pattern_report_flow import scraper_pattern_report_flow
-
-# 必要な引数定義
-from prefect_lib.data_models.stats_analysis_report_input import StatsAnalysisReportConst
-from prefect_lib.data_models.scraper_pattern_report_input import (
-    ScraperPatternReportConst,
-)
-from BrownieAtelierMongo.collection_models.scraped_from_response_model import (
-    ScrapedFromResponseModel,
-)
-from BrownieAtelierMongo.collection_models.crawler_response_model import (
-    CrawlerResponseModel,
-)
-from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
-from BrownieAtelierMongo.collection_models.asynchronous_report_model import (
-    AsynchronousReportModel,
-)
-from BrownieAtelierMongo.collection_models.news_clip_master_model import (
-    NewsClipMasterModel,
-)
-from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
-from BrownieAtelierMongo.collection_models.stats_info_collect_model import (
-    StatsInfoCollectModel,
-)
+from prefect_lib.flows.stop_controller_update_flow import \
+    stop_controller_update_flow
 
 prefect_home = PREFECT_HOME.value()
 print(f"=== {prefect_home =}")

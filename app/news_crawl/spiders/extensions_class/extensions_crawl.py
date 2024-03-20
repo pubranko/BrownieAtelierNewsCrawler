@@ -1,29 +1,31 @@
 import pickle
-import scrapy
-from typing import Any, Final
 from datetime import datetime
-from scrapy.spiders import CrawlSpider
-from scrapy.http import TextResponse
+from typing import Any, Final
 from urllib.parse import unquote
-from scrapy_splash import SplashRequest
 
+import scrapy
+from BrownieAtelierMongo.collection_models.controller_model import \
+    ControllerModel
+from BrownieAtelierMongo.collection_models.crawler_logs_model import \
+    CrawlerLogsModel
+from BrownieAtelierMongo.collection_models.crawler_response_model import \
+    CrawlerResponseModel
 #
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
-from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
-from BrownieAtelierMongo.collection_models.crawler_response_model import (
-    CrawlerResponseModel,
-)
 from news_crawl.items import NewsCrawlItem
 from news_crawl.news_crawl_input import NewsCrawlInput
-from news_crawl.spiders.common.spider_init import spider_init
-from news_crawl.spiders.common.spider_closed import spider_closed
-from news_crawl.spiders.common.lastmod_term_skip_check import LastmodTermSkipCheck
-from news_crawl.spiders.common.lastmod_continued_skip_check import (
-    LastmodContinuedSkipCheck,
-)
-from news_crawl.spiders.common.urls_continued_skip_check import UrlsContinuedSkipCheck
+from news_crawl.spiders.common.lastmod_continued_skip_check import \
+    LastmodContinuedSkipCheck
+from news_crawl.spiders.common.lastmod_term_skip_check import \
+    LastmodTermSkipCheck
 from news_crawl.spiders.common.pagination_check import PaginationCheck
+from news_crawl.spiders.common.spider_closed import spider_closed
+from news_crawl.spiders.common.spider_init import spider_init
+from news_crawl.spiders.common.urls_continued_skip_check import \
+    UrlsContinuedSkipCheck
+from scrapy.http import TextResponse
+from scrapy.spiders import CrawlSpider
+from scrapy_splash import SplashRequest
 
 
 class ExtensionsCrawlSpider(CrawlSpider):

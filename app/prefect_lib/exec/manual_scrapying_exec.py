@@ -1,7 +1,7 @@
 from datetime import datetime
-from shared.settings import TIMEZONE
-from prefect_lib.flows.manual_scrapying_flow import manual_scrapying_flow
 
+from prefect_lib.flows.manual_scrapying_flow import manual_scrapying_flow
+from shared.settings import TIMEZONE
 
 manual_scrapying_flow(
     # domain='sankei_com_sitemap',

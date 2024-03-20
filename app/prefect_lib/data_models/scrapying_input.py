@@ -1,5 +1,6 @@
 from datetime import datetime
-from typing import Any, Optional, Final, Literal
+from typing import Any, Final, Literal, Optional
+
 from pydantic import BaseModel, Field
 
 CONST__DOMAIN: Final[str] = "domain"
@@ -15,22 +16,6 @@ class ScrapyingInput(BaseModel):
     target_start_time_to: Optional[datetime] = Field(None, title="")
     urls: Optional[list[str]] = Field(None, title="")
     following_processing_execution: Optional[bool] = Field(None, title="")
-
-    #####################
-    # 定数
-    #####################
-    DOMAIN: str = Literal[f"{CONST__DOMAIN}"]
-    """定数: domain"""
-    TARGET_START_TIME_FROM: str = Literal[f"{CONST__TARGET_START_TIME_FROM}"]
-    """定数: target_start_time_from"""
-    TARGET_START_TIME_TO: str = Literal[f"{CONST__TARGET_START_TIME_TO}"]
-    """定数: target_start_time_to"""
-    URLS: str = Literal[f"{CONST__URLS}"]
-    """定数: urls"""
-    FOLLOWING_PROCESSING_EXECUTION: bool = Literal[
-        f"{CONST__FOLLOWING_PROCESSING_EXECUTION}"
-    ]
-    """定数: following_processing_execution"""
 
     def __init__(self, **data: Any):
         """引数チェッククラス。以下のFlowで使用。

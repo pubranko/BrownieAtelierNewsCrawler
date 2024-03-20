@@ -1,5 +1,6 @@
 from typing import Any
-from prefect import task, get_run_logger
+
+from prefect import get_run_logger, task
 from shared.directory_search_spiders import DirectorySearchSpiders
 
 

@@ -1,6 +1,7 @@
 from datetime import datetime
-from shared.settings import TIMEZONE
+
 from prefect_lib.flow.solr_news_clip_save_flow import flow
+from shared.settings import TIMEZONE
 
 # scraped_save_start_time_*による絞り込みは任意
 flow.run(

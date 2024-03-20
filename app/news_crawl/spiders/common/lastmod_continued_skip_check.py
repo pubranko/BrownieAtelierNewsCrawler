@@ -1,14 +1,16 @@
 import os
 import sys
-from typing import Any, Optional
 from datetime import datetime
 from logging import LoggerAdapter
+from typing import Any, Optional
+
 from scrapy.exceptions import CloseSpider
 
 path = os.getcwd()
 sys.path.append(path)
+from BrownieAtelierMongo.collection_models.controller_model import \
+    ControllerModel
 from shared.timezone_recovery import timezone_recovery
-from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 
 
 class LastmodContinuedSkipCheck(object):

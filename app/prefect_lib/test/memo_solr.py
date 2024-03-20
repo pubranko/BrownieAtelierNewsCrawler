@@ -1,6 +1,6 @@
-import pysolr
 from datetime import datetime
 
+import pysolr
 import requests
 
 # c ='~/004_atelier/002_Brownie/solr-keystore.pem'

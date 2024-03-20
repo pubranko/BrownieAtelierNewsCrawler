@@ -1,18 +1,18 @@
-import os
 import glob
-from prefect_lib.flows.manual_crawling_flow import manual_crawling_flow
+import os
 
+from prefect_lib.flows.manual_crawling_flow import manual_crawling_flow
 
 manual_crawling_flow(
     spider_names=[
-        # "sankei_com_sitemap",
-        # "asahi_com_sitemap",
-        # "kyodo_co_jp_sitemap",
-        # "yomiuri_co_jp_sitemap",
-        # "jp_reuters_com_sitemap",
-        # "epochtimes_jp_crawl",
-        # "mainichi_jp_crawl",
-        "nikkei_com_crawl"
+        "sankei_com_sitemap",
+        "asahi_com_sitemap",
+        "kyodo_co_jp_sitemap",
+        "yomiuri_co_jp_sitemap",
+        "jp_reuters_com_sitemap",
+        "epochtimes_jp_crawl",
+        "mainichi_jp_crawl",
+        "nikkei_com_crawl",
     ],
     spider_kwargs=dict(
         debug=True,

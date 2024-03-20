@@ -1,6 +1,5 @@
-from prefect import task
-from prefect import get_run_logger
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
+from prefect import get_run_logger, task
 from prefect_lib.flows import START_TIME
 
 """

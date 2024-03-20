@@ -1,12 +1,11 @@
-from typing import Optional, Tuple
 from datetime import datetime
-from prefect import task, get_run_logger
-from pydantic import ValidationError
+from typing import Optional, Tuple
 
+from prefect import get_run_logger, task
+from prefect_lib.data_models.scraper_pattern_report_input import \
+    ScraperPatternReportInput
 from prefect_lib.flows import START_TIME
-from prefect_lib.data_models.scraper_pattern_report_input import (
-    ScraperPatternReportInput,
-)
+from pydantic import ValidationError
 
 
 @task

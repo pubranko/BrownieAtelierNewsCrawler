@@ -1,7 +1,6 @@
 import re
-from urllib.parse import urlparse, parse_qs
-from urllib.parse import ParseResult
 from logging import Logger, LoggerAdapter
+from urllib.parse import ParseResult, parse_qs, urlparse
 
 
 class PaginationCheck:

@@ -1,28 +1,25 @@
-import os
 import glob
 import json
 import logging
+import os
 from logging import Logger
 from typing import Any
-from pydantic import ValidationError
-from prefect import flow, task, get_run_logger
-from prefect.states import State
-from prefect.futures import PrefectFuture
-from prefect.task_runners import SequentialTaskRunner
-from prefect_lib.tasks.init_task import init_task
-from prefect_lib.tasks.end_task import end_task
 
+from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
+from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import \
+    ScraperInfoByDomainModel
+from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import \
+    ScraperInfoByDomainConst
+from prefect import flow, get_run_logger, task
+from prefect.futures import PrefectFuture
+from prefect.states import State
+from prefect.task_runners import SequentialTaskRunner
 # from prefect_lib.flows.common_flow import common_flow
 from prefect_lib.flows.init_flow import init_flow
+from prefect_lib.tasks.end_task import end_task
+from prefect_lib.tasks.init_task import init_task
+from pydantic import ValidationError
 from shared.settings import DATA__SCRAPER_INFO_BY_DOMAIN_DIR
-from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import (
-    ScraperInfoByDomainModel,
-)
-from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import (
-    ScraperInfoByDomainConst,
-)
-
 
 """
 mongoDBのインポートを行う。

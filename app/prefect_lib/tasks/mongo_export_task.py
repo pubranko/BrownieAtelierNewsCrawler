@@ -1,30 +1,27 @@
 import os
 import pickle
-from typing import Any
 from datetime import datetime
-from prefect import task, get_run_logger
+from typing import Any
+
+from BrownieAtelierMongo.collection_models.asynchronous_report_model import \
+    AsynchronousReportModel
+from BrownieAtelierMongo.collection_models.controller_model import \
+    ControllerModel
+from BrownieAtelierMongo.collection_models.crawler_logs_model import \
+    CrawlerLogsModel
+from BrownieAtelierMongo.collection_models.crawler_response_model import \
+    CrawlerResponseModel
+from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
+from BrownieAtelierMongo.collection_models.news_clip_master_model import \
+    NewsClipMasterModel
+from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
+    ScrapedFromResponseModel
+from BrownieAtelierMongo.collection_models.stats_info_collect_model import \
+    StatsInfoCollectModel
+from prefect import get_run_logger, task
 from prefect_lib.flows import START_TIME
 from pymongo import ASCENDING
 from pymongo.cursor import Cursor
-
-from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.crawler_response_model import (
-    CrawlerResponseModel,
-)
-from BrownieAtelierMongo.collection_models.scraped_from_response_model import (
-    ScrapedFromResponseModel,
-)
-from BrownieAtelierMongo.collection_models.news_clip_master_model import (
-    NewsClipMasterModel,
-)
-from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
-from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
-from BrownieAtelierMongo.collection_models.asynchronous_report_model import (
-    AsynchronousReportModel,
-)
-from BrownieAtelierMongo.collection_models.stats_info_collect_model import (
-    StatsInfoCollectModel,
-)
 
 
 @task

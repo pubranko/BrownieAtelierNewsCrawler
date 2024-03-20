@@ -1,21 +1,23 @@
 from typing import Any
-from prefect import flow, get_run_logger
-from prefect.states import State
-from prefect.futures import PrefectFuture
-from prefect.task_runners import SequentialTaskRunner
-from prefect_lib.tasks.init_task import init_task
-from prefect_lib.tasks.end_task import end_task
-from prefect_lib.flows.init_flow import init_flow
-from prefect_lib.tasks.crawling_input_create_task import crawling_input_create_task
-from prefect_lib.tasks.manual_crawling_target_spiders_task import (
-    manual_crawling_target_spiders_task,
-)
-from prefect_lib.tasks.crawling_task import crawling_task
-from prefect_lib.tasks.scrapying_task import scrapying_task
-from prefect_lib.tasks.news_clip_master_save_task import news_clip_master_save_task
-from news_crawl.news_crawl_input import NewsCrawlInput
+
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
+from news_crawl.news_crawl_input import NewsCrawlInput
+from prefect import flow, get_run_logger
+from prefect.futures import PrefectFuture
+from prefect.states import State
+from prefect.task_runners import SequentialTaskRunner
 from prefect_lib.flows import START_TIME
+from prefect_lib.flows.init_flow import init_flow
+from prefect_lib.tasks.crawling_input_create_task import \
+    crawling_input_create_task
+from prefect_lib.tasks.crawling_task import crawling_task
+from prefect_lib.tasks.end_task import end_task
+from prefect_lib.tasks.init_task import init_task
+from prefect_lib.tasks.manual_crawling_target_spiders_task import \
+    manual_crawling_target_spiders_task
+from prefect_lib.tasks.news_clip_master_save_task import \
+    news_clip_master_save_task
+from prefect_lib.tasks.scrapying_task import scrapying_task
 
 
 @flow(name="Manual crawling flow", task_runner=SequentialTaskRunner())

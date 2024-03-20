@@ -1,13 +1,12 @@
 import os
-from prefect import task, get_run_logger
-from openpyxl import Workbook
-from shared.settings import DATA
 
-from prefect_lib.flows import START_TIME
-from prefect_lib.data_models.scraper_pattern_report_input import (
-    ScraperPatternReportInput,
-)
 from BrownieAtelierNotice.mail_attach_send import mail_attach_send
+from openpyxl import Workbook
+from prefect import get_run_logger, task
+from prefect_lib.data_models.scraper_pattern_report_input import \
+    ScraperPatternReportInput
+from prefect_lib.flows import START_TIME
+from shared.settings import DATA
 
 
 @task

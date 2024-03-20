@@ -1,10 +1,9 @@
-from prefect import task, get_run_logger
-
-from prefect_lib.data_models.stats_info_collect_data import StatsInfoCollectData
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.stats_info_collect_model import (
-    StatsInfoCollectModel,
-)
+from BrownieAtelierMongo.collection_models.stats_info_collect_model import \
+    StatsInfoCollectModel
+from prefect import get_run_logger, task
+from prefect_lib.data_models.stats_info_collect_data import \
+    StatsInfoCollectData
 
 
 @task

@@ -1,10 +1,10 @@
-import os
-import sys
-import re
 import glob
 import importlib
 import inspect
-from typing import Any, List, Final
+import os
+import re
+import sys
+from typing import Any, Final, List
 
 path = os.getcwd()
 sys.path.append(path)

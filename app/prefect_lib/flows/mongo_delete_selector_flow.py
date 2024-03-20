@@ -1,14 +1,15 @@
 from typing import Any
+
+from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from prefect import flow, get_run_logger
-from prefect.states import State
 from prefect.futures import PrefectFuture
+from prefect.states import State
 from prefect.task_runners import SequentialTaskRunner
-from prefect_lib.tasks.init_task import init_task
-from prefect_lib.tasks.end_task import end_task
 from prefect_lib.flows.init_flow import init_flow
+from prefect_lib.tasks.end_task import end_task
+from prefect_lib.tasks.init_task import init_task
 from prefect_lib.tasks.mongo_common_task import mongo_common_task
 from prefect_lib.tasks.mongo_delete_task import mongo_delete_task
-from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 
 
 @flow(name="Mongo delete selector flow", task_runner=SequentialTaskRunner())

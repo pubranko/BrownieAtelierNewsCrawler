@@ -1,13 +1,12 @@
-from news_crawl.spiders.extensions_class.extensions_sitemap import (
-    ExtensionsSitemapSpider,
-)
 import scrapy
-from scrapy.spiders import Rule
-from scrapy.linkextractors import LinkExtractor
-from scrapy.http import Response, Request, TextResponse
-from scrapy.utils.sitemap import sitemap_urls_from_robots
-from scrapy.spiders.sitemap import iterloc
 from news_crawl.spiders.common.custom_sitemap import CustomSitemap
+from news_crawl.spiders.extensions_class.extensions_sitemap import \
+    ExtensionsSitemapSpider
+from scrapy.http import Request, Response, TextResponse
+from scrapy.linkextractors import LinkExtractor
+from scrapy.spiders import Rule
+from scrapy.spiders.sitemap import iterloc
+from scrapy.utils.sitemap import sitemap_urls_from_robots
 
 
 class SankeiComSitemapSpider(ExtensionsSitemapSpider):

@@ -1,5 +1,6 @@
 import os
 import sys
+
 from scrapy.spiders import Spider
 
 path = os.getcwd()

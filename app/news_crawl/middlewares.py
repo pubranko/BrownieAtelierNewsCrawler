@@ -2,13 +2,12 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-
-from scrapy import signals
-
 # useful for handling different item types with a single interface
-from itemadapter import is_item, ItemAdapter
-from scrapy.http import Request
-from scrapy.http import Response
+
+from itemadapter.adapter import ItemAdapter
+from itemadapter.utils import is_item
+from scrapy import signals
+from scrapy.http import Request, Response
 
 
 class NewsCrawlSpiderMiddleware:

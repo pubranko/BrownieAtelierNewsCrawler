@@ -1,29 +1,32 @@
 import urllib.parse
 from time import sleep
 from typing import Any
+
 import scrapy
+from news_crawl.items import NewsCrawlItem
+from news_crawl.spiders.common.start_request_debug_file_generate import \
+    LASTMOD as debug_file__LASTMOD
+from news_crawl.spiders.common.start_request_debug_file_generate import \
+    LOC as debug_file__LOC
+from news_crawl.spiders.common.start_request_debug_file_generate import \
+    start_request_debug_file_generate
+from news_crawl.spiders.common.url_pattern_skip_check import \
+    url_pattern_skip_check
+from news_crawl.spiders.common.urls_continued_skip_check import \
+    UrlsContinuedSkipCheck
+from news_crawl.spiders.extensions_class.extensions_crawl import \
+    ExtensionsCrawlSpider
+from scrapy.exceptions import CloseSpider
 from scrapy.http import TextResponse
 from scrapy_selenium import SeleniumRequest
-from scrapy.exceptions import CloseSpider
+from selenium.common.exceptions import (NoSuchElementException,
+                                        StaleElementReferenceException)
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
-from selenium.common.exceptions import (
-    NoSuchElementException,
-    StaleElementReferenceException,
-)
-from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
-from news_crawl.spiders.common.start_request_debug_file_generate import (
-    start_request_debug_file_generate,
-    LOC as debug_file__LOC,
-    LASTMOD as debug_file__LASTMOD,
-)
-from news_crawl.spiders.common.urls_continued_skip_check import UrlsContinuedSkipCheck
-from news_crawl.items import NewsCrawlItem
-from news_crawl.spiders.common.url_pattern_skip_check import url_pattern_skip_check
+from selenium.webdriver.support.wait import WebDriverWait
 from shared.login_info_get import login_info_get
 
 base_start_url: str = "https://www.epochtimes.jp/latest"

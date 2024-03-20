@@ -1,10 +1,9 @@
-from news_crawl.spiders.extensions_class.extensions_sitemap import (
-    ExtensionsSitemapSpider,
-)
 from datetime import timedelta
-from news_crawl.spiders.common.start_request_debug_file_generate import (
-    start_request_debug_file_generate,
-)
+
+from news_crawl.spiders.common.start_request_debug_file_generate import \
+    start_request_debug_file_generate
+from news_crawl.spiders.extensions_class.extensions_sitemap import \
+    ExtensionsSitemapSpider
 
 
 class AnalysysSitemapSpider(ExtensionsSitemapSpider):

@@ -1,9 +1,8 @@
-import os
 import glob
+import os
+
 from prefect_lib.flows.stop_controller_update_flow import (
-    stop_controller_update_flow,
-    StopControllerUpdateConst,
-)
+    StopControllerUpdateConst, stop_controller_update_flow)
 
 stop_controller_update_flow(
     domain="sankei.com",

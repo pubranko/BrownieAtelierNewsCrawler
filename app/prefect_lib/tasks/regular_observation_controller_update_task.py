@@ -1,11 +1,10 @@
-from prefect import task, get_run_logger
-from shared.directory_search_spiders import DirectorySearchSpiders
-from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
-from prefect_lib.flows.regular_observation_controller_update_const import (
-    RegularObservationControllerUpdateConst,
-)
-from shared.directory_search_spiders import DirectorySearchSpiders
+from BrownieAtelierMongo.collection_models.controller_model import \
+    ControllerModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
+from prefect import get_run_logger, task
+from prefect_lib.flows.regular_observation_controller_update_const import \
+    RegularObservationControllerUpdateConst
+from shared.directory_search_spiders import DirectorySearchSpiders
 
 
 @task

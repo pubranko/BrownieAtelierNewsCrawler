@@ -1,22 +1,24 @@
-from typing import Optional, Any
-from datetime import datetime, date
+from datetime import date, datetime
+from typing import Any, Optional
+
+from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from dateutil.relativedelta import relativedelta
 from prefect import flow, get_run_logger
-from prefect.states import State
 from prefect.futures import PrefectFuture
+from prefect.states import State
 from prefect.task_runners import SequentialTaskRunner
-
-from prefect_lib.tasks.init_task import init_task
-from prefect_lib.tasks.end_task import end_task
+from prefect_lib.data_models.stats_info_collect_data import \
+    StatsInfoCollectData
+from prefect_lib.data_models.stats_info_collect_input import \
+    StatsInfoCollectInput
 from prefect_lib.flows.init_flow import init_flow
-from prefect_lib.tasks.stats_info_collect_args_check_task import (
-    stats_info_collect_args_check_task,
-)
+from prefect_lib.tasks.end_task import end_task
+from prefect_lib.tasks.init_task import init_task
+from prefect_lib.tasks.stats_info_collect_args_check_task import \
+    stats_info_collect_args_check_task
+from prefect_lib.tasks.stats_info_collect_save_task import \
+    stats_info_collect_save_task
 from prefect_lib.tasks.stats_info_collect_task import stats_info_collect_task
-from prefect_lib.tasks.stats_info_collect_save_task import stats_info_collect_save_task
-from prefect_lib.data_models.stats_info_collect_input import StatsInfoCollectInput
-from prefect_lib.data_models.stats_info_collect_data import StatsInfoCollectData
-from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 
 
 @flow(

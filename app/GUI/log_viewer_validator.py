@@ -1,7 +1,8 @@
 import re
 from datetime import datetime
-from dateutil import parser
 from typing import Any, Union
+
+from dateutil import parser
 from pydantic import BaseModel, validator
 from shared.settings import TIMEZONE
 

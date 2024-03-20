@@ -1,7 +1,7 @@
 import sys
+
 from scrapy.cmdline import execute
 from scrapy.utils.project import get_project_settings
-
 
 args = sys.argv
 # args

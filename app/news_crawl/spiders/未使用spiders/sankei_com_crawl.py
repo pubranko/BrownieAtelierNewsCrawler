@@ -1,20 +1,21 @@
-from datetime import datetime, timedelta
-import time
-from typing import Union, Any
-from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
-from scrapy.http import Response
-from scrapy_selenium import SeleniumRequest
-from scrapy.exceptions import CloseSpider
-from dateutil import parser
-import scrapy
 import sys
-from selenium.webdriver.remote.webdriver import WebDriver
-from selenium.webdriver.remote.webelement import WebElement
-from news_crawl.spiders.common.start_request_debug_file_generate import (
-    start_request_debug_file_generate,
-)
+import time
+from datetime import datetime, timedelta
+from typing import Any, Union
+
+import scrapy
 from bs4 import BeautifulSoup as bs4
 from bs4.element import ResultSet
+from dateutil import parser
+from news_crawl.spiders.common.start_request_debug_file_generate import \
+    start_request_debug_file_generate
+from news_crawl.spiders.extensions_class.extensions_crawl import \
+    ExtensionsCrawlSpider
+from scrapy.exceptions import CloseSpider
+from scrapy.http import Response
+from scrapy_selenium import SeleniumRequest
+from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.remote.webelement import WebElement
 
 """
 このソースは現在未使用。

@@ -1,8 +1,10 @@
 from typing import Any
-from prefect import task, get_run_logger
-from shared.directory_search_spiders import DirectorySearchSpiders
-from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
+
+from BrownieAtelierMongo.collection_models.controller_model import \
+    ControllerModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
+from prefect import get_run_logger, task
+from shared.directory_search_spiders import DirectorySearchSpiders
 
 
 @task

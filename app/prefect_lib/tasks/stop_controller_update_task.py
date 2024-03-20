@@ -1,10 +1,11 @@
-from prefect import task, get_run_logger
+from BrownieAtelierMongo.collection_models.controller_model import \
+    ControllerModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
-from prefect_lib.flows.stop_controller_update_const import StopControllerUpdateConst
-from prefect_lib.data_models.stop_controller_update_input import (
-    StopControllerUpdateInput,
-)
+from prefect import get_run_logger, task
+from prefect_lib.data_models.stop_controller_update_input import \
+    StopControllerUpdateInput
+from prefect_lib.flows.stop_controller_update_const import \
+    StopControllerUpdateConst
 
 
 @task

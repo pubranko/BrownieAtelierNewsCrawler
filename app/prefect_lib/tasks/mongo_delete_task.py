@@ -1,26 +1,22 @@
-from typing import Any
-from datetime import datetime
-from prefect import task, get_run_logger
-from pymongo.command_cursor import CommandCursor, RawBatchCommandCursor
 import copy
+from datetime import datetime
+from typing import Any
 
+from BrownieAtelierMongo.collection_models.asynchronous_report_model import \
+    AsynchronousReportModel
+from BrownieAtelierMongo.collection_models.crawler_logs_model import \
+    CrawlerLogsModel
+from BrownieAtelierMongo.collection_models.crawler_response_model import \
+    CrawlerResponseModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.crawler_response_model import (
-    CrawlerResponseModel,
-)
-from BrownieAtelierMongo.collection_models.scraped_from_response_model import (
-    ScrapedFromResponseModel,
-)
-from BrownieAtelierMongo.collection_models.news_clip_master_model import (
-    NewsClipMasterModel,
-)
-from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
-from BrownieAtelierMongo.collection_models.asynchronous_report_model import (
-    AsynchronousReportModel,
-)
-from BrownieAtelierMongo.collection_models.stats_info_collect_model import (
-    StatsInfoCollectModel,
-)
+from BrownieAtelierMongo.collection_models.news_clip_master_model import \
+    NewsClipMasterModel
+from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
+    ScrapedFromResponseModel
+from BrownieAtelierMongo.collection_models.stats_info_collect_model import \
+    StatsInfoCollectModel
+from prefect import get_run_logger, task
+from pymongo.command_cursor import CommandCursor, RawBatchCommandCursor
 
 
 @task

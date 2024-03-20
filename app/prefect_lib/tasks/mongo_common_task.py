@@ -1,9 +1,10 @@
 import os
-from datetime import datetime, date, time
+from datetime import date, datetime, time
+
 from dateutil.relativedelta import relativedelta
-from prefect import task, get_run_logger
-from shared.settings import TIMEZONE, DATA__BACKUP_BASE_DIR
+from prefect import get_run_logger, task
 from prefect_lib.flows import START_TIME
+from shared.settings import DATA__BACKUP_BASE_DIR, TIMEZONE
 
 
 @task

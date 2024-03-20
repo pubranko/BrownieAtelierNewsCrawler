@@ -1,8 +1,8 @@
-from news_crawl.spiders.extensions_class.extensions_sitemap import (
-    ExtensionsSitemapSpider,
-)
-from lxml.etree import _Element
 from typing import Any
+
+from lxml.etree import _Element
+from news_crawl.spiders.extensions_class.extensions_sitemap import \
+    ExtensionsSitemapSpider
 
 
 class AsahiComSitemapSpider(ExtensionsSitemapSpider):

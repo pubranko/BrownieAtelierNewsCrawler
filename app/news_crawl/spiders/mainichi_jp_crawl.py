@@ -1,26 +1,30 @@
-import scrapy
 import time
 import urllib.parse
 from datetime import datetime
-from dateutil import parser
 from typing import Any
+
+import scrapy
+from dateutil import parser
+from news_crawl.spiders.common.start_request_debug_file_generate import \
+    LASTMOD as debug_file__LASTMOD
+from news_crawl.spiders.common.start_request_debug_file_generate import \
+    LOC as debug_file__LOC
+from news_crawl.spiders.common.start_request_debug_file_generate import \
+    start_request_debug_file_generate
+from news_crawl.spiders.common.url_pattern_skip_check import \
+    url_pattern_skip_check
+from news_crawl.spiders.common.urls_continued_skip_check import \
+    UrlsContinuedSkipCheck
+from news_crawl.spiders.extensions_class.extensions_crawl import \
+    ExtensionsCrawlSpider
 from scrapy.http import TextResponse
 from scrapy_selenium import SeleniumRequest
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.common.action_chains import ActionChains
-
-from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
-from news_crawl.spiders.common.start_request_debug_file_generate import (
-    start_request_debug_file_generate,
-    LOC as debug_file__LOC,
-    LASTMOD as debug_file__LASTMOD,
-)
-from news_crawl.spiders.common.urls_continued_skip_check import UrlsContinuedSkipCheck
-from news_crawl.spiders.common.url_pattern_skip_check import url_pattern_skip_check
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
 
 
 class MainichiJpCrawlSpider(ExtensionsCrawlSpider):

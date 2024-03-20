@@ -6,14 +6,14 @@
 # useful for handling different item types with a single interface
 
 from typing import Union
-from itemadapter import ItemAdapter
-from BrownieAtelierMongo.collection_models.crawler_response_model import (
-    CrawlerResponseModel,
-)
-from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
-from news_crawl.spiders.extensions_class.extensions_sitemap import (
-    ExtensionsSitemapSpider,
-)
+
+from BrownieAtelierMongo.collection_models.crawler_response_model import \
+    CrawlerResponseModel
+from itemadapter.adapter import ItemAdapter
+from news_crawl.spiders.extensions_class.extensions_crawl import \
+    ExtensionsCrawlSpider
+from news_crawl.spiders.extensions_class.extensions_sitemap import \
+    ExtensionsSitemapSpider
 
 
 class MongoPipeline(object):

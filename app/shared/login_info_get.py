@@ -1,6 +1,7 @@
-import yaml
 import os
 from typing import Any
+
+import yaml
 from shared import settings
 
 

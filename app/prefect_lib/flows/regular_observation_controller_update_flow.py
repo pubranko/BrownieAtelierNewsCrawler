@@ -1,16 +1,16 @@
 from typing import Any, Final
-from prefect import flow, get_run_logger
-from prefect.states import State
-from prefect.futures import PrefectFuture
-from prefect.task_runners import SequentialTaskRunner
-from prefect_lib.tasks.init_task import init_task
-from prefect_lib.tasks.end_task import end_task
-from prefect_lib.flows.init_flow import init_flow
-from prefect_lib.tasks.regular_observation_controller_update_task import (
-    regular_observation_controller_update_task,
-)
+
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
+from prefect import flow, get_run_logger
+from prefect.futures import PrefectFuture
+from prefect.states import State
+from prefect.task_runners import SequentialTaskRunner
 from prefect_lib.flows import START_TIME
+from prefect_lib.flows.init_flow import init_flow
+from prefect_lib.tasks.end_task import end_task
+from prefect_lib.tasks.init_task import init_task
+from prefect_lib.tasks.regular_observation_controller_update_task import \
+    regular_observation_controller_update_task
 
 
 @flow(

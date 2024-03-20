@@ -1,11 +1,12 @@
-import re, scrapy
+import re
 from datetime import datetime, timedelta
+
+import scrapy
 from dateutil import parser
-from scrapy.selector.unified import Selector
+from news_crawl.spiders.extensions_class.extensions_xml_feed import \
+    ExtensionsXmlFeedSpider
 from scrapy.http.response.xml import XmlResponse
-from news_crawl.spiders.extensions_class.extensions_xml_feed import (
-    ExtensionsXmlFeedSpider,
-)
+from scrapy.selector.unified import Selector
 
 """
 現在このソースは未使用。

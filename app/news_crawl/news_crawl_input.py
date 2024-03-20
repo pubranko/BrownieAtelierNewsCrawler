@@ -1,8 +1,9 @@
 from datetime import datetime
-from typing import Any, Optional, Tuple, Final
-from pydantic import BaseModel, validator, Field
+from typing import Any, Final, Optional, Tuple
 from urllib.parse import urlparse
+
 from news_crawl.settings import TIMEZONE
+from pydantic import BaseModel, Field, validator
 
 #####################################################################################
 # 定数 (news_crawlの引数)

@@ -1,6 +1,7 @@
-from datetime import datetime, date, time
+from datetime import date, datetime, time
+from typing import Any, Final, Literal, Optional, Tuple
+
 from dateutil.relativedelta import relativedelta
-from typing import Any, Optional, Tuple, Final, Literal
 from pydantic import BaseModel
 from shared.settings import TIMEZONE
 
@@ -10,12 +11,6 @@ CONST__BASE_DATE: Final[str] = "base_date"
 
 class StatsInfoCollectInput(BaseModel):
     base_date: Optional[date] = None
-
-    #####################
-    # 定数
-    #####################
-    BASE_DATE: str = Literal[f"{CONST__BASE_DATE}"]
-    """定数: base_date"""
 
     def __init__(self, **data: Any):
         """あとで"""

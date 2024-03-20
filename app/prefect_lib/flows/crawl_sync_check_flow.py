@@ -1,22 +1,20 @@
-from typing import Optional, Any
 from datetime import datetime
-from prefect.states import State
+from typing import Any, Optional
+
+from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from prefect import flow, get_run_logger
 from prefect.futures import PrefectFuture
+from prefect.states import State
 from prefect.task_runners import SequentialTaskRunner
-from prefect_lib.tasks.init_task import init_task
-from prefect_lib.tasks.end_task import end_task
 from prefect_lib.flows.init_flow import init_flow
-from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from prefect_lib.tasks.sync_check_crawler_response_task import (
-    sync_check_crawler_response_task,
-)
-from prefect_lib.tasks.sync_check_news_clip_master_task import (
-    sync_check_news_clip_master_task,
-)
-from prefect_lib.tasks.sync_check_notice_result_task import (
-    sync_check_notice_result_task,
-)
+from prefect_lib.tasks.end_task import end_task
+from prefect_lib.tasks.init_task import init_task
+from prefect_lib.tasks.sync_check_crawler_response_task import \
+    sync_check_crawler_response_task
+from prefect_lib.tasks.sync_check_news_clip_master_task import \
+    sync_check_news_clip_master_task
+from prefect_lib.tasks.sync_check_notice_result_task import \
+    sync_check_notice_result_task
 
 
 @flow(name="Crawl sync check flow", task_runner=SequentialTaskRunner())

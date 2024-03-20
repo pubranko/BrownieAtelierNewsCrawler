@@ -1,8 +1,10 @@
 from prefect import task
-
-from prefect_lib.data_models.stats_analysis_report_excel import StatsAnalysisReportExcel
-from prefect_lib.data_models.stats_analysis_report_input import StatsAnalysisReportInput
-from prefect_lib.data_models.stats_info_collect_data import StatsInfoCollectData
+from prefect_lib.data_models.stats_analysis_report_excel import \
+    StatsAnalysisReportExcel
+from prefect_lib.data_models.stats_analysis_report_input import \
+    StatsAnalysisReportInput
+from prefect_lib.data_models.stats_info_collect_data import \
+    StatsInfoCollectData
 
 
 @task

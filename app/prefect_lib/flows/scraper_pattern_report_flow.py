@@ -1,35 +1,28 @@
-from typing import Optional, Any
 from datetime import datetime
+from typing import Any, Optional
+
+from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from openpyxl import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from prefect import flow, get_run_logger
-from prefect.states import State
 from prefect.futures import PrefectFuture
+from prefect.states import State
 from prefect.task_runners import SequentialTaskRunner
-
-from prefect_lib.tasks.init_task import init_task
-from prefect_lib.tasks.end_task import end_task
+from prefect_lib.data_models.scraper_pattern_report_excel import \
+    ScraperPatternReportExcel
 from prefect_lib.flows.init_flow import init_flow
-from prefect_lib.tasks.scraper_pattern_report_args_check_task import (
-    scraper_pattern_report_args_check_task,
-)
-from prefect_lib.tasks.scraper_pattern_report_data_frame_task import (
-    scraper_pattern_report_data_frame_task,
-)
-
+from prefect_lib.tasks.end_task import end_task
+from prefect_lib.tasks.init_task import init_task
+from prefect_lib.tasks.scraper_pattern_report_args_check_task import \
+    scraper_pattern_report_args_check_task
 # from prefect_lib.tasks.scraper_pattern_report_header_task import scraper_pattern_report_header_task
 # from prefect_lib.tasks.scraper_pattern_report_body_task import scraper_pattern_report_body_task
-from prefect_lib.tasks.scraper_pattern_report_create_task import (
-    scraper_pattern_report_create_task,
-)
-from prefect_lib.tasks.scraper_pattern_report_notice_task import (
-    scraper_pattern_report_notice_task,
-)
-from prefect_lib.data_models.scraper_pattern_report_excel import (
-    ScraperPatternReportExcel,
-)
-
-from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
+from prefect_lib.tasks.scraper_pattern_report_create_task import \
+    scraper_pattern_report_create_task
+from prefect_lib.tasks.scraper_pattern_report_data_frame_task import \
+    scraper_pattern_report_data_frame_task
+from prefect_lib.tasks.scraper_pattern_report_notice_task import \
+    scraper_pattern_report_notice_task
 
 
 @flow(

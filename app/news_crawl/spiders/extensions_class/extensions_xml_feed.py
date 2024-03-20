@@ -1,19 +1,19 @@
 import pickle
-import scrapy
-from typing import Any
 from datetime import datetime
-from scrapy.spiders import XMLFeedSpider
+from typing import Any
+
+import scrapy
+from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
+from news_crawl.items import NewsCrawlItem
+from news_crawl.news_crawl_input import NewsCrawlInput
+from news_crawl.spiders.common.spider_closed import spider_closed
+from news_crawl.spiders.common.spider_init import spider_init
+from news_crawl.spiders.common.start_request_debug_file_generate import \
+    start_request_debug_file_generate
 from scrapy.http import Response
 from scrapy.http.response.xml import XmlResponse
+from scrapy.spiders import XMLFeedSpider
 from scrapy.utils.spider import iterate_spider_output
-from news_crawl.items import NewsCrawlItem
-from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from news_crawl.news_crawl_input import NewsCrawlInput
-from news_crawl.spiders.common.start_request_debug_file_generate import (
-    start_request_debug_file_generate,
-)
-from news_crawl.spiders.common.spider_init import spider_init
-from news_crawl.spiders.common.spider_closed import spider_closed
 
 """
 現在このソースは未使用。

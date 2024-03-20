@@ -1,28 +1,27 @@
 from __future__ import annotations  # ExtensionsSitemapSpiderの循環参照を回避するため
-from typing import Union, TYPE_CHECKING, Any
-from scrapy.exceptions import CloseSpider
+
+from typing import TYPE_CHECKING, Any, Union
+
+from BrownieAtelierMongo.collection_models.controller_model import \
+    ControllerModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
-from news_crawl.spiders.common.start_request_debug_file_init import (
-    start_request_debug_file_init,
-)
-from news_crawl.spiders.common.crawling_domain_duplicate_check import (
-    CrawlingDomainDuplicatePrevention,
-)
-from news_crawl.spiders.common.lastmod_term_skip_check import LastmodTermSkipCheck
-from news_crawl.spiders.common.lastmod_continued_skip_check import (
-    LastmodContinuedSkipCheck,
-)
 from news_crawl.news_crawl_input import NewsCrawlInput
+from news_crawl.spiders.common.crawling_domain_duplicate_check import \
+    CrawlingDomainDuplicatePrevention
+from news_crawl.spiders.common.lastmod_continued_skip_check import \
+    LastmodContinuedSkipCheck
+from news_crawl.spiders.common.lastmod_term_skip_check import \
+    LastmodTermSkipCheck
+from news_crawl.spiders.common.start_request_debug_file_init import \
+    start_request_debug_file_init
+from scrapy.exceptions import CloseSpider
 from shared.resource_check import resource_check
 
 if TYPE_CHECKING:  # 型チェック時のみインポート
-    from news_crawl.spiders.extensions_class.extensions_sitemap import (
-        ExtensionsSitemapSpider,
-    )
-    from news_crawl.spiders.extensions_class.extensions_crawl import (
-        ExtensionsCrawlSpider,
-    )
+    from news_crawl.spiders.extensions_class.extensions_crawl import \
+        ExtensionsCrawlSpider
+    from news_crawl.spiders.extensions_class.extensions_sitemap import \
+        ExtensionsSitemapSpider
 
     # from news_crawl.spiders.extensions_class.extensions_xml_feed import ExtensionsXmlFeedSpider
 

@@ -1,11 +1,13 @@
 import os
-from prefect import task, get_run_logger
-from shared.settings import DATA
 
-from prefect_lib.flows import START_TIME
-from prefect_lib.data_models.stats_analysis_report_input import StatsAnalysisReportInput
-from prefect_lib.data_models.stats_analysis_report_excel import StatsAnalysisReportExcel
 from BrownieAtelierNotice.mail_attach_send import mail_attach_send
+from prefect import get_run_logger, task
+from prefect_lib.data_models.stats_analysis_report_excel import \
+    StatsAnalysisReportExcel
+from prefect_lib.data_models.stats_analysis_report_input import \
+    StatsAnalysisReportInput
+from prefect_lib.flows import START_TIME
+from shared.settings import DATA
 
 
 @task

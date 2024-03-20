@@ -1,15 +1,13 @@
-from prefect import task, get_run_logger
-from prefect_lib.data_models.scraper_pattern_report_data import ScraperPatternReportData
-from prefect_lib.data_models.scraper_pattern_report_input import (
-    ScraperPatternReportInput,
-)
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.news_clip_master_model import (
-    NewsClipMasterModel,
-)
-from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import (
-    ScraperInfoByDomainModel,
-)
+from BrownieAtelierMongo.collection_models.news_clip_master_model import \
+    NewsClipMasterModel
+from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import \
+    ScraperInfoByDomainModel
+from prefect import get_run_logger, task
+from prefect_lib.data_models.scraper_pattern_report_data import \
+    ScraperPatternReportData
+from prefect_lib.data_models.scraper_pattern_report_input import \
+    ScraperPatternReportInput
 
 
 @task

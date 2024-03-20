@@ -1,8 +1,9 @@
+import itertools
+from copy import deepcopy
 from datetime import datetime
 from typing import Any, Final
+
 import pandas as pd
-from copy import deepcopy
-import itertools
 
 
 class StatsInfoCollectData:

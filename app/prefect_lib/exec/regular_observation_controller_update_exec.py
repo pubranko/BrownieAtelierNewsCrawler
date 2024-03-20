@@ -1,9 +1,7 @@
-from prefect_lib.flows.regular_observation_controller_update_flow import (
-    regular_observation_controller_update_flow,
-)
-from prefect_lib.flows.regular_observation_controller_update_const import (
-    RegularObservationControllerUpdateConst,
-)
+from prefect_lib.flows.regular_observation_controller_update_const import \
+    RegularObservationControllerUpdateConst
+from prefect_lib.flows.regular_observation_controller_update_flow import \
+    regular_observation_controller_update_flow
 
 regular_observation_controller_update_flow(
     register_type=RegularObservationControllerUpdateConst.REGISTER_ADD,

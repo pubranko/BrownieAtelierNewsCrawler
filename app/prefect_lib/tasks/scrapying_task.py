@@ -1,31 +1,27 @@
 import pickle
-from bs4 import BeautifulSoup as bs4
-from typing import Any, Optional
 from datetime import datetime
-from pymongo.cursor import Cursor
-from pymongo import ASCENDING
 from importlib import import_module
-from prefect import task, get_run_logger
-from prefect_lib.flows import START_TIME
-from prefect_lib.common_module.scraped_record_error_check import (
-    scraped_record_error_check,
-)
-from shared.timezone_recovery import timezone_recovery
+from typing import Any, Optional
+
+from BrownieAtelierMongo.collection_models.controller_model import \
+    ControllerModel
+from BrownieAtelierMongo.collection_models.crawler_response_model import \
+    CrawlerResponseModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
+from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
+    ScrapedFromResponseModel
+from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import \
+    ScraperInfoByDomainModel
 from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import (
-    ScraperInfoByDomainData,
-    ScraperInfoByDomainConst,
-)
-from BrownieAtelierMongo.collection_models.crawler_response_model import (
-    CrawlerResponseModel,
-)
-from BrownieAtelierMongo.collection_models.scraped_from_response_model import (
-    ScrapedFromResponseModel,
-)
-from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import (
-    ScraperInfoByDomainModel,
-)
+    ScraperInfoByDomainConst, ScraperInfoByDomainData)
+from bs4 import BeautifulSoup as bs4
+from prefect import get_run_logger, task
+from prefect_lib.common_module.scraped_record_error_check import \
+    scraped_record_error_check
+from prefect_lib.flows import START_TIME
+from pymongo import ASCENDING
+from pymongo.cursor import Cursor
+from shared.timezone_recovery import timezone_recovery
 
 
 @task

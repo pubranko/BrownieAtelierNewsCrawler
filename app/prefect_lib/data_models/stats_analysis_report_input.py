@@ -1,10 +1,11 @@
 from copy import deepcopy
-from datetime import datetime, date, time
+from datetime import date, datetime, time
+from typing import Any, Final, Literal, Optional, Tuple
+
 from dateutil.relativedelta import relativedelta
-from typing import Any, Optional, Tuple, Final, Literal
-from pydantic import BaseModel, validator, Field
-from shared.settings import TIMEZONE
 from prefect_lib.flows import START_TIME
+from pydantic import BaseModel, Field, validator
+from shared.settings import TIMEZONE
 
 
 ############################################
@@ -33,48 +34,6 @@ class StatsAnalysisReportInput(BaseModel):
     report_term: str = Field(..., title="レポート期間")
     totalling_term: str = Field(..., title="集計期間")
     base_date: Optional[date] = None
-
-    #####################
-    # 定数
-    #####################
-    START_TIME: str = Literal[f"{StatsAnalysisReportConst.START_TIME}"]
-    """定数: start_time """
-    REPORT_TERM: str = Literal[f"{StatsAnalysisReportConst.REPORT_TERM}"]
-    """定数: report_term """
-    TOTALLING_TERM: str = Literal[f"{StatsAnalysisReportConst.TOTALLING_TERM}"]
-    """定数: totalling_term """
-    BASE_DATE: str = Literal[f"{StatsAnalysisReportConst.BASE_DATE}"]
-    """定数: base_date """
-    REPORT_TERM__DAILY: str = Literal[f"{StatsAnalysisReportConst.REPORT_TERM__DAILY}"]
-    """定数: report_term__daily """
-    REPORT_TERM__WEEKLY: str = Literal[
-        f"{StatsAnalysisReportConst.REPORT_TERM__WEEKLY}"
-    ]
-    """定数: report_term__weekly """
-    REPORT_TERM__MONTHLY: str = Literal[
-        f"{StatsAnalysisReportConst.REPORT_TERM__MONTHLY}"
-    ]
-    """定数: report_term__monthly """
-    REPORT_TERM__YEARLY: str = Literal[
-        f"{StatsAnalysisReportConst.REPORT_TERM__YEARLY}"
-    ]
-    """定数: report_term__yearly """
-    TOTALLING_TERM__DAILY: str = Literal[
-        f"{StatsAnalysisReportConst.TOTALLING_TERM__DAILY}"
-    ]
-    """定数: totalling_term__daily """
-    TOTALLING_TERM__WEEKLY: str = Literal[
-        f"{StatsAnalysisReportConst.TOTALLING_TERM__WEEKLY}"
-    ]
-    """定数: totalling_term__weekly """
-    TOTALLING_TERM__MONTHLY: str = Literal[
-        f"{StatsAnalysisReportConst.TOTALLING_TERM__MONTHLY}"
-    ]
-    """定数: totalling_term__monthly """
-    TOTALLING_TERM__YEARLY: str = Literal[
-        f"{StatsAnalysisReportConst.TOTALLING_TERM__YEARLY}"
-    ]
-    """定数: totalling_term__yearly """
 
     def __init__(self, **data: Any):
         """あとで"""

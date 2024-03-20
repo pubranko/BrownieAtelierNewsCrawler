@@ -1,5 +1,5 @@
-from prefect import task, get_run_logger
 from news_crawl.news_crawl_input import NewsCrawlInput
+from prefect import get_run_logger, task
 from prefect_lib.flows import START_TIME
 
 

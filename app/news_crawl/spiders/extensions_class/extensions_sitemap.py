@@ -1,40 +1,43 @@
 import pickle
-import scrapy
-from typing import Any, Optional, Final
 from datetime import datetime, timedelta
+from typing import Any, Final, Optional
+from urllib.parse import unquote
+
+import scrapy
+from BrownieAtelierMongo.collection_models.controller_model import \
+    ControllerModel
+from BrownieAtelierMongo.collection_models.crawler_logs_model import \
+    CrawlerLogsModel
+from BrownieAtelierMongo.collection_models.crawler_response_model import \
+    CrawlerResponseModel
+#
+from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
+from bs4 import BeautifulSoup as bs4
 from dateutil import parser
 from lxml.etree import _Element
-from urllib.parse import unquote
-from bs4 import BeautifulSoup as bs4
+from news_crawl.items import NewsCrawlItem
+from news_crawl.news_crawl_input import NewsCrawlInput
+from news_crawl.spiders.common.custom_sitemap import CustomSitemap
+from news_crawl.spiders.common.lastmod_continued_skip_check import \
+    LastmodContinuedSkipCheck
+from news_crawl.spiders.common.lastmod_term_skip_check import \
+    LastmodTermSkipCheck
+from news_crawl.spiders.common.pagination_check import PaginationCheck
+from news_crawl.spiders.common.spider_closed import spider_closed
+from news_crawl.spiders.common.spider_init import spider_init
+from news_crawl.spiders.common.start_request_debug_file_generate import \
+    start_request_debug_file_generate
+from news_crawl.spiders.common.url_pattern_skip_check import \
+    url_pattern_skip_check
+from scrapy.http import Request, Response, TextResponse
 from scrapy.spiders import SitemapSpider
 from scrapy.spiders.sitemap import iterloc
-from scrapy.http import Response, Request, TextResponse
 from scrapy.utils.sitemap import sitemap_urls_from_robots
 from scrapy_selenium import SeleniumRequest
 from scrapy_splash import SplashRequest
+from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
-
-#
-from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
-from BrownieAtelierMongo.collection_models.crawler_response_model import (
-    CrawlerResponseModel,
-)
-from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
-from news_crawl.items import NewsCrawlItem
-from news_crawl.news_crawl_input import NewsCrawlInput
-from news_crawl.spiders.common.lastmod_term_skip_check import LastmodTermSkipCheck
-from news_crawl.spiders.common.lastmod_continued_skip_check import (
-    LastmodContinuedSkipCheck,
-)
-from news_crawl.spiders.common.pagination_check import PaginationCheck
-from news_crawl.spiders.common.custom_sitemap import CustomSitemap
-from news_crawl.spiders.common.start_request_debug_file_generate import (
-    start_request_debug_file_generate,
-)
-from news_crawl.spiders.common.spider_init import spider_init
-from news_crawl.spiders.common.spider_closed import spider_closed
-from news_crawl.spiders.common.url_pattern_skip_check import url_pattern_skip_check
+from selenium.webdriver.remote.webelement import WebElement
 
 
 class ExtensionsSitemapSpider(SitemapSpider):
@@ -466,10 +469,15 @@ class ExtensionsSitemapSpider(SitemapSpider):
         # 既知のページネーションページ内の対象urlを抽出
         urls: set = set()
         req: list = []
+
         for css_selector in self.known_pagination_css_selectors:
             # 既知のページネーションのurlの場合リクエストへ追加
-            elem = driver.find_elements_by_css_selector(css_selector)
-            known_links = [unquote(el.get_attribute("href")) for el in elem]
+            # elem = driver.find_elements_by_css_selector(css_selector)
+            elems: list[WebElement] = driver.find_elements(
+                By.CSS_SELECTOR, css_selector
+            )
+
+            known_links = [unquote(str(el.get_attribute("href"))) for el in elems]
 
             for link in known_links:
                 # 相対パスの場合絶対パスへ変換。また%エスケープされたものはUTF-8へ変換

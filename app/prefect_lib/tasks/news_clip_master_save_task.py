@@ -1,22 +1,19 @@
-from typing import Any, Optional
-from prefect import task, get_run_logger
 from datetime import datetime
+from typing import Any, Optional
+
+from BrownieAtelierMongo.collection_models.crawler_response_model import \
+    CrawlerResponseModel
+from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
+from BrownieAtelierMongo.collection_models.news_clip_master_model import \
+    NewsClipMasterModel
+from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
+    ScrapedFromResponseModel
+from prefect import get_run_logger, task
+from prefect_lib.common_module.scraped_record_error_check import \
+    scraped_record_error_check
+from prefect_lib.flows import START_TIME
 from pymongo import ASCENDING
 from pymongo.cursor import Cursor
-from prefect_lib.flows import START_TIME
-from prefect_lib.common_module.scraped_record_error_check import (
-    scraped_record_error_check,
-)
-from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.scraped_from_response_model import (
-    ScrapedFromResponseModel,
-)
-from BrownieAtelierMongo.collection_models.crawler_response_model import (
-    CrawlerResponseModel,
-)
-from BrownieAtelierMongo.collection_models.news_clip_master_model import (
-    NewsClipMasterModel,
-)
 
 
 @task

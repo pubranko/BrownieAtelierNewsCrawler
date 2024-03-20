@@ -1,10 +1,11 @@
-from typing import Optional
 from datetime import date
-from prefect import task, get_run_logger
-from pydantic import ValidationError
+from typing import Optional
 
+from prefect import get_run_logger, task
+from prefect_lib.data_models.stats_analysis_report_input import \
+    StatsAnalysisReportInput
 from prefect_lib.flows import START_TIME
-from prefect_lib.data_models.stats_analysis_report_input import StatsAnalysisReportInput
+from pydantic import ValidationError
 
 
 @task

@@ -1,15 +1,16 @@
 #!/usr/bin/python3
-import pysolr
-from datetime import datetime as dt
-import sys, os
-import pysolr
 import logging
+import os
+import sys
+from datetime import datetime as dt
 from logging import Logger
+
+import pysolr
 
 path = os.getcwd()
 sys.path.append(path)
-from shared.settings import TIMEZONE
 from models.solr_news_clip_model import SolrNewsClip
+from shared.settings import TIMEZONE
 
 logger: Logger = logging.getLogger()
 

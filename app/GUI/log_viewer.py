@@ -1,26 +1,28 @@
-import os
 import io
-import sys
+import os
 import re
-import pyperclip
+import sys
 import tkinter
 import tkinter.font
-from tkinter import scrolledtext
-from functools import partial
-from pydantic import ValidationError
 from datetime import datetime
+from functools import partial
 from pprint import pprint
+from tkinter import scrolledtext
 from typing import Any
-from pymongo.cursor import Cursor
+
+import pyperclip
+from pydantic import ValidationError
 from pymongo import DESCENDING
+from pymongo.cursor import Cursor
 
 path = os.getcwd()
 sys.path.append(path)
+from BrownieAtelierMongo.collection_models.crawler_logs_model import \
+    CrawlerLogsModel
+from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
+from GUI.log_viewer_validator import LogViewerValidator
 from shared.directory_search_task import directory_search_task
 from shared.timezone_recovery import timezone_recovery
-from GUI.log_viewer_validator import LogViewerValidator
-from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
 
 
 class LogViewer(tkinter.Frame):

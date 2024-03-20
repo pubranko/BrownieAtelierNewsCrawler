@@ -1,6 +1,6 @@
-from prefect import task, get_run_logger
-from prefect_lib.flows import START_TIME
 from BrownieAtelierNotice.mail_send import mail_send
+from prefect import get_run_logger, task
+from prefect_lib.flows import START_TIME
 
 
 @task

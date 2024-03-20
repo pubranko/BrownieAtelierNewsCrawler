@@ -1,16 +1,21 @@
 import copy
 import urllib.parse
-import scrapy
 from typing import Final
+
+import scrapy
+from news_crawl.spiders.common.start_request_debug_file_generate import \
+    LASTMOD as debug_file__LASTMOD
+from news_crawl.spiders.common.start_request_debug_file_generate import \
+    LOC as debug_file__LOC
+from news_crawl.spiders.common.start_request_debug_file_generate import \
+    start_request_debug_file_generate
+from news_crawl.spiders.common.url_pattern_skip_check import \
+    url_pattern_skip_check
+from news_crawl.spiders.common.urls_continued_skip_check import \
+    UrlsContinuedSkipCheck
+from news_crawl.spiders.extensions_class.extensions_crawl import \
+    ExtensionsCrawlSpider
 from scrapy.http import TextResponse
-from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
-from news_crawl.spiders.common.start_request_debug_file_generate import (
-    start_request_debug_file_generate,
-    LOC as debug_file__LOC,
-    LASTMOD as debug_file__LASTMOD,
-)
-from news_crawl.spiders.common.urls_continued_skip_check import UrlsContinuedSkipCheck
-from news_crawl.spiders.common.url_pattern_skip_check import url_pattern_skip_check
 
 
 class NikkeiComCrawlSpider(ExtensionsCrawlSpider):

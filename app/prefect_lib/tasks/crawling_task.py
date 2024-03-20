@@ -1,12 +1,13 @@
 import logging
-from logging import StreamHandler, FileHandler
+from logging import FileHandler, StreamHandler
 from typing import Any
-from prefect import task, get_run_logger
+
 from news_crawl.news_crawl_input import NewsCrawlInput
+from prefect import get_run_logger, task
 from scrapy.crawler import CrawlerRunner
 from scrapy.utils.log import configure_logging
-from twisted.internet import reactor
 from scrapy.utils.project import get_project_settings
+from twisted.internet import reactor
 
 
 @task

@@ -1,9 +1,10 @@
+import logging
 import os
 import sys
-from typing import Any
-import pysolr
-import logging
 from logging import Logger
+from typing import Any
+
+import pysolr
 
 path = os.getcwd()
 sys.path.append(path)

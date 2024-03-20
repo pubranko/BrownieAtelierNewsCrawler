@@ -1,11 +1,10 @@
+import requests
+from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import \
+    ScraperInfoByDomainConst
 from bs4 import BeautifulSoup as bs4
 from bs4.element import Tag
 from dateutil.parser import parse
 from shared.settings import TIMEZONE
-import requests
-from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import (
-    ScraperInfoByDomainConst,
-)
 
 
 def scraper(

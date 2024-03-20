@@ -1,11 +1,10 @@
-from typing import ItemsView
-import os
-import sys
-import re
 import glob
 import importlib
 import inspect
-from typing import Any, Final
+import os
+import re
+import sys
+from typing import Any, Final, ItemsView
 
 path = os.getcwd()
 sys.path.append(path)

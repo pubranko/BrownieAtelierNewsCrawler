@@ -1,14 +1,15 @@
 from typing import Any, Union
-from prefect import task, get_run_logger
-from pymongo.cursor import Cursor
 
-from prefect_lib.flows import START_TIME
-from prefect_lib.data_models.stats_analysis_report_input import StatsAnalysisReportInput
-from prefect_lib.data_models.stats_info_collect_data import StatsInfoCollectData
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.stats_info_collect_model import (
-    StatsInfoCollectModel,
-)
+from BrownieAtelierMongo.collection_models.stats_info_collect_model import \
+    StatsInfoCollectModel
+from prefect import get_run_logger, task
+from prefect_lib.data_models.stats_analysis_report_input import \
+    StatsAnalysisReportInput
+from prefect_lib.data_models.stats_info_collect_data import \
+    StatsInfoCollectData
+from prefect_lib.flows import START_TIME
+from pymongo.cursor import Cursor
 
 
 @task

@@ -1,13 +1,14 @@
 from __future__ import annotations  # ExtensionsSitemapSpiderの循環参照を回避するため
-from typing import Any, TYPE_CHECKING
+
+from typing import TYPE_CHECKING, Any
+
 import lxml.etree
 from lxml.etree import XMLParser, _Element
 from scrapy.http import Response
 
 if TYPE_CHECKING:
-    from news_crawl.spiders.extensions_class.extensions_sitemap import (
-        ExtensionsSitemapSpider,
-    )
+    from news_crawl.spiders.extensions_class.extensions_sitemap import \
+        ExtensionsSitemapSpider
 
 
 class CustomSitemap:

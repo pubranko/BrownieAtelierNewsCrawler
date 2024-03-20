@@ -1,21 +1,20 @@
-from errno import EKEYEXPIRED
-import os
-import sys
 import logging
+import os
+import pickle
+import sys
+import time
+from datetime import datetime
+from errno import EKEYEXPIRED
 from logging import Logger
 from typing import Any, Union
-import pickle
+
+import requests
+from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import \
+    ScraperInfoByDomainConst
 from bs4 import BeautifulSoup as bs4
-from bs4.element import Tag
-from bs4.element import ResultSet
-from datetime import datetime
+from bs4.element import ResultSet, Tag
 from dateutil.parser import parse
 from shared.settings import TIMEZONE
-import time
-import requests
-from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import (
-    ScraperInfoByDomainConst,
-)
 
 
 def scraper(

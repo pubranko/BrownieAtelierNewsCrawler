@@ -1,11 +1,12 @@
-from datetime import datetime
-from dateutil import parser
-import pysolr
-import os
-from typing import Union
-from collections.abc import ItemsView
 import logging
+import os
+from collections.abc import ItemsView
+from datetime import datetime
 from logging import Logger
+from typing import Union
+
+import pysolr
+from dateutil import parser
 
 # solrの特殊文字
 #   + - && || ! ( ) { } [ ] ^ " ~ * ? : \
