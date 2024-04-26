@@ -3,19 +3,30 @@ run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on: 
     push:
         branches: ["github-actions-test"]
+    workflow_dispatch:
 
 jobs:
   Explore-GitHub-Actions:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+        # "🎉 ジョブはプッシュ イベントによって自動的にトリガーされました。" 
+      - run: echo "🎉 起動したイベントの種類： ${{ github.event_name }}"
+        # 「🐧 このジョブは現在、GitHub によってホストされている Linux サーバーで実行されています!」
+      - run: echo "🐧 github上のOSの種類： ${{ runner.os }}"
+        # "🔎 ブランチの名前は refs/heads/github-actions-test、リポジトリは pubranko/BrownieAtelier です。" を実行します。
+      - run: echo "🔎 リポジトリ名： ${{ github.repository }}."
+      - run: echo "🔎 ブランチ名： ${{ github.ref }}"
+        # 上記のリポジトリ・ブランチにチェックアウト
       - name: Check out repository code
         uses: actions/checkout@v4
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: List files in the repository
+        # 「💡 pubranko/BrownieAtelier リポジトリがランナーに複製されました。」
+      - run: echo "💡 ${{ github.repository }} リポジトリがランナーに複製されました。"
+        # 🖥️ ワークフローはランナーでコードをテストする準備ができました。」
+      - run: echo "🖥️ ワークフローはランナーでコードをテストする準備ができました。"
+        # 
+      - name: リポジトリをクローンで格納した結果を確認
+        # クローン後はここにソースが格納される /home/runner/work/BrownieAtelier/BrownieAtelier
         run: |
-          ls ${{ github.workspace }}
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+          ls -a ${{ github.workspace }}
+        # "🍏 This job's status is success."
+      - run: echo "🍏 実行後のステータス： ${{ job.status }}."
