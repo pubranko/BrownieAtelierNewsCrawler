@@ -17,10 +17,9 @@ jobs:
       - run: echo "🔎 リポジトリ名： ${{ github.repository }}."
       - run: echo "🔎 ブランチ名： ${{ github.ref }}"
         # 上記のリポジトリ・ブランチにチェックアウト
-      - name: Check out repository code
+      - name: 上記リポジトリ・ブランチにチェックアウト
         uses: actions/checkout@v4
-        # 「💡 pubranko/BrownieAtelier リポジトリがランナーに複製されました。」
-      - run: echo "💡 ${{ github.repository }} リポジトリがランナーに複製されました。"
+
         # 🖥️ ワークフローはランナーでコードをテストする準備ができました。」
       - run: echo "🖥️ ワークフローはランナーでコードをテストする準備ができました。"
         # 
@@ -30,3 +29,6 @@ jobs:
           ls -a ${{ github.workspace }}
         # "🍏 This job's status is success."
       - run: echo "🍏 実行後のステータス： ${{ job.status }}."
+
+      - run: sudo apt list --installed
+      - run: sudo dpkg-query -l
