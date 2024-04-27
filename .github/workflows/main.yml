@@ -49,7 +49,7 @@ jobs:
 
       - name: Start MongoDB
         run:  >
-          docker run
+          docker run -d
           --name mongo-container
           -p 27017:27017
           -v $PWD/mongodb/init/create-user.js:/docker-entrypoint-initdb.d/create-user.js
@@ -60,7 +60,7 @@ jobs:
           -e BROWNIE_ATELIER_MONGO__MONGO_PASS=${BROWNIE_ATELIER_MONGO__MONGO_PASS}
           mongo:7.0.1-jammy
 
-      - run: sleep 10
+      - run: sleep 30
 
       - run: docker ps -a
 
