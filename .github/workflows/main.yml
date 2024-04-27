@@ -47,17 +47,18 @@ jobs:
       #- run: sudo apt list --installed
       #- run: sudo dpkg-query -l
 
-      # - name: Start MongoDB
-      #   run:    docker run \
-      #           --name mongo-container \
-      #           -p 27017:27017 \
-      #           -v $PWD/mongodb/init/create-user.js:/docker-entrypoint-initdb.d/create-user.js \
-      #           -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME} \
-      #           -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD} \
-      #           -e BROWNIE_ATELIER_MONGO__MONGO_USE_DB=${BROWNIE_ATELIER_MONGO__MONGO_USE_DB} \
-      #           -e BROWNIE_ATELIER_MONGO__MONGO_USER=${BROWNIE_ATELIER_MONGO__MONGO_USER} \
-      #           -e BROWNIE_ATELIER_MONGO__MONGO_PASS=${BROWNIE_ATELIER_MONGO__MONGO_PASS} \
-      #           mongo:test
+      - name: Start MongoDB
+        run:  >
+          docker run
+          --name mongo-container
+          -p 27017:27017
+          -v $PWD/mongodb/init/create-user.js:/docker-entrypoint-initdb.d/create-user.js
+          -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+          -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+          -e BROWNIE_ATELIER_MONGO__MONGO_USE_DB=${BROWNIE_ATELIER_MONGO__MONGO_USE_DB}
+          -e BROWNIE_ATELIER_MONGO__MONGO_USER=${BROWNIE_ATELIER_MONGO__MONGO_USER}
+          -e BROWNIE_ATELIER_MONGO__MONGO_PASS=${BROWNIE_ATELIER_MONGO__MONGO_PASS}
+          mongo:test
 
       - run: sleep 10
 
