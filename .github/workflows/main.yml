@@ -60,7 +60,7 @@ jobs:
           -e BROWNIE_ATELIER_MONGO__MONGO_PASS=${BROWNIE_ATELIER_MONGO__MONGO_PASS}
           mongo:7.0.1-jammy
 
-      - run: sleep 30
+      # - run: sleep 30
 
       - run: docker ps -a
 
