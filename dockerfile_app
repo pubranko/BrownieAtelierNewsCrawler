@@ -23,6 +23,7 @@ WORKDIR /home/${CONTAINER_USER}/BrownieAtelier/sh
 RUN chmod 755 ./*
 WORKDIR /home/${CONTAINER_USER}/BrownieAtelier/data
 RUN chmod 766 ./*
+RUN ls -la
 
 # Pipfile.lockからインストール（更新があった場合）
 WORKDIR /home/${CONTAINER_USER}/BrownieAtelier
