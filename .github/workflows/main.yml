@@ -45,7 +45,7 @@ jobs:
         # CONTAINER_START_COMMAND: 'bash -c "sleep 1000000000"'
         # CONTAINER_START_COMMAND: 'bash -c "sleep 60"'
         # CONTAINER_START_COMMAND: '. .venv/bin/activate && cd $HOME/BrownieAtelier/app && python prefect_lib/test_set/github_actions_unit_test.py'
-        CONTAINER_START_COMMAND: 'bash $HOME/BrownieAtelier/sh/github_actions_unit_test.sh'
+        CONTAINER_START_COMMAND: '$PWD && ls -l && bash $HOME/BrownieAtelier/sh/github_actions_unit_test.sh'
 
         # mongoDBコンテナー一般ユーザー情報、mongoDB接続情報
         # BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo
