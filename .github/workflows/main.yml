@@ -64,6 +64,8 @@ jobs:
         BROWNIE_ATELIER_NOTICE__TO_EMAIL: ${{ secrets.BROWNIE_ATELIER_NOTICE__TO_EMAIL }}
         BROWNIE_ATELIER_NOTICE__PASSWORD: ${{ secrets.BROWNIE_ATELIER_NOTICE__PASSWORD }}
 
+        # HOST OS(WSL2)のIPアドレス(コンテナー内から参照)
+        HOST_OS_IP_ADDRESS: mongo-container
 
 
     steps:
