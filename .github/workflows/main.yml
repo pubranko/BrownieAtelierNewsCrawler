@@ -70,7 +70,7 @@ jobs:
         # dummy
         HOST_OS_IP_ADDRESS: 192.0.0.1
         # dummy
-        PREFECT_HOME: /home/mikuras/BrownieAtelier
+        PREFECT_HOME: /home/root_user/BrownieAtelier
         PREFECT_API_URL: 
         PREFECT__API_KEY: 
         PREFECT__WORK_SPACE: 
@@ -137,7 +137,7 @@ jobs:
       # コンテナー起動
       - run: docker-compose -f docker-compose__app-container.yml up
 
-      - run: sleep 5
+      - run: docker-compose logs --tail="100"
 
       - run: docker ps -a
 
