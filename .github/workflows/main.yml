@@ -137,7 +137,7 @@ jobs:
       # コンテナー起動
       - run: docker-compose -f docker-compose__app-container.yml up
 
-      - run: docker-compose logs --tail="100"
+      - run: docker logs -f brownie_atelier_app --tail="100"
 
       - run: docker ps -a
 
