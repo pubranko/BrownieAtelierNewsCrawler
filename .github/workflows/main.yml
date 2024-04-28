@@ -13,13 +13,58 @@ on:
 jobs:
   GitHub-Actions-Test:
     runs-on: ubuntu-22.04
-
+    environment:
+      # name: ${{ github.ref }}
+      name: TEST
     env:
-        MONGO_INITDB_ROOT_USERNAME: root_user
-        MONGO_INITDB_ROOT_PASSWORD: password
+        ## mongoDB用コンテナーで参照するイメージのタグ
+        MONGO_TAG: 7.0.1-jammy
+        ## dockerfile_baseで参照するubuntuイメージのタグ
+        UBUNTU_TAG: 22.04
+        ## # dockerfile_appで参照するbaseイメージのタグ
+        BASE_TAG: test-0.15
+        # docker-composeで参照するappイメージのタグ
+        APP_TAG: test-0.15
+        # コンテナー内rootユーザーパスワード
+        CONTAINER_ROOT_USER: root_user
+        CONTAINER_ROOT_PASS: password
+        # コンテナ内の一般ユーザー、パスワード
+        CONTAINER_USER: common_user
+        CONTAINER_USER_PASS: password
+        # ブラウニー工房のgitリモートリポジトリー
+        GIT_REMOTE_REPOSITORY: https://github.com/pubranko/BrownieAtelier.git
+        # 上記リポジトリーのgitブランチ
+        GIT_BRANCH: github-actions-test
+        # Firefox の gecko driver
+        GECKO_DRIVER: https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz
+
+        # ホスト（ローカル）側のmongoDB接続用のcrtやpemファイルの保管ディレクトリ
+        LOCAL_MONGO_KEY_DIR: /tmp
+
+        # docker-compose command選択
+        # CONTAINER_START_COMMAND: 'bash -c "sleep 1000000000"'
+        CONTAINER_START_COMMAND: 'bash -c "sleep 5"'
+
+        # mongoDBコンテナー一般ユーザー情報、mongoDB接続情報
+        BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo
+        BROWNIE_ATELIER_MONGO__MONGO_PORT: 27017
         BROWNIE_ATELIER_MONGO__MONGO_USE_DB: test_crawler_db
-        BROWNIE_ATELIER_MONGO__MONGO_USER: common_user
-        BROWNIE_ATELIER_MONGO__MONGO_PASS: password
+        BROWNIE_ATELIER_MONGO__MONGO_USER: mongo_user
+        BROWNIE_ATELIER_MONGO__MONGO_PASS: mongo_pass
+        BROWNIE_ATELIER_MONGO__MONGO_TLS: false
+        BROWNIE_ATELIER_MONGO__MONGO_TLS_CA_FILE: 
+        BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE: 
+        # mongoDBコンテナーroot情報
+        BROWNIE_ATELIER_MONGO__MONGO_INITDB_ROOT_USERNAME: root_user
+        BROWNIE_ATELIER_MONGO__MONGO_INITDB_ROOT_PASSWORD: password
+        # Email接続情報
+        BROWNIE_ATELIER_NOTICE__SMTP_HOST: ${{ secrets.BROWNIE_ATELIER_NOTICE__SMTP_HOST }}
+        BROWNIE_ATELIER_NOTICE__SMTP_PORT: ${{ secrets.BROWNIE_ATELIER_NOTICE__SMTP_PORT }}
+        BROWNIE_ATELIER_NOTICE__FROM_EMAIL: ${{ secrets.BROWNIE_ATELIER_NOTICE__FROM_EMAIL }}
+        BROWNIE_ATELIER_NOTICE__TO_EMAIL: ${{ secrets.BROWNIE_ATELIER_NOTICE__TO_EMAIL }}
+        BROWNIE_ATELIER_NOTICE__PASSWORD: ${{ secrets.BROWNIE_ATELIER_NOTICE__PASSWORD }}
+
+
 
     steps:
         # "🎉 ジョブはプッシュ イベントによって自動的にトリガーされました。" 
@@ -47,26 +92,96 @@ jobs:
       #- run: sudo apt list --installed
       #- run: sudo dpkg-query -l
 
+      # mongoDBコンテナーの作成。
+      #   rootユーザー、使用DB名を指定。
+      #   一般ユーザーをcreate-user.jsで作成。
       - name: Start MongoDB
         run:  >
           docker run -d
           --name mongo-container
           -p 27017:27017
           -v $PWD/mongodb/init/create-user.js:/docker-entrypoint-initdb.d/create-user.js
-          -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
-          -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+          -e MONGO_INITDB_ROOT_USERNAME=${BROWNIE_ATELIER_MONGO__MONGO_INITDB_ROOT_USERNAME}
+          -e MONGO_INITDB_ROOT_PASSWORD=${BROWNIE_ATELIER_MONGO__MONGO_INITDB_ROOT_PASSWORD}
           -e BROWNIE_ATELIER_MONGO__MONGO_USE_DB=${BROWNIE_ATELIER_MONGO__MONGO_USE_DB}
           -e BROWNIE_ATELIER_MONGO__MONGO_USER=${BROWNIE_ATELIER_MONGO__MONGO_USER}
           -e BROWNIE_ATELIER_MONGO__MONGO_PASS=${BROWNIE_ATELIER_MONGO__MONGO_PASS}
-          mongo:7.0.1-jammy
-
-      # - run: sleep 30
+          mongo:${MONGO_TAG}
 
       - run: docker ps -a
 
-      - run: docker stop mongo-container
+      # baseイメージ作成
+      - run: docker-compose -f docker-compose__base-image-build.yml build
+
+      # appイメージ作成
+      - run: docker-compose -f docker-compose__app-image-build.yml build
+      
+      # - run: docker stop mongo-container
+
+      # コンテナー起動
+      # ただし各Flowをbashで実行するためにcommandは工夫する。
+      - run: docker-compose -f docker-compose__app-container.yml up -d
 
       - run: sleep 10
 
       - run: docker ps -a
 
+
+
+      # 各ニュースサイト別に、スクレイピングの情報を登録する。
+      #   scraper_info_uploader_flow.py
+
+      # 定期観測用のスパイダーを登録する。
+      #   regular_observation_controller_update_flow.py
+      #   ３つを指定（a:産経,b:朝日,c:読売）
+
+      # 初回定期観測
+      #   first_observation_flow.py
+      #   上記のa,b,cだけが実行されるはず
+
+      # 手動クローリング
+      #   manual_crawling_flow.py
+      #   その他を全て指定 (d:エポック、e:ロイター、f:共同、g:毎日、h:日経)
+
+      # 各ニュースサイト別に、定期観測クローリングのON/OFF、スクレイピングのON/OFF指定を登録する。
+      #   stop_controller_update_flow.py
+      #   a:クローリングをOFF、b:スクレイピングをOFF、C:何もしない。
+      # 
+
+      # 定期観測
+      #   regular_observation_flow.py
+      #     産経：クローリング・スクレイピングがスキップされる。
+      #     朝日：クローリングのみ稼働。スクレイピングがスキップされる。
+      #     読売：通常稼働。
+      # 
+      # マニュアルスクレイピング
+      #   manual_scrapying_flow.py
+      # 
+      # マニュアルニュースクリップマスター保存
+      #   manual_news_clip_master_save_flow.py
+      # 
+      # スクレイピング使用パターンレポート
+      #   scraper_pattern_report_flow.py
+      # 
+      # Scrapy統計情報集計
+      #   stats_info_collect_flow.py
+      # Scrapy統計情報レポート
+      #   stats_analysis_report_flow.py
+      # 
+      # 同期チェック
+      #   crawl_sync_check_flow.py
+      #   
+      # mongoDBエクスポート
+      #   mongo_export_selector_flow.py
+      # mongoDB削除
+      #   mongo_delete_selector_flow.py
+      # mongoDBインポート
+      #   mongo_import_selector_flow.py
+      # 
+      # 
+      # 
+      # 
+      # 
+      # 
+      # 
+      # 
