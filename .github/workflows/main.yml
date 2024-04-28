@@ -43,7 +43,8 @@ jobs:
 
         # docker-compose command選択
         # CONTAINER_START_COMMAND: 'bash -c "sleep 1000000000"'
-        CONTAINER_START_COMMAND: 'bash -c "sleep 60"'
+        # CONTAINER_START_COMMAND: 'bash -c "sleep 60"'
+        CONTAINER_START_COMMAND: 'cd app && pwd && python prefect_lib/test_set/github_actions_unit_test.py'
 
         # mongoDBコンテナー一般ユーザー情報、mongoDB接続情報
         # BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo
@@ -68,6 +69,7 @@ jobs:
         # dummy
         HOST_OS_IP_ADDRESS: 192.0.0.1
         # dummy
+        PREFECT_HOME: /home/mikuras/BrownieAtelier
         PREFECT_API_URL: 
         PREFECT__API_KEY: 
         PREFECT__WORK_SPACE: 
