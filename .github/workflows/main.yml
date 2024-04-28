@@ -75,7 +75,7 @@ jobs:
         PREFECT__API_KEY: 
         PREFECT__WORK_SPACE: 
         PREFECT__WORK_POOL: 
-        SCRAPY__LOG_LEVEL: 
+        SCRAPY__LOG_LEVEL: INFO
 
 
     steps:
