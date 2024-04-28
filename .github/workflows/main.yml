@@ -92,6 +92,9 @@ jobs:
       #- run: sudo apt list --installed
       #- run: sudo dpkg-query -l
 
+      # dockerネットワークを作成
+      - run: docker network create brownie-atelier-net
+
       # mongoDBコンテナーの作成。
       #   rootユーザー、使用DB名を指定。
       #   一般ユーザーをcreate-user.jsで作成。
@@ -100,6 +103,7 @@ jobs:
           docker run -d
           --name mongo-container
           -p 27017:27017
+          --network brownie-atelier-net
           -v $PWD/mongodb/init/create-user.js:/docker-entrypoint-initdb.d/create-user.js
           -e MONGO_INITDB_ROOT_USERNAME=${BROWNIE_ATELIER_MONGO__MONGO_INITDB_ROOT_USERNAME}
           -e MONGO_INITDB_ROOT_PASSWORD=${BROWNIE_ATELIER_MONGO__MONGO_INITDB_ROOT_PASSWORD}
