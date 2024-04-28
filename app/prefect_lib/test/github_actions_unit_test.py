@@ -1,3 +1,10 @@
+# カレントディレクトリをpythonpathに追加
+import os
+import sys
+current_directory = os.environ.get('PWD')
+if current_directory:
+    sys.path.append(current_directory)
+
 
 # 各ニュースサイト別に、スクレイピングの情報を登録する。
 #   scraper_info_uploader_flow.py

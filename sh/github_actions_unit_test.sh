@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # python仮想環境を有効化
-cd $HOME/BrownieAtelier/
 . .venv/bin/activate
+which python
 
 # テスト用のシェルを起動
-cd $HOME/BrownieAtelier/app
+cd app
 python prefect_lib/test/github_actions_unit_test.py
