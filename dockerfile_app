@@ -25,6 +25,7 @@ RUN chmod 755 ./*
 # Pipfile.lockからインストール（更新があった場合）
 WORKDIR /home/${CONTAINER_USER}/BrownieAtelier
 RUN python3 -m pipenv sync
+RUN ls -la
 RUN .venv/bin/pip list
 
 ENTRYPOINT []
