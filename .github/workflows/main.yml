@@ -46,7 +46,8 @@ jobs:
         CONTAINER_START_COMMAND: 'bash -c "sleep 5"'
 
         # mongoDBコンテナー一般ユーザー情報、mongoDB接続情報
-        BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo
+        # BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo
+        BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo-container
         BROWNIE_ATELIER_MONGO__MONGO_PORT: 27017
         BROWNIE_ATELIER_MONGO__MONGO_USE_DB: test_crawler_db
         BROWNIE_ATELIER_MONGO__MONGO_USER: mongo_user
@@ -65,7 +66,7 @@ jobs:
         BROWNIE_ATELIER_NOTICE__PASSWORD: ${{ secrets.BROWNIE_ATELIER_NOTICE__PASSWORD }}
 
         # HOST OS(WSL2)のIPアドレス(コンテナー内から参照)
-        HOST_OS_IP_ADDRESS: mongo-container
+        HOST_OS_IP_ADDRESS: 192.0.0.1
 
 
     steps:
