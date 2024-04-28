@@ -43,7 +43,7 @@ jobs:
 
         # docker-compose command選択
         # CONTAINER_START_COMMAND: 'bash -c "sleep 1000000000"'
-        CONTAINER_START_COMMAND: 'bash -c "sleep 5"'
+        CONTAINER_START_COMMAND: 'bash -c "sleep 60"'
 
         # mongoDBコンテナー一般ユーザー情報、mongoDB接続情報
         # BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo
@@ -65,8 +65,14 @@ jobs:
         BROWNIE_ATELIER_NOTICE__TO_EMAIL: ${{ secrets.BROWNIE_ATELIER_NOTICE__TO_EMAIL }}
         BROWNIE_ATELIER_NOTICE__PASSWORD: ${{ secrets.BROWNIE_ATELIER_NOTICE__PASSWORD }}
 
-        # HOST OS(WSL2)のIPアドレス(コンテナー内から参照)
+        # dummy
         HOST_OS_IP_ADDRESS: 192.0.0.1
+        # dummy
+        PREFECT_API_URL: 
+        PREFECT__API_KEY: 
+        PREFECT__WORK_SPACE: 
+        PREFECT__WORK_POOL: 
+        SCRAPY__LOG_LEVEL: 
 
 
     steps:
@@ -129,11 +135,9 @@ jobs:
       # ただし各Flowをbashで実行するためにcommandは工夫する。
       - run: docker-compose -f docker-compose__app-container.yml up -d
 
-      - run: sleep 10
+      - run: sleep 5
 
       - run: docker ps -a
-
-
 
       # 各ニュースサイト別に、スクレイピングの情報を登録する。
       #   scraper_info_uploader_flow.py
