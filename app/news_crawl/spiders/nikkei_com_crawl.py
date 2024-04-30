@@ -92,13 +92,14 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
         # ページ内の対象urlを抽出
         # ※1ページ目と２ページ目以降でリンクを抽出するcssセレクターが異なるため以下のように操作
         links = response.css(
-            f"#CONTENTS_MAIN > div > h3.m-miM09_title > a[href]::attr(href)"
+            # f"#CONTENTS_MAIN > div > h3.m-miM09_title > a[href]::attr(href)"
+            f"main[class^=main] article[class^=sokuhoCard] > div[class^=container] > div[class^=textArea_] > a[href]::attr(href)"
         ).getall()
-        links.extend(
-            response.css(
-                f"#CONTENTS_MAIN > div > ul > li > h3 > span > span.m-miM32_itemTitleText > a[href]::attr(href)"
-            ).getall()
-        )
+        # links.extend(
+        #     response.css(
+        #         f"#CONTENTS_MAIN > div > ul > li > h3 > span > span.m-miM32_itemTitleText > a[href]::attr(href)"
+        #     ).getall()
+        # )
         self.logger.info(f"=== ページ内の記事件数 = {len(links)}")
         # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
         if not len(links) == self.ITEMS_ON_PAGE_COUNT:

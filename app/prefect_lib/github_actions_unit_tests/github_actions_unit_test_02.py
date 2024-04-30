@@ -9,30 +9,27 @@ if __name__ == "__main__":
         sys.path.append(current_directory)
 
     # <4>
-    # 各ニュースサイト別に、定期観測クローリングのON/OFF、スクレイピングのON/OFF指定を登録する。
-    #   stop_controller_update_flow.py
-    #   a:産経:クローリングをOFF、b:朝日:スクレイピングをOFF、c:読売:何もしない。
-    from prefect_lib.flows.stop_controller_update_flow import (
-        StopControllerUpdateConst, stop_controller_update_flow)
-    stop_controller_update_flow(
-        domain="sankei.com",
-        command=StopControllerUpdateConst.COMMAND_ADD,
-        destination=StopControllerUpdateConst.CRAWLING,
-        # destination=StopControllerUpdateConst.SCRAPYING,
+    # 手動クローリング
+    #   manual_crawling_flow.py
+    #   その他を全て指定 (a:産経, b:朝日, c:読売, d:エポック, e:ロイター, f:共同, g:毎日, h:日経)
+    from prefect_lib.flows.manual_crawling_flow import manual_crawling_flow
+    manual_crawling_flow(
+        spider_names=[
+            "sankei_com_sitemap",
+            "asahi_com_sitemap",
+            "yomiuri_co_jp_sitemap",
+            "epochtimes_jp_crawl",
+            "jp_reuters_com_sitemap",
+            "kyodo_co_jp_sitemap",
+            "mainichi_jp_crawl",
+            "nikkei_com_crawl",
+        ],
+        spider_kwargs=dict(
+            debug=True,
+            page_span_from=2,
+            page_span_to=2,
+            lastmod_term_minutes_from=60,
+            lastmod_term_minutes_to=0,
+        ),
+        following_processing_execution=True  # 後続処理実行(scrapying,news_clip_masterへの登録,solrへの登録)
     )
-    stop_controller_update_flow(
-        domain="asahi.com",
-        command=StopControllerUpdateConst.COMMAND_ADD,
-        # destination=StopControllerUpdateConst.CRAWLING,
-        destination=StopControllerUpdateConst.SCRAPYING,
-    )
-
-
-    # <5>
-    # 定期観測
-    #   regular_observation_flow.py
-    #     産経：クローリング・スクレイピングがスキップされる。
-    #     朝日：クローリングのみ稼働。スクレイピングがスキップされる。
-    #     読売：通常稼働。
-    from prefect_lib.flows.regular_observation_flow import regular_observation_flow
-    regular_observation_flow()
