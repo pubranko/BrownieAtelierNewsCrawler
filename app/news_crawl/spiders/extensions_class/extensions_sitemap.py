@@ -302,8 +302,8 @@ class ExtensionsSitemapSpider(SitemapSpider):
 
             if entries.type == self.SITEMAP_TYPE__SITEMAPINDEX:
                 # 親sitemap側のlastmodと子サイトマップ側のlastmodはは常に一致するわけではなさそう。
-                if self.lastmod_term.skip_check(date_lastmod):
-                    crwal_flg = False
+                # if self.lastmod_term.skip_check(date_lastmod):
+                #     crwal_flg = False
                 if self.lastmod_continued.skip_check(date_lastmod):
                     crwal_flg = False
             else:

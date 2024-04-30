@@ -24,9 +24,13 @@ def scraper(
             scraped_pattern = {
                 scraper: scrape_info[ScraperInfoByDomainConst.ITEM__PATTERN]
             }
-            scraped_result["publish_date"] = parse(
-                str(scraped_item["content"])
-            ).astimezone(TIMEZONE)
+            if "content" in scraped_item:
+                # tag内のcontent属性がある場合はそちらの日時を取
+                _ = str(scraped_item["content"])
+            else:
+                # content属性がないタイプの場合は、タグの文字列より日時を取得
+                _ = str(scraped_item.get_text().strip())
+            scraped_result["publish_date"] = parse(_).astimezone(TIMEZONE)
             break
 
     return scraped_result, scraped_pattern

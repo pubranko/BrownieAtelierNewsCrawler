@@ -9,5 +9,5 @@ class KyodoCoJpSitemapSpider(ExtensionsSitemapSpider):
     _domain_name: str = "kyodo_co_jp"  # 各種処理で使用するドメイン名の一元管理
     _spider_version: float = 1.0
 
-    # https://www.kyodo.co.jp/sitemap-pt-post-2021-09.xml
-    sitemap_follow = ["/sitemap-pt-post-"]
+    # https://www.kyodo.co.jp/post-sitemap.xml	https://www.kyodo.co.jp/post-sitemap2.xml
+    sitemap_follow = ["/post-sitemap"]
