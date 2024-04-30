@@ -103,7 +103,7 @@ jobs:
       # キャッシュID の定義
       - name: mongoDB用キャッシュID の定義
         id: mongo_image_cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ env.PATH_CACHE }}
           key: ${{ runner.os }}-localstack-mongo-${{ env.MONGO_TAG }}
@@ -114,10 +114,14 @@ jobs:
         run: |
           docker pull mongo:${MONGO_TAG}
           docker save mongo:${MONGO_TAG} -o ${{ env.PATH_CACHE }}
+          ls -l ${{ env.PATH_CACHE }}
+          docker images
 
       # キャッシュからmongoDBイメージを復元
       - name: キャッシュからmongoDBイメージを復元
-        run: docker load -i ${{ env.PATH_CACHE }}
+        run: |
+          docker load -i ${{ env.PATH_CACHE }}
+          docker images
 
       # mongoDBコンテナーの作成。
       #   rootユーザー、使用DB名を指定。
