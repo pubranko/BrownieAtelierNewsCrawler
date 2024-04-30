@@ -140,31 +140,31 @@ jobs:
 
       # コンテナー起動
       - run: echo -e "############################\n#\n# github_actions_unit_test_01.py 実行\n#\n############################"
-      - run: export UNIT_TEST_FILE="python prefect_lib/github_actions_unit_tests/github_actions_unit_test_01.py"
+      - run: export UNIT_TEST_SCRIPT="python prefect_lib/github_actions_unit_tests/github_actions_unit_test_01.py"
       - run: docker-compose -f docker-compose__app-container.yml up
       - run: docker logs -f brownie_atelier_app --tail="100"
       - run: docker ps -a
 
       - run: echo -e "############################\n#\n# github_actions_unit_test_01.py 実行\n#\n############################"
-      - run: export UNIT_TEST_FILE="python prefect_lib/github_actions_unit_tests/github_actions_unit_test_02.py"
+      - run: export UNIT_TEST_SCRIPT="python prefect_lib/github_actions_unit_tests/github_actions_unit_test_02.py"
       - run: docker-compose -f docker-compose__app-container.yml up
       - run: docker logs -f brownie_atelier_app --tail="100"
       - run: docker ps -a
 
       - run: echo -e "############################\n#\n# github_actions_unit_test_01.py 実行\n#\n############################"
-      - run: export UNIT_TEST_FILE="python prefect_lib/github_actions_unit_tests/github_actions_unit_test_03.py"
+      - run: export UNIT_TEST_SCRIPT="python prefect_lib/github_actions_unit_tests/github_actions_unit_test_03.py"
       - run: docker-compose -f docker-compose__app-container.yml up
       - run: docker logs -f brownie_atelier_app --tail="100"
       - run: docker ps -a
 
       - run: echo -e "############################\n#\n# github_actions_unit_test_01.py 実行\n#\n############################"
-      - run: export UNIT_TEST_FILE="python prefect_lib/github_actions_unit_tests/github_actions_unit_test_04.py"
+      - run: export UNIT_TEST_SCRIPT="python prefect_lib/github_actions_unit_tests/github_actions_unit_test_04.py"
       - run: docker-compose -f docker-compose__app-container.yml up
       - run: docker logs -f brownie_atelier_app --tail="100"
       - run: docker ps -a
 
       - run: echo -e "############################\n#\n# github_actions_unit_test_01.py 実行\n#\n############################"
-      - run: export UNIT_TEST_FILE="python prefect_lib/github_actions_unit_tests/github_actions_unit_test_05.py"
+      - run: export UNIT_TEST_SCRIPT="python prefect_lib/github_actions_unit_tests/github_actions_unit_test_05.py"
       - run: docker-compose -f docker-compose__app-container.yml up
       - run: docker logs -f brownie_atelier_app --tail="100"
       - run: docker ps -a
