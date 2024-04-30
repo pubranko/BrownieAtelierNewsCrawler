@@ -106,7 +106,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ env.PATH_CACHE }}
-          key: ${{ runner.os }}-localstack-mongo-${MONGO_TAG}
+          key: ${{ runner.os }}-localstack-mongo-${{ env.MONGO_TAG }}
 
         # キャッシュ ID の作成（イメージのハッシュと日付から作成。Windows 非互換。次項を参照）
       - name: mongoDBのイメージがキャッシュにない場合にpullとsave(キャッシュ)を実行
@@ -117,7 +117,7 @@ jobs:
 
       # キャッシュからmongoDBイメージを復元
       - name: キャッシュからmongoDBイメージを復元
-        run: docker load -i ${LOCALSTACK_CACHE_PATH}
+        run: docker load -i ${{ env.PATH_CACHE }}
 
       # mongoDBコンテナーの作成。
       #   rootユーザー、使用DB名を指定。
