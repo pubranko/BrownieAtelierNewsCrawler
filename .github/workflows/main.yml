@@ -77,6 +77,8 @@ jobs:
         PREFECT__WORK_POOL: 
         SCRAPY__LOG_LEVEL: INFO
 
+        # github actions unit test用
+        UNIT_TEST_SCRIPT: 
 
     steps:
         # "🎉 ジョブはプッシュ イベントによって自動的にトリガーされました。" 
@@ -139,31 +141,31 @@ jobs:
       # - run: docker stop mongo-container
 
       # コンテナー起動
-      - run: echo -e "############################\n#\n# github_actions_unit_test_01.py 実行\n#\n############################"
+      - run: echo -e "###＜github_actions_unit_test_01.py 実行＞###"
       - run: export UNIT_TEST_SCRIPT="python prefect_lib/github_actions_unit_tests/github_actions_unit_test_01.py"
       - run: docker-compose -f docker-compose__app-container.yml up
       - run: docker logs -f brownie_atelier_app --tail="100"
       - run: docker ps -a
 
-      - run: echo -e "############################\n#\n# github_actions_unit_test_01.py 実行\n#\n############################"
+      - run: echo -e "###＜github_actions_unit_test_02.py 実行＞###"
       - run: export UNIT_TEST_SCRIPT="python prefect_lib/github_actions_unit_tests/github_actions_unit_test_02.py"
       - run: docker-compose -f docker-compose__app-container.yml up
       - run: docker logs -f brownie_atelier_app --tail="100"
       - run: docker ps -a
 
-      - run: echo -e "############################\n#\n# github_actions_unit_test_01.py 実行\n#\n############################"
+      - run: echo -e "###＜github_actions_unit_test_03.py 実行＞###"
       - run: export UNIT_TEST_SCRIPT="python prefect_lib/github_actions_unit_tests/github_actions_unit_test_03.py"
       - run: docker-compose -f docker-compose__app-container.yml up
       - run: docker logs -f brownie_atelier_app --tail="100"
       - run: docker ps -a
 
-      - run: echo -e "############################\n#\n# github_actions_unit_test_01.py 実行\n#\n############################"
+      - run: echo -e "###＜github_actions_unit_test_04.py 実行＞###"
       - run: export UNIT_TEST_SCRIPT="python prefect_lib/github_actions_unit_tests/github_actions_unit_test_04.py"
       - run: docker-compose -f docker-compose__app-container.yml up
       - run: docker logs -f brownie_atelier_app --tail="100"
       - run: docker ps -a
 
-      - run: echo -e "############################\n#\n# github_actions_unit_test_01.py 実行\n#\n############################"
+      - run: echo -e "###＜github_actions_unit_test_05.py 実行＞###"
       - run: export UNIT_TEST_SCRIPT="python prefect_lib/github_actions_unit_tests/github_actions_unit_test_05.py"
       - run: docker-compose -f docker-compose__app-container.yml up
       - run: docker logs -f brownie_atelier_app --tail="100"
