@@ -15,6 +15,8 @@ if __name__ == "__main__":
         scraper_info_by_domain_flow
     scraper_info_by_domain_flow(scraper_info_by_domain_files=[],)
 
+
+    # <2>
     # 定期観測用のスパイダーを登録する。
     #   regular_observation_controller_update_flow.py
     #   ３つを指定（a:産経,b:朝日,c:読売）
@@ -31,7 +33,7 @@ if __name__ == "__main__":
         ],
     )
 
-    # <2>
+    # <3>
     # 初回定期観測
     #   first_observation_flow.py
     #   上記のa:産経,b:朝日,c:読売だけが実行されるはず

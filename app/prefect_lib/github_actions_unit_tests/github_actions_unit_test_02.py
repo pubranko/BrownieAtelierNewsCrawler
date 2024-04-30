@@ -8,7 +8,7 @@ if __name__ == "__main__":
     if current_directory:
         sys.path.append(current_directory)
 
-    # <3>
+    # <4>
     # 各ニュースサイト別に、定期観測クローリングのON/OFF、スクレイピングのON/OFF指定を登録する。
     #   stop_controller_update_flow.py
     #   a:産経:クローリングをOFF、b:朝日:スクレイピングをOFF、c:読売:何もしない。
@@ -27,7 +27,8 @@ if __name__ == "__main__":
         destination=StopControllerUpdateConst.SCRAPYING,
     )
 
-    # <4>
+
+    # <5>
     # 定期観測
     #   regular_observation_flow.py
     #     産経：クローリング・スクレイピングがスキップされる。
@@ -35,32 +36,3 @@ if __name__ == "__main__":
     #     読売：通常稼働。
     from prefect_lib.flows.regular_observation_flow import regular_observation_flow
     regular_observation_flow()
-    
-    # <5>
-    # マニュアルスクレイピング
-    #   manual_scrapying_flow.py
-    from datetime import datetime, timedelta
-    from prefect_lib.flows.manual_scrapying_flow import manual_scrapying_flow
-    from shared.settings import TIMEZONE
-
-    manual_scrapying_flow(
-        # domain='sankei_com_sitemap',
-        target_start_time_from=datetime.now().astimezone(TIMEZONE) - timedelta(minutes=60),
-        target_start_time_to=datetime.now().astimezone(TIMEZONE),
-        # urls=None,
-        following_processing_execution=True,
-    )
-
-    # <6>
-    # マニュアルニュースクリップマスター保存
-    #   manual_news_clip_master_save_flow.py
-    # from datetime import datetime
-    from prefect_lib.flows.manual_news_clip_master_save_flow import \
-        manual_news_clip_master_save_flow
-    # from shared.settings import TIMEZONE
-
-    manual_news_clip_master_save_flow(
-        # domain='sankei_com_sitemap',
-        target_start_time_from=datetime.now().astimezone(TIMEZONE) - timedelta(minutes=60),
-        target_start_time_to=datetime.now().astimezone(TIMEZONE),
-    )

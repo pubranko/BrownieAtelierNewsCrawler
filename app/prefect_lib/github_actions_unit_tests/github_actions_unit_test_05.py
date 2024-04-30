@@ -8,110 +8,36 @@ if __name__ == "__main__":
     if current_directory:
         sys.path.append(current_directory)
 
+    # <9>
+    # Scrapy統計情報集計
+    #   stats_info_collect_flow.py
     from datetime import datetime, timedelta
+    from prefect_lib.flows.stats_info_collect_flow import stats_info_collect_flow
     from shared.settings import TIMEZONE
 
+    #基準日(0:00:00)〜翌日(0:00:00)までの期間が対象となる。
+    # stats_info_collect_flow(base_date=date(2023, 7, 1))
+    # 日を跨いだ場合に備えて2日分を収集
+    _ = datetime.now().astimezone(TIMEZONE)
+    stats_info_collect_flow(base_date=_.date())
+    _ = _ - timedelta(days=1)
+    stats_info_collect_flow(base_date=_.date())
 
-    # <12>
-    # mongoDBエクスポート
-    #   mongo_export_selector_flow.py
-    from BrownieAtelierMongo.collection_models.asynchronous_report_model import \
-        AsynchronousReportModel
-    from BrownieAtelierMongo.collection_models.controller_model import \
-        ControllerModel
-    from BrownieAtelierMongo.collection_models.crawler_logs_model import \
-        CrawlerLogsModel
-    from BrownieAtelierMongo.collection_models.crawler_response_model import \
-        CrawlerResponseModel
-    from BrownieAtelierMongo.collection_models.news_clip_master_model import \
-        NewsClipMasterModel
-    from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
-        ScrapedFromResponseModel
-    from prefect_lib.flows.mongo_export_selector_flow import \
-        mongo_export_selector_flow
-        
-    from dateutil.relativedelta import relativedelta
 
-    mongo_export_selector_flow(
-        collections_name=[
-            CrawlerResponseModel.COLLECTION_NAME,
-            ScrapedFromResponseModel.COLLECTION_NAME,
-            NewsClipMasterModel.COLLECTION_NAME,
-            CrawlerLogsModel.COLLECTION_NAME,
-            AsynchronousReportModel.COLLECTION_NAME,
-            ControllerModel.COLLECTION_NAME,
-        ],
-        prefix="",  # export先のフォルダyyyy-mmの先頭に拡張した名前を付与する。
-        suffix="",
-        period_month_from=1,  # 月次エクスポートを行うデータの基準年月
-        period_month_to=0,  # 月次エクスポートを行うデータの基準年月
-        crawler_response__registered=True,  # crawler_responseの場合、登録済みになったレコードのみエクスポートする場合True、登録済み以外のレコードも含めてエクスポートする場合False
+    # <10>
+    # Scrapy統計情報レポート
+    #   stats_analysis_report_flow.py
+    # from datetime import date
+    from prefect_lib.data_models.stats_analysis_report_input import \
+        StatsAnalysisReportConst
+    from prefect_lib.flows.stats_analysis_report_flow import \
+        stats_analysis_report_flow
+
+    # 基準日(0:00:00)〜翌日(0:00:00)までの期間が対象となる。
+    # 一週間分を1日ごとに集計した結果を取得する。
+    _ = datetime.now().astimezone(TIMEZONE)
+    stats_analysis_report_flow(
+        report_term=StatsAnalysisReportConst.REPORT_TERM__WEEKLY,
+        totalling_term=StatsAnalysisReportConst.TOTALLING_TERM__DAILY,
+        base_date=_.date(),
     )
-
-    # <13>
-    # mongoDB削除
-    #   mongo_delete_selector_flow.py
-    from BrownieAtelierMongo.collection_models.asynchronous_report_model import \
-        AsynchronousReportModel
-    from BrownieAtelierMongo.collection_models.controller_model import \
-        ControllerModel
-    from BrownieAtelierMongo.collection_models.crawler_logs_model import \
-        CrawlerLogsModel
-    from BrownieAtelierMongo.collection_models.crawler_response_model import \
-        CrawlerResponseModel
-    from BrownieAtelierMongo.collection_models.news_clip_master_model import \
-        NewsClipMasterModel
-    from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
-        ScrapedFromResponseModel
-    from prefect_lib.flows.mongo_delete_selector_flow import \
-        mongo_delete_selector_flow
-
-    mongo_delete_selector_flow(
-        collections_name=[
-            CrawlerResponseModel.COLLECTION_NAME,
-            ScrapedFromResponseModel.COLLECTION_NAME,
-            NewsClipMasterModel.COLLECTION_NAME,
-            CrawlerLogsModel.COLLECTION_NAME,
-            AsynchronousReportModel.COLLECTION_NAME,
-            ControllerModel.COLLECTION_NAME,
-        ],
-        period_month_from=1,  # 月次エクスポートを行うデータの基準年月
-        period_month_to=0,  # 月次エクスポートを行うデータの基準年月
-        # crawler_response__registered=False,
-    )
-
-    # <14>
-    # mongoDBインポート
-    #   mongo_import_selector_flow.py
-    from BrownieAtelierMongo.collection_models.asynchronous_report_model import \
-        AsynchronousReportModel
-    from BrownieAtelierMongo.collection_models.controller_model import \
-        ControllerModel
-    from BrownieAtelierMongo.collection_models.crawler_logs_model import \
-        CrawlerLogsModel
-    from BrownieAtelierMongo.collection_models.crawler_response_model import \
-        CrawlerResponseModel
-    from BrownieAtelierMongo.collection_models.news_clip_master_model import \
-        NewsClipMasterModel
-    from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
-        ScrapedFromResponseModel
-    from prefect_lib.flows.mongo_import_selector_flow import \
-        mongo_import_selector_flow
-
-    _ = datetime.now().astimezone(TIMEZONE) - relativedelta(months=1)
-    yyyy_mm_from = _.strftime("%Y-%m")
-    _ = datetime.now().astimezone(TIMEZONE) - relativedelta(months=1)
-    yyyy_mm_to = _.strftime("%Y-%m")
-
-    mongo_import_selector_flow(
-        folder_name=f"{yyyy_mm_from}_{yyyy_mm_to}",
-        collections_name=[
-            CrawlerResponseModel.COLLECTION_NAME,
-            ScrapedFromResponseModel.COLLECTION_NAME,
-            NewsClipMasterModel.COLLECTION_NAME,
-            CrawlerLogsModel.COLLECTION_NAME,
-            AsynchronousReportModel.COLLECTION_NAME,
-            ControllerModel.COLLECTION_NAME,
-        ],
-    )
-

@@ -77,30 +77,18 @@ jobs:
         PREFECT__WORK_POOL: 
         SCRAPY__LOG_LEVEL: INFO
 
-        # github actions unit test用
-        # UNIT_TEST_SCRIPT: 
-
     steps:
-        # "🎉 ジョブはプッシュ イベントによって自動的にトリガーされました。" 
-      - run: echo "🎉 起動したイベントの種類： ${{ github.event_name }}"
-        # 「🐧 このジョブは現在、GitHub によってホストされている Linux サーバーで実行されています!」
-      - run: echo "🐧 github上のOSの種類： ${{ runner.os }}"
-        # "🔎 ブランチの名前は refs/heads/github-actions-test、リポジトリは pubranko/BrownieAtelier です。" を実行します。
-      - run: echo "🔎 リポジトリ名： ${{ github.repository }}."
-      - run: echo "🔎 ブランチ名： ${{ github.ref }}"
+      - run: echo "🎉 起動イベントの種類 (${{ github.event_name }})"
+      - run: echo "🐧 github上のOSの種類 (${{ runner.os }})"
         # 上記のリポジトリ・ブランチにチェックアウト
-      - name: 上記リポジトリ・ブランチにチェックアウト
+      - name: リポジトリ(${{ github.repository }})・ブランチ(${{ github.ref }})にチェックアウト
         uses: actions/checkout@v4
 
-        # 🖥️ ワークフローはランナーでコードをテストする準備ができました。」
-      - run: echo "🖥️ ワークフローはランナーでコードをテストする準備ができました。"
-        # 
-      - name: リポジトリをクローンで格納した結果を確認
+        # テスト前チェックを確認
+      - name: ワークスペースチェック(${{ github.workspace }})
         # クローン後はここにソースが格納される /home/runner/work/BrownieAtelier/BrownieAtelier
         run: |
           ls -a ${{ github.workspace }}
-        # "🍏 This job's status is success."
-      - run: echo "🍏 実行後のステータス： ${{ job.status }}."
 
       # インストールされているものの一覧を調べてみた。
       #- run: sudo apt list --installed
@@ -137,96 +125,51 @@ jobs:
 
       # appイメージ作成
       - run: docker-compose -f docker-compose__app-image-build.yml build
-      
-      # - run: docker stop mongo-container
 
       # コンテナー起動
-      - name: "各フローのテスト"
+      - name: "<1>各ニュースサイト別スクレイピングの情報登録  <2>定期観測用のスパイダー登録  <3>初回定期観測"
         run: |
-          echo -e "###＜github_actions_unit_test_01.py 実行＞###"
+          echo -e "### <github_actions_unit_test_01.py 実行> ###"
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_01.py"
           docker-compose -f docker-compose__app-container.yml up
           docker logs -f brownie_atelier_app --tail="100"
-          docker ps -a
 
-          echo -e "###＜github_actions_unit_test_02.py 実行＞###"
+      - name: "<4>定期観測のON/OFF  <5>定期観測"
+        run: |
+          echo -e "### <github_actions_unit_test_02.py 実行> ###"
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_02.py"
           docker-compose -f docker-compose__app-container.yml up
           docker logs -f brownie_atelier_app --tail="100"
-          docker ps -a
 
-          echo -e "###＜github_actions_unit_test_03.py 実行＞###"
+      - name: "<6>手動スクレイピング  <7>手動ニュースクリップマスター保存"
+        run: |
+          echo -e "### <github_actions_unit_test_03.py 実行> ###"
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_03.py"
           docker-compose -f docker-compose__app-container.yml up
-          docker logs -f brownie_atelier_app --tail="100"
-          docker ps -a
 
-           echo -e "###＜github_actions_unit_test_04.py 実行＞###"
-           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_04.py"
-           docker-compose -f docker-compose__app-container.yml up
-           docker logs -f brownie_atelier_app --tail="100"
-           docker ps -a
+      - name: "<8>手動クローリング"
+        run: |
+          echo -e "### <github_actions_unit_test_04.py 実行> ###"
+          export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_04.py"
+          docker-compose -f docker-compose__app-container.yml up
 
-           echo -e "###＜github_actions_unit_test_05.py 実行＞###"
-           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_05.py"
-           docker-compose -f docker-compose__app-container.yml up
-           docker logs -f brownie_atelier_app --tail="100"
-           docker ps -a
+      - name: "<9>Scrapy統計情報集計  <10>Scrapy統計情報レポート"
+        run: |
+          echo -e "### <github_actions_unit_test_05.py 実行> ###"
+          export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_05.py"
+          docker-compose -f docker-compose__app-container.yml up
 
-      # 各ニュースサイト別に、スクレイピングの情報を登録する。
-      #   scraper_info_uploader_flow.py
+      - name: "<11>スクレイピング使用パターンレポート  <12>同期チェック"
+        run: |
+          echo -e "### <github_actions_unit_test_06.py 実行> ###"
+          export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_06.py"
+          docker-compose -f docker-compose__app-container.yml up
 
-      # 定期観測用のスパイダーを登録する。
-      #   regular_observation_controller_update_flow.py
-      #   ３つを指定（a:産経,b:朝日,c:読売）
+      - name: "<13>mongoDBエクスポート  <14>mongoDB削除  <15>mongoDBインポート"
+        run: |
+          echo -e "### <github_actions_unit_test_06.py 実行> ###"
+          export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_07.py"
+          docker-compose -f docker-compose__app-container.yml up
 
-      # 初回定期観測
-      #   first_observation_flow.py
-      #   上記のa,b,cだけが実行されるはず
-
-      # 手動クローリング
-      #   manual_crawling_flow.py
-      #   その他を全て指定 (d:エポック、e:ロイター、f:共同、g:毎日、h:日経)
-
-      # 各ニュースサイト別に、定期観測クローリングのON/OFF、スクレイピングのON/OFF指定を登録する。
-      #   stop_controller_update_flow.py
-      #   a:クローリングをOFF、b:スクレイピングをOFF、C:何もしない。
-      # 
-
-      # 定期観測
-      #   regular_observation_flow.py
-      #     産経：クローリング・スクレイピングがスキップされる。
-      #     朝日：クローリングのみ稼働。スクレイピングがスキップされる。
-      #     読売：通常稼働。
-      # 
-      # マニュアルスクレイピング
-      #   manual_scrapying_flow.py
-      # 
-      # マニュアルニュースクリップマスター保存
-      #   manual_news_clip_master_save_flow.py
-      # 
-      # スクレイピング使用パターンレポート
-      #   scraper_pattern_report_flow.py
-      # 
-      # Scrapy統計情報集計
-      #   stats_info_collect_flow.py
-      # Scrapy統計情報レポート
-      #   stats_analysis_report_flow.py
-      # 
-      # 同期チェック
-      #   crawl_sync_check_flow.py
-      #   
-      # mongoDBエクスポート
-      #   mongo_export_selector_flow.py
-      # mongoDB削除
-      #   mongo_delete_selector_flow.py
-      # mongoDBインポート
-      #   mongo_import_selector_flow.py
-      # 
-      # 
-      # 
-      # 
-      # 
-      # 
-      # 
-      # 
+      # "🍏 This job's status is success."
+      - run: echo "🍏 実行後のステータス： ${{ job.status }}."
