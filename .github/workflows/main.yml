@@ -77,6 +77,8 @@ jobs:
         PREFECT__WORK_POOL: 
         SCRAPY__LOG_LEVEL: INFO
 
+        # Docker イメージの tar アーカイブ出力先のパス
+        PATH_CACHE: /tmp/docker-img-arch
     steps:
       - run: echo "🎉 起動イベントの種類 (${{ github.event_name }})"
       - run: echo "🐧 github上のOSの種類 (${{ runner.os }})"
@@ -85,7 +87,7 @@ jobs:
         uses: actions/checkout@v4
 
         # テスト前チェックを確認
-      - name: ワークスペースチェック(${{ github.workspace }})
+      - name: ワークスペースチェック
         # クローン後はここにソースが格納される /home/runner/work/BrownieAtelier/BrownieAtelier
         run: |
           ls -a ${{ github.workspace }}
@@ -95,11 +97,31 @@ jobs:
       #- run: sudo dpkg-query -l
 
       # dockerネットワークを作成
-      - run: docker network create brownie-atelier-net
+      - name: dockerネットワークをテスト用に作成
+        run: docker network create brownie-atelier-net
+
+      # キャッシュID の定義
+      - name: mongoDB用キャッシュID の定義
+        id: mongo_image_cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.PATH_CACHE }}
+          key: ${{ runner.os }}-localstack-mongo-${MONGO_TAG}
+
+        # キャッシュ ID の作成（イメージのハッシュと日付から作成。Windows 非互換。次項を参照）
+      - name: mongoDBのイメージがキャッシュにない場合にpullとsave(キャッシュ)を実行
+        if: steps.mongo_image_cache.outputs.cache-hit != 'true'
+        run: |
+          docker pull mongo:${MONGO_TAG}
+          docker save mongo:${MONGO_TAG} -o ${{ env.PATH_CACHE }}
+
+      # キャッシュからmongoDBイメージを復元
+      - name: キャッシュからmongoDBイメージを復元
+        run: docker load -i ${LOCALSTACK_CACHE_PATH}
 
       # mongoDBコンテナーの作成。
       #   rootユーザー、使用DB名を指定。
-      #   一般ユーザーをcreate-user.jsで作成。
+      #   一般ユーザーをcreate-user.jsで自動作成。
       - name: テスト用MongoDBコンテナー起動
         run:  >
           docker run -d

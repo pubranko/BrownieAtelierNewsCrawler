@@ -24,7 +24,7 @@ def scraper(
             scraped_pattern = {
                 scraper: scrape_info[ScraperInfoByDomainConst.ITEM__PATTERN]
             }
-            if "content" in scraped_item:
+            if "content" in scraped_item.attrs:
                 # tag内のcontent属性がある場合はそちらの日時を取
                 _ = str(scraped_item["content"])
             else:
