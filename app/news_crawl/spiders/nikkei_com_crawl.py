@@ -23,8 +23,8 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
     allowed_domains: list = ["nikkei.com"]
     start_urls: list = [
         "https://www.nikkei.com/news/category/",  # 新着
-        # 'https://www.nikkei.com/news/category/?bn=1',  #クエリー部分で取得開始したい記事を指定。省略すればbn=1として処理される。
-        # 'https://www.nikkei.com/news/category/?bn=',  # 初期処理で指定ページに合わせてbn=部をカスタマイズ
+        # 'https://www.nikkei.com/news/category/?page=1',  #クエリー部分で取得開始したい記事を指定。省略すればpage=1として処理される。
+        # 'https://www.nikkei.com/news/category/?page=2',  # 初期処理で指定ページに合わせてpage=部をカスタマイズ
     ]
     _domain_name: str = "nikkei_com"  # 各種処理で使用するドメイン名の一元管理
     _spider_version: float = 1.0
@@ -69,17 +69,17 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
         """ """
         # start_urlsをベースにページに合わせたurlを生成
         # 例）https://www.nikkei.com/news/category/
-        #     -> https://www.nikkei.com/news/category/?bn=5,
+        #     -> https://www.nikkei.com/news/category/?page=5,
         # 記事の開始位置をページより計算して求める。
 
         if self.url_continued.continued:
             yield scrapy.Request(
-                url=f"{self.start_urls[0]}?bn={1}",
+                url=f"{self.start_urls[0]}",
                 callback=self.parse_start_response_continued_crawl_mode,
             )
         else:
             yield scrapy.Request(
-                url=f"{self.start_urls[0]}?bn={(self.page_from * self.ITEMS_ON_PAGE_COUNT) - self.ITEMS_ON_PAGE_COUNT + 1}",
+                url=f"{self.start_urls[0]}?page={self.page_from}",
                 callback=self.parse_start_response_page_crawl_mode,
             )
 
@@ -95,11 +95,6 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
             # f"#CONTENTS_MAIN > div > h3.m-miM09_title > a[href]::attr(href)"
             f"main[class^=main] article[class^=sokuhoCard] > div[class^=container] > div[class^=textArea_] > a[href]::attr(href)"
         ).getall()
-        # links.extend(
-        #     response.css(
-        #         f"#CONTENTS_MAIN > div > ul > li > h3 > span > span.m-miM32_itemTitleText > a[href]::attr(href)"
-        #     ).getall()
-        # )
         self.logger.info(f"=== ページ内の記事件数 = {len(links)}")
         # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
         if not len(links) == self.ITEMS_ON_PAGE_COUNT:
@@ -111,9 +106,9 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
             # 相対パスの場合絶対パスへ変換。また%エスケープされたものはUTF-8へ変換
             url: str = urllib.parse.unquote(response.urljoin(link))
             self.all_urls_list.append({debug_file__LOC: url, debug_file__LASTMOD: ""})
+
             # 前回からの続きの指定がある場合、
             # 前回取得したurlが確認できたら確認済み（削除）にする。
-
             if self.url_continued.skip_check(url):
                 pass
             elif url_pattern_skip_check(url, self.news_crawl_input.url_pattern):
@@ -156,7 +151,7 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
         else:
             # 次のページのURLを生成しリクエスト
             self.page += 1
-            next_page_url = f"{self.start_urls[0]}?bn={(self.page * self.ITEMS_ON_PAGE_COUNT) - self.ITEMS_ON_PAGE_COUNT + 1}"
+            next_page_url = f"{self.start_urls[0]}?page={self.page}"
             yield scrapy.Request(
                 url=next_page_url,
                 callback=self.parse_start_response_continued_crawl_mode,
@@ -172,13 +167,8 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
         # ページ内の対象urlを抽出
         # ※1ページ目と２ページ目以降でリンクを抽出するcssセレクターが異なるため以下のように操作
         links = response.css(
-            f"#CONTENTS_MAIN > div > h3.m-miM09_title > a[href]::attr(href)"
+            f"main[class^=main] article[class^=sokuhoCard] > div[class^=container] > div[class^=textArea_] > a[href]::attr(href)"
         ).getall()
-        links.extend(
-            response.css(
-                f"#CONTENTS_MAIN > div > ul > li > h3 > span > span.m-miM32_itemTitleText > a[href]::attr(href)"
-            ).getall()
-        )
         self.logger.info(f"=== ページ内の記事件数 = {len(links)}")
         # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
         if not len(links) == self.ITEMS_ON_PAGE_COUNT:
@@ -190,8 +180,6 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
             # 相対パスの場合絶対パスへ変換。また%エスケープされたものはUTF-8へ変換
             url: str = urllib.parse.unquote(response.urljoin(link))
             self.all_urls_list.append({debug_file__LOC: url, debug_file__LASTMOD: ""})
-            # 前回からの続きの指定がある場合、
-            # 前回取得したurlが確認できたら確認済み（削除）にする。
 
             if url_pattern_skip_check(url, self.news_crawl_input.url_pattern):
                 pass
@@ -209,7 +197,7 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
         self.page += 1
         if self.page <= self.page_to:
             # 次のページのURLを生成しリクエスト
-            next_page_url = f"{self.start_urls[0]}?bn={(self.page * self.ITEMS_ON_PAGE_COUNT) - self.ITEMS_ON_PAGE_COUNT + 1}"
+            next_page_url = f"{self.start_urls[0]}?page={self.page}"
             yield scrapy.Request(
                 url=next_page_url, callback=self.parse_start_response_page_crawl_mode
             )
