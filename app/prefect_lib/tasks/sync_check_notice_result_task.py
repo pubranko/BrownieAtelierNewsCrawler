@@ -28,6 +28,7 @@ def sync_check_notice_result_task(
         for item in response_async_domain_aggregate.items():
             if item[1] > 0:
                 message = message + item[0] + " : " + str(item[1]) + " 件\n"
+                message = message + "\n".join(response_async_list) + "\n"
 
     # スクレイピングミス分のurlがあれば
     if len(master_async_list) > 0:
@@ -36,6 +37,7 @@ def sync_check_notice_result_task(
         for item in master_async_domain_aggregate.items():
             if item[1] > 0:
                 message = message + item[0] + " : " + str(item[1]) + " 件\n"
+                message = message + "\n".join(master_async_list) + "\n"
 
     # solrへの送信ミス分のurlがあれば
     if len(solr_async_list) > 0:
@@ -44,6 +46,7 @@ def sync_check_notice_result_task(
         for item in solr_async_domain_aggregate.items():
             if item[1] > 0:
                 message = message + item[0] + " : " + str(item[1]) + " 件\n"
+                message = message + "\n".join(solr_async_list) + "\n"
 
     # エラーがあった場合エラー通知を行う。
     if not message == "":

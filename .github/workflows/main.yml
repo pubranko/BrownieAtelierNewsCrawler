@@ -137,20 +137,20 @@ jobs:
       - name: "<4>手動クローリング"
         run: |
           echo -e "### <github_actions_unit_test_04.py 実行> ###"
-          export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_04.py"
+          export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_02.py"
           docker-compose -f docker-compose__app-container.yml up
 
       - name: "<5>定期観測のON/OFF  <6>定期観測"    
         run: |
           echo -e "### <github_actions_unit_test_02.py 実行> ###"
-          export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_02.py"
+          export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_03.py"
           docker-compose -f docker-compose__app-container.yml up
           docker logs -f brownie_atelier_app --tail="100"
 
       - name: "<7>手動スクレイピング  <8>手動ニュースクリップマスター保存"    
         run: |
           echo -e "### <github_actions_unit_test_03.py 実行> ###"
-          export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_03.py"
+          export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_04.py"
           docker-compose -f docker-compose__app-container.yml up
     
       - name: "<9>Scrapy統計情報集計  <10>Scrapy統計情報レポート"
