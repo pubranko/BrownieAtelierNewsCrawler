@@ -82,12 +82,12 @@ jobs:
     steps:
       - run: echo "🎉 起動イベントの種類 (${{ github.event_name }})"
       - run: echo "🐧 github上のOSの種類 (${{ runner.os }})"
-        # 上記のリポジトリ・ブランチにチェックアウト
       - name: リポジトリ(${{ github.repository }})・ブランチ(${{ github.ref }})にチェックアウト
+        # 上記のリポジトリ・ブランチにチェックアウト
         uses: actions/checkout@v4
 
-        # テスト前チェックを確認
       - name: ワークスペースチェック
+        # テスト前チェックを確認
         # クローン後はここにソースが格納される /home/runner/work/BrownieAtelier/BrownieAtelier
         run: |
           ls -a ${{ github.workspace }}
@@ -96,20 +96,23 @@ jobs:
       #- run: sudo apt list --installed
       #- run: sudo dpkg-query -l
 
-      # dockerネットワークを作成
       - name: dockerネットワークをテスト用に作成
+        # dockerネットワークを作成
         run: docker network create brownie-atelier-net
 
-      # キャッシュID の定義
       - name: mongoDB用キャッシュID の定義
+        # キャッシュID の定義
         id: mongo_image_cache
         uses: actions/cache@v4
         with:
           path: ${{ env.PATH_CACHE }}
           key: ${{ runner.os }}-localstack-mongo-${{ env.MONGO_TAG }}
 
-        # キャッシュ ID の作成（イメージのハッシュと日付から作成。Windows 非互換。次項を参照）
+      - name: キャッシュの有無を確認
+        run: ls -l ${{ env.PATH_CACHE }}
+        
       - name: mongoDBのイメージがキャッシュにない場合にpullとsave(キャッシュ)を実行
+          # キャッシュ ID の作成（イメージのハッシュと日付から作成。Windows 非互換。次項を参照）
         if: steps.mongo_image_cache.outputs.cache-hit != 'true'
         run: |
           docker pull mongo:${MONGO_TAG}
@@ -117,16 +120,16 @@ jobs:
           ls -l ${{ env.PATH_CACHE }}
           docker images
 
-      # キャッシュからmongoDBイメージを復元
       - name: キャッシュからmongoDBイメージを復元
+        # キャッシュからmongoDBイメージを復元
         run: |
           docker load -i ${{ env.PATH_CACHE }}
           docker images
 
-      # mongoDBコンテナーの作成。
-      #   rootユーザー、使用DB名を指定。
-      #   一般ユーザーをcreate-user.jsで自動作成。
       - name: テスト用MongoDBコンテナー起動
+        # mongoDBコンテナーの作成。
+        #   rootユーザー、使用DB名を指定。
+        #   一般ユーザーをcreate-user.jsで自動作成。
         run:  >
           docker run -d
           --name mongo-container
@@ -142,8 +145,8 @@ jobs:
 
       - run: docker ps -a
 
-      # baseイメージ作成
       - name: baseイメージ作成
+        # baseイメージ作成
         # run: docker-compose -f docker-compose__base-image-build.yml build
 
         # テスト用にbaseイメージの作成を省略
@@ -152,12 +155,12 @@ jobs:
           docker pull mikuras/brownie_atelier_base:$BASE_TAG
           docker tag mikuras/brownie_atelier_base:$BASE_TAG brownie_atelier_base:$BASE_TAG
 
-      # appイメージ作成
       - name: appイメージ作成
+        # appイメージ作成
         run: docker-compose -f docker-compose__app-image-build.yml build
 
-      # 各種フローテスト
       - name: "<1>各ニュースサイト別スクレイピングの情報登録  <2>定期観測用のスパイダー登録  <3>初回定期観測"
+        # 各種フローテスト
         run: |
           echo -e "### <github_actions_unit_test_01.py 実行> ###"
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_01.py"
