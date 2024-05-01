@@ -1,0 +1,52 @@
+name: Prefect flow test
+run-name: Prefect flow test
+on: 
+    # 以下のブランチにプッシュされた際起動
+    # push:
+    #     branches: ["github-actions-test"]
+    # Githubより手動で起動
+    workflow_dispatch:
+
+env:
+  # Docker イメージの tar アーカイブ出力先のパス
+  PATH_CACHE: /tmp/docker-img-arch
+
+
+  
+
+jobs:
+  Prefect_flow_test_init:
+    runs-on: ubuntu-22.04
+    environment:
+      name: TEST
+    steps:
+      - run: echo "🎉 起動イベントの種類 (${{ github.event_name }})"
+      - run: echo "🐧 github上のOSの種類 (${{ runner.os }})"
+      - name: リポジトリ(${{ github.repository }})・ブランチ(${{ github.ref }})にチェックアウト
+        # 上記のリポジトリ・ブランチにチェックアウト
+        uses: actions/checkout@v4
+      - name: ワークスペースチェック
+        # クローン後はここにソースが格納される /home/runner/work/BrownieAtelier/BrownieAtelier
+        run: |
+          ls -a ${{ github.workspace }}
+
+
+  call_mongo_container_up:
+    runs-on: ubuntu-latest
+    environment:
+      name: TEST
+    env:
+      # 
+      DOCKER_NETWORK: "--network sample-net"
+      ## mongoDB用コンテナーで参照するイメージのタグ
+      MONGO_TAG: 7.0.1-jammy
+      # Docker イメージの tar アーカイブ出力先のパス
+      PATH_CACHE: /tmp/docker-img-arch
+
+    steps:
+      - name: Call reusable workflow
+        uses: ./.github/workflows/mongo_container_up.yml
+        with:
+          docker-network: ${{ env.DOCKER_NETWORK }}
+          path_cache: ${{ env.PATH_CACHE }}
+          mongo_tag: ${{ env.MONGO_TAG }}
