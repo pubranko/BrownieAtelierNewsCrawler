@@ -2,8 +2,8 @@ name: GitHub Actions Demo
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on: 
     # 以下のブランチにプッシュされた際起動
-    push:
-        branches: ["github-actions-test"]
+    # push:
+    #     branches: ["github-actions-test"]
     # Githubより手動で起動
     workflow_dispatch:
 
@@ -11,7 +11,6 @@ jobs:
   GitHub-Actions-Test:
     runs-on: ubuntu-22.04
     environment:
-      # name: ${{ github.ref }}
       name: TEST
     env:
         ## mongoDB用コンテナーで参照するイメージのタグ
