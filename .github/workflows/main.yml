@@ -7,9 +7,6 @@ on:
     # Githubより手動で起動
     workflow_dispatch:
 
-# env:
-#     AAA: bbb
-
 jobs:
   GitHub-Actions-Test:
     runs-on: ubuntu-22.04
@@ -42,14 +39,10 @@ jobs:
         LOCAL_MONGO_KEY_DIR: /tmp
 
         # docker-compose command選択
-        # CONTAINER_START_COMMAND: 'bash -c "sleep 1000000000"'
-        # CONTAINER_START_COMMAND: 'bash -c "sleep 60"'
-        # CONTAINER_START_COMMAND: '. .venv/bin/activate && cd $HOME/BrownieAtelier/app && python prefect_lib/test_set/github_actions_unit_test.py'
         CONTAINER_START_COMMAND: /home/common_user/BrownieAtelier/sh/github_actions_unit_test.sh
 
         # mongoDBコンテナー一般ユーザー情報、mongoDB接続情報
-        # BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo
-        BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo-container
+        BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo-server
         BROWNIE_ATELIER_MONGO__MONGO_PORT: 27017
         BROWNIE_ATELIER_MONGO__MONGO_USE_DB: test_crawler_db
         BROWNIE_ATELIER_MONGO__MONGO_USER: mongo_user
@@ -106,7 +99,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.PATH_CACHE }}
-          key: ${{ runner.os }}-localstack-mongo-${{ env.MONGO_TAG }}
+          key: ${{ runner.os }}-mongo-${{ env.MONGO_TAG }}
 
       - name: キャッシュの有無を確認
         run: ls -l ${{ env.PATH_CACHE }}
@@ -132,7 +125,7 @@ jobs:
         #   一般ユーザーをcreate-user.jsで自動作成。
         run:  >
           docker run -d
-          --name mongo-container
+          --name mongo-server
           -p 27017:27017
           --network brownie-atelier-net
           -v $PWD/mongodb/init/create-user.js:/docker-entrypoint-initdb.d/create-user.js
@@ -151,7 +144,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.PATH_CACHE }}
-          key: ${{ runner.os }}-localstack-base-${{ env.BASE_TAG }}
+          key: ${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}
 
       - name: キャッシュの有無を確認
         run: ls -l ${{ env.PATH_CACHE }}
@@ -164,16 +157,6 @@ jobs:
           docker save brownie_atelier_base:$BASE_TAG -o ${{ env.PATH_CACHE }}
           ls -l ${{ env.PATH_CACHE }}
           docker images
-
-      # - name: baseイメージ作成
-      #   # baseイメージ作成
-      #   # run: docker-compose -f docker-compose__base-image-build.yml build
-
-      #   # テスト用にbaseイメージの作成を省略
-      #   # 頭のユーザー名を削除したタグを作成
-      #   run: |
-      #     docker pull mikuras/brownie_atelier_base:$BASE_TAG
-      #     docker tag mikuras/brownie_atelier_base:$BASE_TAG brownie_atelier_base:$BASE_TAG
 
       - name: appイメージ作成
         # appイメージ作成
@@ -192,7 +175,7 @@ jobs:
         env:
           TZ: ${{ vars.TZ}}
         run: |
-          echo -e "### <github_actions_unit_test_04.py 実行> ###"
+          echo -e "### <github_actions_unit_test_02.py 実行> ###"
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_02.py"
           docker-compose -f docker-compose__app-container.yml up
 
@@ -200,7 +183,7 @@ jobs:
         env:
           TZ: ${{ vars.TZ}}
         run: |
-          echo -e "### <github_actions_unit_test_02.py 実行> ###"
+          echo -e "### <github_actions_unit_test_03.py 実行> ###"
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_03.py"
           docker-compose -f docker-compose__app-container.yml up
 
@@ -208,7 +191,7 @@ jobs:
         env:
           TZ: ${{ vars.TZ}}
         run: |
-          echo -e "### <github_actions_unit_test_03.py 実行> ###"
+          echo -e "### <github_actions_unit_test_04.py 実行> ###"
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_04.py"
           docker-compose -f docker-compose__app-container.yml up
     
@@ -232,7 +215,7 @@ jobs:
         env:
           TZ: ${{ vars.TZ}}
         run: |
-          echo -e "### <github_actions_unit_test_06.py 実行> ###"
+          echo -e "### <github_actions_unit_test_07.py 実行> ###"
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_07.py"
           docker-compose -f docker-compose__app-container.yml up
 
