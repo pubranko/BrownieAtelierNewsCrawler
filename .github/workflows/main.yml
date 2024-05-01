@@ -112,7 +112,7 @@ jobs:
         run: ls -l ${{ env.PATH_CACHE }}
         
       - name: mongoDBのイメージがキャッシュにない場合にpullとsave(キャッシュ)を実行
-          # キャッシュ ID の作成（イメージのハッシュと日付から作成。Windows 非互換。次項を参照）
+          # キャッシュ ID の作成
         if: steps.mongo_image_cache.outputs.cache-hit != 'true'
         run: |
           docker pull mongo:${MONGO_TAG}
@@ -145,15 +145,35 @@ jobs:
 
       - run: docker ps -a
 
-      - name: baseイメージ作成
-        # baseイメージ作成
-        # run: docker-compose -f docker-compose__base-image-build.yml build
+      - name: baseイメージ用キャッシュID の定義
+        # キャッシュID の定義
+        id: base_image_cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PATH_CACHE }}
+          key: ${{ runner.os }}-localstack-base-${{ env.BASE_TAG }}
 
-        # テスト用にbaseイメージの作成を省略
-        # 頭のユーザー名を削除したタグを作成
+      - name: キャッシュの有無を確認
+        run: ls -l ${{ env.PATH_CACHE }}
+  
+      - name: baseイメージがキャッシュにない場合にbuildとsave(キャッシュ)を実行
+        # キャッシュ ID の作成
+        if: steps.base_image_cache.outputs.cache-hit != 'true'
         run: |
-          docker pull mikuras/brownie_atelier_base:$BASE_TAG
-          docker tag mikuras/brownie_atelier_base:$BASE_TAG brownie_atelier_base:$BASE_TAG
+          docker-compose -f docker-compose__base-image-build.yml build
+          docker save brownie_atelier_base:$BASE_TAG -o ${{ env.PATH_CACHE }}
+          ls -l ${{ env.PATH_CACHE }}
+          docker images
+
+      # - name: baseイメージ作成
+      #   # baseイメージ作成
+      #   # run: docker-compose -f docker-compose__base-image-build.yml build
+
+      #   # テスト用にbaseイメージの作成を省略
+      #   # 頭のユーザー名を削除したタグを作成
+      #   run: |
+      #     docker pull mikuras/brownie_atelier_base:$BASE_TAG
+      #     docker tag mikuras/brownie_atelier_base:$BASE_TAG brownie_atelier_base:$BASE_TAG
 
       - name: appイメージ作成
         # appイメージ作成
@@ -161,7 +181,7 @@ jobs:
 
       - name: "<1>各ニュースサイト別スクレイピングの情報登録  <2>定期観測用のスパイダー登録  <3>初回定期観測"
         env:
-          TZ: Asia/Tokyo
+          TZ: ${{ vars.TZ}}
         # 各種フローテスト
         run: |
           echo -e "### <github_actions_unit_test_01.py 実行> ###"
@@ -170,7 +190,7 @@ jobs:
 
       - name: "<4>手動クローリング"
         env:
-          TZ: Asia/Tokyo
+          TZ: ${{ vars.TZ}}
         run: |
           echo -e "### <github_actions_unit_test_04.py 実行> ###"
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_02.py"
@@ -178,7 +198,7 @@ jobs:
 
       - name: "<5>定期観測のON/OFF  <6>定期観測"    
         env:
-          TZ: Asia/Tokyo
+          TZ: ${{ vars.TZ}}
         run: |
           echo -e "### <github_actions_unit_test_02.py 実行> ###"
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_03.py"
@@ -186,7 +206,7 @@ jobs:
 
       - name: "<7>手動スクレイピング  <8>手動ニュースクリップマスター保存"    
         env:
-          TZ: Asia/Tokyo
+          TZ: ${{ vars.TZ}}
         run: |
           echo -e "### <github_actions_unit_test_03.py 実行> ###"
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_04.py"
@@ -194,7 +214,7 @@ jobs:
     
       - name: "<9>Scrapy統計情報集計  <10>Scrapy統計情報レポート"
         env:
-          TZ: Asia/Tokyo
+          TZ: ${{ vars.TZ}}
         run: |
           echo -e "### <github_actions_unit_test_05.py 実行> ###"
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_05.py"
@@ -202,7 +222,7 @@ jobs:
 
       - name: "<11>スクレイピング使用パターンレポート  <12>同期チェック"
         env:
-          TZ: Asia/Tokyo
+          TZ: ${{ vars.TZ}}
         run: |
           echo -e "### <github_actions_unit_test_06.py 実行> ###"
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_06.py"
@@ -210,7 +230,7 @@ jobs:
 
       - name: "<13>mongoDBエクスポート  <14>mongoDB削除  <15>mongoDBインポート"
         env:
-          TZ: Asia/Tokyo
+          TZ: ${{ vars.TZ}}
         run: |
           echo -e "### <github_actions_unit_test_06.py 実行> ###"
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_07.py"

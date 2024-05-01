@@ -24,11 +24,12 @@ def mongo_common_task(
         f"=== 引数 : prefix={prefix} suffix={suffix} period_month_from~to= {period_month_from} ~ {period_month_to}"
     )
 
+    today = START_TIME.date()
     period_from: datetime = datetime.combine(
-        date.today() - relativedelta(months=period_month_from), time.min, TIMEZONE
+        today - relativedelta(months=period_month_from), time.min, TIMEZONE
     ) + relativedelta(day=1)
     period_to: datetime = datetime.combine(
-        date.today() - relativedelta(months=period_month_to), time.max, TIMEZONE
+        today - relativedelta(months=period_month_to), time.max, TIMEZONE
     ) + relativedelta(day=99)
 
     pre: str = ""
