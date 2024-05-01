@@ -44,6 +44,9 @@ jobs:
       PATH_CACHE: /tmp/docker-img-arch
 
     steps:
+      - name: リポジトリ(${{ github.repository }})・ブランチ(${{ github.ref }})にチェックアウト
+        # 上記のリポジトリ・ブランチにチェックアウト
+        uses: actions/checkout@v4
       - name: Call reusable workflow
         uses: ./.github/workflows/mongo_container_up.yml
         with:
