@@ -17,6 +17,8 @@ jobs:
       # name: ${{ github.ref }}
       name: TEST
     env:
+        # タイムゾーンの調整
+        TZ: Asia/Tokyo
         ## mongoDB用コンテナーで参照するイメージのタグ
         MONGO_TAG: 7.0.1-jammy
         ## dockerfile_baseで参照するubuntuイメージのタグ
