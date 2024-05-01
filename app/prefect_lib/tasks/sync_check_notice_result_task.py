@@ -1,3 +1,4 @@
+from urllib.parse import urlparse
 from BrownieAtelierNotice.mail_send import mail_send
 from prefect import get_run_logger, task
 from prefect_lib.flows import START_TIME
@@ -28,7 +29,8 @@ def sync_check_notice_result_task(
         for item in response_async_domain_aggregate.items():
             if item[1] > 0:
                 message = message + item[0] + " : " + str(item[1]) + " 件\n"
-                message = message + "\n".join(response_async_list) + "\n"
+                _ = [url for url in response_async_list if urlparse(url).hostname.replace("www.","") == item[0]]    # 非同期リストよりドメインが一致したものだけのリストを生成
+                message = message + "\n".join(_) + "\n"
 
     # スクレイピングミス分のurlがあれば
     if len(master_async_list) > 0:
@@ -37,7 +39,8 @@ def sync_check_notice_result_task(
         for item in master_async_domain_aggregate.items():
             if item[1] > 0:
                 message = message + item[0] + " : " + str(item[1]) + " 件\n"
-                message = message + "\n".join(master_async_list) + "\n"
+                _ = [url for url in master_async_list if urlparse(url).hostname.replace("www.","") == item[0]]    # 非同期リストよりドメインが一致したものだけのリストを生成
+                message = message + "\n".join(_) + "\n"
 
     # solrへの送信ミス分のurlがあれば
     if len(solr_async_list) > 0:
@@ -46,7 +49,8 @@ def sync_check_notice_result_task(
         for item in solr_async_domain_aggregate.items():
             if item[1] > 0:
                 message = message + item[0] + " : " + str(item[1]) + " 件\n"
-                message = message + "\n".join(solr_async_list) + "\n"
+                _ = [url for url in solr_async_list if urlparse(url).hostname.replace("www.","") == item[0]]    # 非同期リストよりドメインが一致したものだけのリストを生成
+                message = message + "\n".join(_) + "\n"
 
     # エラーがあった場合エラー通知を行う。
     if not message == "":
