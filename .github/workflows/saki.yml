@@ -15,9 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     environment: TEST
     steps:
-      - run: echo "呼び出し先 ${{ secrets.BROWNIE_ATELIER_NOTICE__FROM_EMAIL }}" 
-      - run: echo "呼び出し先 ${{ secrets.token }}" 
-      - run: echo "呼び出し先 ${{ secrets.GITHUB_TOKEN }}" 
+      - name: 呼び出し先
+        run: |
+          echo "${{ secrets.BROWNIE_ATELIER_NOTICE__FROM_EMAIL }}" 
+          echo "${{ secrets.REPO_ENV_TEST }}" 
+          echo "${{ secrets.token }}" 
+          echo "${{ secrets.GITHUB_TOKEN }}" 
 
 
 
