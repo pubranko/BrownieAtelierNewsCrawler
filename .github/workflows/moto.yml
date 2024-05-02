@@ -1,21 +1,20 @@
 name: Moto
 run-name: moto
 on:
-    workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
-    moto_job:
-        runs-on: ubuntu-latest
-        environment: TEST
-        steps:
-            - run: echo "呼び出し元"
-            - name: リポジトリ(${{ github.repository }})・ブランチ(${{ github.ref }})にチェックアウト
-            # 上記のリポジトリ・ブランチにチェックアウト
-              uses: actions/checkout@v4
-    
-            - name: Call reusable workflow
-              #   uses: ./.github/workflows/mongo_container_up.yml
-              uses: ./.github/workflows/saki.yml
+  moto_job:
+    runs-on: ubuntu-latest
+    environment: TEST
+    steps:
+      - run: echo "呼び出し元"
+      - name: リポジトリ(${{ github.repository }})・ブランチ(${{ github.ref }})にチェックアウト
+      # 上記のリポジトリ・ブランチにチェックアウト
+        uses: actions/checkout@v4
+
+  reuse:
+    uses: ./.github/workflows/saki.yml
 
 
 

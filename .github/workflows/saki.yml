@@ -4,11 +4,11 @@ on:
     workflow_call:
 
 jobs:
-    saki_job:
-        runs-on: ubuntu-latest
-        environment: TEST
-        steps:
-          - run: echo "呼び出し先"
+  saki_job:
+    runs-on: ubuntu-latest
+    environment: TEST
+    steps:
+      - run: echo "呼び出し先"
 
 
 
