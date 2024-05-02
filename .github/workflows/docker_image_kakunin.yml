@@ -114,7 +114,7 @@ jobs:
       - name: キャッシュからmongoDBイメージを復元
         # キャッシュからmongoDBイメージを復元
         run: |
-          docker load -i ${{ env.PATH_CACHE }}/${{ runner.os }}-mongo-${{ env.MONGO_TAG }}
+          docker load -i ${{ env.PATH_CACHE }}/${{ runner.os }}-mongo-${{ env.MONGO_TAG }}.tar
           docker images
 
   Docker-Image-Check:
