@@ -14,8 +14,8 @@ jobs:
         uses: actions/checkout@v4
       - run: ${{ secrets.BROWNIE_ATELIER_NOTICE__FROM_EMAIL }}
 
-  reuse:
-    
+  reuse-job:
+    needs: moto_job
     uses: ./.github/workflows/saki.yml
     
     with:
