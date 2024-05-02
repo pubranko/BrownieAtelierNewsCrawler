@@ -95,8 +95,7 @@ jobs:
 
       # この Workflow が正常に終了したら path をキャッシュ。
       # すでに key が存在する場合、path にキャッシュをリストアする。
-      - name: mongoDB用キャッシュID の定義
-        # キャッシュID の定義
+      - name: mongoDB用キャッシュの定義 & 復元
         id: mongo_image_cache
         uses: actions/cache@v4
         with:
@@ -104,9 +103,10 @@ jobs:
           key: ${{ runner.os }}-mongo-${{ env.MONGO_TAG }}
           # restore-keys: |
           #   ${{ runner.os }}-mongo-${{ env.MONGO_TAG }}
+          #   ${{ runner.os }}-mongo
 
       # キャッシュがある場合は tar をロードしてイメージ一覧に追加
-      - name: Load Docker image if exists
+      - name: mongoDB用キャッシュがある場合は tar をロードしてイメージ一覧に追加
         if: steps.mongo_image_cache.outputs.cache-hit == 'true'
         run: |
           ls -l ${{ env.PATH_CACHE }}
