@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: 呼び出し先
         run: |
-          echo "${{ secrets.BROWNIE_ATELIER_NOTICE__FROM_EMAIL }}" 
+          echo "${{ secrets.BROWNIE_ATELIER_NOTICE__ }}" 
           echo "${{ secrets.REPO_ENV_TEST }}" 
           echo "${{ secrets.token }}" 
           echo "${{ secrets.GITHUB_TOKEN }}" 
