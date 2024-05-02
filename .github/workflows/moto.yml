@@ -17,11 +17,11 @@ jobs:
   reuse-job:
     needs: moto_job
     uses: ./.github/workflows/saki.yml
-    
+    environment: TEST
     with:
       config-path: "/tmp"
-    # secrets:
-    #   token: ${{ secrets.REPO_ENV_TEST }}
-    #   BROWNIE_ATELIER_NOTICE__FROM_EMAIL: ${{ secrets.BROWNIE_ATELIER_NOTICE__FROM_EMAIL }}
+    secrets:
+      token: ${{ secrets.REPO_ENV_TEST }}
+      BROWNIE_ATELIER_NOTICE__FROM_EMAIL: ${{ secrets.BROWNIE_ATELIER_NOTICE__FROM_EMAIL }}
     # secrets: inherit # pass all secrets
 
