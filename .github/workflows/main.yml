@@ -149,7 +149,7 @@ jobs:
       # baseイメージコンテナー
       #################################################
 
-      - name: baseイメージ用キャッシュID の定義
+      - name: baseイメージ用キャッシュの定義 & 復元
         # キャッシュID の定義
         id: base_image_cache
         uses: actions/cache@v4
@@ -157,12 +157,19 @@ jobs:
           path: ${{ env.PATH_CACHE }}
           key: ${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}
 
-      - name: baseイメージがキャッシュにない場合にbuildとsave(キャッシュ)を実行
-        # キャッシュ ID の作成
+      # キャッシュがある場合は tar をロードしてイメージ一覧に追加
+      - name: base用キャッシュがある場合は tar をロードしてイメージ一覧に追加
+        if: steps.base_image_cache.outputs.cache-hit == 'true'
+        run: |
+          ls -l ${{ env.PATH_CACHE }}
+          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}.tar
+          docker images
+
+      - name: baseイメージがキャッシュにない場合にpullとsave(キャッシュ)を実行
         if: steps.base_image_cache.outputs.cache-hit != 'true'
         run: |
           docker-compose -f docker-compose__base-image-build.yml build
-          docker save brownie_atelier_base:$BASE_TAG -o ${{ env.PATH_CACHE }}
+          docker save brownie_atelier_base:$BASE_TAG -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}.tar
           ls -l ${{ env.PATH_CACHE }}
           docker images
 
