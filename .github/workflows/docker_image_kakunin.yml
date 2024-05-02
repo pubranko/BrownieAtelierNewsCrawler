@@ -114,6 +114,7 @@ jobs:
           # キャッシュ ID の作成
         if: steps.mongo_image_cache.outputs.cache-hit != 'true'
         run: |
+          mkdir ${{ env.PATH_CACHE }}
           docker pull mongo:${MONGO_TAG}
           docker save mongo:${MONGO_TAG} -o ${{ env.PATH_CACHE }}/${{ runner.os }}-mongo-${{ env.MONGO_TAG }}.tar
           ls -l ${{ env.PATH_CACHE }}
