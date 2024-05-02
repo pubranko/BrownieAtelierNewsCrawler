@@ -105,6 +105,11 @@ jobs:
           # restore-keys: |
           #   ${{ runner.os }}-mongo-${{ env.MONGO_TAG }}
 
+      # キャッシュがある場合は tar をロードしてイメージ一覧に追加
+      - name: Load Docker image if exists
+        if: steps.mongo_image_cache.outputs.cache-hit == 'true'
+        run: docker load --input ${{ runner.os }}-mongo-${{ env.MONGO_TAG }}
+
       - name: mongoDBのイメージがキャッシュにない場合にpullとsave(キャッシュ)を実行
           # キャッシュ ID の作成
         if: steps.mongo_image_cache.outputs.cache-hit != 'true'
@@ -116,9 +121,10 @@ jobs:
 
       - name: キャッシュからmongoDBイメージを復元
         # キャッシュからmongoDBイメージを復元
+        # docker load -i ${{ runner.os }}-mongo-${{ env.MONGO_TAG }}
         run: |
           ls -l ${{ env.PATH_CACHE }}
-          docker load -i ${{ runner.os }}-mongo-${{ env.MONGO_TAG }}
+          
           docker images
 
   Docker-Image-Check:
