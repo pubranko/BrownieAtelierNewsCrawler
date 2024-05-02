@@ -145,6 +145,7 @@ jobs:
 
       - run: docker ps -a
 
+
       #################################################
       # baseイメージコンテナー
       #################################################
@@ -173,13 +174,16 @@ jobs:
           ls -l ${{ env.PATH_CACHE }}
           docker images
 
+
       #################################################
       # appイメージコンテナー
       #################################################
 
       - name: appイメージ作成
         # appイメージ作成
-        run: docker-compose -f docker-compose__app-image-build.yml build
+        run: |
+          docker-compose -f docker-compose__app-image-build.yml build
+          docker images
 
 
       #################################################
