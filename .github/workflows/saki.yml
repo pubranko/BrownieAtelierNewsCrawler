@@ -8,7 +8,7 @@ jobs:
         runs-on: ubuntu-latest
         environment: TEST
         steps:
-            - run: echo "呼び出し先"
+          - run: echo "呼び出し先"
 
 
 
