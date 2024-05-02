@@ -12,9 +12,15 @@ jobs:
       - name: リポジトリ(${{ github.repository }})・ブランチ(${{ github.ref }})にチェックアウト
       # 上記のリポジトリ・ブランチにチェックアウト
         uses: actions/checkout@v4
+      - run: ${{ secrets.BROWNIE_ATELIER_NOTICE__FROM_EMAIL }}
 
   reuse:
+    
     uses: ./.github/workflows/saki.yml
-
+    
+    with:
+      config-path: .github/labeler.yml
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}
 
 

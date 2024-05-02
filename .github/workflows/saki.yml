@@ -2,13 +2,22 @@ name: Saki
 # run-name: saki
 on:
     workflow_call:
+      inputs:
+        config-path:
+          required: true
+          type: string
+      secrets:
+        token:
+          required: true
 
 jobs:
   saki_job:
     runs-on: ubuntu-latest
     environment: TEST
     steps:
-      - run: echo "呼び出し先"
+      - run: echo "呼び出し先 ${{ secrets.BROWNIE_ATELIER_NOTICE__FROM_EMAIL }}" 
+      - run: echo "呼び出し先 ${{ secrets.token }}" 
+      - run: echo "呼び出し先 ${{ secrets.GITHUB_TOKEN }}" 
 
 
 
