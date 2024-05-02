@@ -92,6 +92,9 @@ jobs:
         # dockerネットワークを作成
         run: docker network create brownie-atelier-net
 
+
+      # この Workflow が正常に終了したら path をキャッシュ。
+      # すでに key が存在する場合、path にキャッシュをリストアする。
       - name: mongoDB用キャッシュID の定義
         # キャッシュID の定義
         id: mongo_image_cache
@@ -115,7 +118,7 @@ jobs:
         # キャッシュからmongoDBイメージを復元
         run: |
           ls -l ${{ env.PATH_CACHE }}
-          docker load -i ${{ env.PATH_CACHE }}/${{ runner.os }}-mongo-${{ env.MONGO_TAG }}.tar
+          docker load -i ${{ runner.os }}-mongo-${{ env.MONGO_TAG }}
           docker images
 
   Docker-Image-Check:
