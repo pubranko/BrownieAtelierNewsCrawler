@@ -102,8 +102,8 @@ jobs:
         with:
           path: ${{ env.PATH_CACHE }}
           key: ${{ runner.os }}-mongo-${{ env.MONGO_TAG }}
-          # restore-keys: |
-          #   ${{ runner.os }}-mongo-${{ env.MONGO_TAG }}
+          restore-keys: |
+            ${{ runner.os }}-mongo-${{ env.MONGO_TAG }}
 
       # キャッシュがある場合は tar をロードしてイメージ一覧に追加
       - name: Load Docker image if exists
@@ -136,7 +136,7 @@ jobs:
         # 上記のリポジトリ・ブランチにチェックアウト
         uses: actions/checkout@v4
 
-      - name: 別ジョブで作成したdockerイメージ参照できる？
+      - name: 別ジョブで作成したdockerイメージ参照できる？ -> 答え：できない
         run: |
           docker images
 
