@@ -6,9 +6,12 @@ on:
         config-path:
           required: true
           type: string
-      secrets:
-        token:
-          required: true
+      # secrets:
+      #   token:
+      #     required: true
+      #   BROWNIE_ATELIER_NOTICE__FROM_EMAIL:
+      #     required: true
+      # secrets: inherit
 
 jobs:
   saki_job:
@@ -17,10 +20,9 @@ jobs:
     steps:
       - name: 呼び出し先
         run: |
-          echo "${{ secrets.BROWNIE_ATELIER_NOTICE__ }}" 
+          echo "${{ secrets.BROWNIE_ATELIER_NOTICE__FROM_EMAIL }}" 
           echo "${{ secrets.REPO_ENV_TEST }}" 
           echo "${{ secrets.token }}" 
           echo "${{ secrets.GITHUB_TOKEN }}" 
-
 
 
