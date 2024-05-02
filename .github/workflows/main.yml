@@ -1,6 +1,6 @@
 name: GitHub Actions Demo
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
-on: 
+on:
     # 以下のブランチにプッシュされた際起動
     # push:
     #     branches: ["github-actions-test"]
@@ -47,8 +47,8 @@ jobs:
         BROWNIE_ATELIER_MONGO__MONGO_USER: mongo_user
         BROWNIE_ATELIER_MONGO__MONGO_PASS: mongo_pass
         BROWNIE_ATELIER_MONGO__MONGO_TLS: false
-        BROWNIE_ATELIER_MONGO__MONGO_TLS_CA_FILE: 
-        BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE: 
+        BROWNIE_ATELIER_MONGO__MONGO_TLS_CA_FILE:
+        BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE:
         # mongoDBコンテナーroot情報
         BROWNIE_ATELIER_MONGO__MONGO_INITDB_ROOT_USERNAME: root_user
         BROWNIE_ATELIER_MONGO__MONGO_INITDB_ROOT_PASSWORD: password
@@ -63,10 +63,10 @@ jobs:
         HOST_OS_IP_ADDRESS: 192.0.0.1
         # dummy
         PREFECT_HOME: /home/root_user/BrownieAtelier
-        PREFECT_API_URL: 
-        PREFECT__API_KEY: 
-        PREFECT__WORK_SPACE: 
-        PREFECT__WORK_POOL: 
+        PREFECT_API_URL:
+        PREFECT__API_KEY:
+        PREFECT__WORK_SPACE:
+        PREFECT__WORK_POOL:
         SCRAPY__LOG_LEVEL: INFO
 
         # Docker イメージの tar アーカイブ出力先のパス
@@ -92,27 +92,38 @@ jobs:
         # dockerネットワークを作成
         run: docker network create brownie-atelier-net
 
-      - name: mongoDB用キャッシュID の定義
-        # キャッシュID の定義
+
+      #################################################
+      # mongoDBコンテナー
+      #################################################
+
+      # この Workflow が正常に終了したら path をキャッシュ。
+      # すでに key が存在する場合、path にキャッシュをリストアする。
+      - name: mongoDB用キャッシュの定義 & 復元
         id: mongo_image_cache
         uses: actions/cache@v4
         with:
           path: ${{ env.PATH_CACHE }}
           key: ${{ runner.os }}-mongo-${{ env.MONGO_TAG }}
+          # restore-keys: |
+          #   ${{ runner.os }}-mongo-${{ env.MONGO_TAG }}
+          #   ${{ runner.os }}-mongo
 
-      - name: mongoDBのイメージがキャッシュにない場合にpullとsave(キャッシュ)を実行
-          # キャッシュ ID の作成
-        if: steps.mongo_image_cache.outputs.cache-hit != 'true'
+      # キャッシュがある場合は tar をロードしてイメージ一覧に追加
+      - name: mongoDB用キャッシュがある場合は tar をロードしてイメージ一覧に追加
+        if: steps.mongo_image_cache.outputs.cache-hit == 'true'
         run: |
-          docker pull mongo:${MONGO_TAG}
-          docker save mongo:${MONGO_TAG} -o ${{ env.PATH_CACHE }}
           ls -l ${{ env.PATH_CACHE }}
+          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-mongo-${{ env.MONGO_TAG }}.tar
           docker images
 
-      - name: キャッシュからmongoDBイメージを復元
-        # キャッシュからmongoDBイメージを復元
+      - name: mongoDBのイメージがキャッシュにない場合にpullとsave(キャッシュ)を実行
+        if: steps.mongo_image_cache.outputs.cache-hit != 'true'
         run: |
-          docker load -i ${{ env.PATH_CACHE }}
+          mkdir ${{ env.PATH_CACHE }}
+          docker pull mongo:${MONGO_TAG}
+          docker save mongo:${MONGO_TAG} -o ${{ env.PATH_CACHE }}/${{ runner.os }}-mongo-${{ env.MONGO_TAG }}.tar
+          ls -l ${{ env.PATH_CACHE }}
           docker images
 
       - name: テスト用MongoDBコンテナー起動
@@ -134,6 +145,10 @@ jobs:
 
       - run: docker ps -a
 
+      #################################################
+      # baseイメージコンテナー
+      #################################################
+
       - name: baseイメージ用キャッシュID の定義
         # キャッシュID の定義
         id: base_image_cache
@@ -151,9 +166,18 @@ jobs:
           ls -l ${{ env.PATH_CACHE }}
           docker images
 
+      #################################################
+      # appイメージコンテナー
+      #################################################
+
       - name: appイメージ作成
         # appイメージ作成
         run: docker-compose -f docker-compose__app-image-build.yml build
+
+
+      #################################################
+      # 各種フロー実行
+      #################################################
 
       - name: "<1>各ニュースサイト別スクレイピングの情報登録  <2>定期観測用のスパイダー登録  <3>初回定期観測"
         env:
@@ -172,7 +196,7 @@ jobs:
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_02.py"
           docker-compose -f docker-compose__app-container.yml up
 
-      - name: "<5>定期観測のON/OFF  <6>定期観測"    
+      - name: "<5>定期観測のON/OFF  <6>定期観測"
         env:
           TZ: ${{ vars.TZ}}
         run: |
@@ -180,14 +204,14 @@ jobs:
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_03.py"
           docker-compose -f docker-compose__app-container.yml up
 
-      - name: "<7>手動スクレイピング  <8>手動ニュースクリップマスター保存"    
+      - name: "<7>手動スクレイピング  <8>手動ニュースクリップマスター保存"
         env:
           TZ: ${{ vars.TZ}}
         run: |
           echo -e "### <github_actions_unit_test_04.py 実行> ###"
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_04.py"
           docker-compose -f docker-compose__app-container.yml up
-    
+
       - name: "<9>Scrapy統計情報集計  <10>Scrapy統計情報レポート"
         env:
           TZ: ${{ vars.TZ}}
