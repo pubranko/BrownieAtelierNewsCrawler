@@ -12,16 +12,13 @@ jobs:
       - name: リポジトリ(${{ github.repository }})・ブランチ(${{ github.ref }})にチェックアウト
       # 上記のリポジトリ・ブランチにチェックアウト
         uses: actions/checkout@v4
-      - run: echo "MY_SECRET=${{ secrets.BROWNIE_ATELIER_NOTICE__FROM_EMAIL }}" >> $GITHUB_ENV
 
   reuse-job:
     needs: moto_job
     uses: ./.github/workflows/saki.yml
-    environment: TEST
     with:
       config-path: "/tmp"
     secrets:
       token: ${{ secrets.REPO_ENV_TEST }}
-      BROWNIE_ATELIER_NOTICE__FROM_EMAIL: ${{ secrets.BROWNIE_ATELIER_NOTICE__FROM_EMAIL }}
     # secrets: inherit # pass all secrets
 

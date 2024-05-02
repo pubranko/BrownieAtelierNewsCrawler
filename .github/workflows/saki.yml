@@ -9,8 +9,6 @@ on:
       secrets:
         token:
           required: true
-        BROWNIE_ATELIER_NOTICE__FROM_EMAIL:
-          required: true
       # secrets: inherit
 
 jobs:
