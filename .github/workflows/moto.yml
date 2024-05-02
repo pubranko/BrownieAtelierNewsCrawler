@@ -12,7 +12,7 @@ jobs:
       - name: リポジトリ(${{ github.repository }})・ブランチ(${{ github.ref }})にチェックアウト
       # 上記のリポジトリ・ブランチにチェックアウト
         uses: actions/checkout@v4
-      - run: ${{ secrets.BROWNIE_ATELIER_NOTICE__FROM_EMAIL }}
+      - run: echo "${{ secrets.BROWNIE_ATELIER_NOTICE__FROM_EMAIL }}"
 
   reuse-job:
     needs: moto_job
