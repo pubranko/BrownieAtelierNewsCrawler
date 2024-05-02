@@ -115,7 +115,7 @@ jobs:
         if: steps.mongo_image_cache.outputs.cache-hit != 'true'
         run: |
           docker pull mongo:${MONGO_TAG}
-          docker save mongo:${MONGO_TAG} -o ${{ env.PATH_CACHE }}/${{ runner.os }}-mongo-${{ env.MONGO_TAG }}
+          docker save mongo:${MONGO_TAG} -o ${{ runner.os }}-mongo-${{ env.MONGO_TAG }}
           ls -l ${{ env.PATH_CACHE }}
           docker images
 
