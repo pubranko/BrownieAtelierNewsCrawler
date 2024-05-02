@@ -116,15 +116,12 @@ jobs:
         run: |
           docker pull mongo:${MONGO_TAG}
           docker save mongo:${MONGO_TAG} -o ${{ runner.os }}-mongo-${{ env.MONGO_TAG }}
-          ls -l ${{ env.PATH_CACHE }}
           docker images
 
       - name: キャッシュからmongoDBイメージを復元
         # キャッシュからmongoDBイメージを復元
         # docker load -i ${{ runner.os }}-mongo-${{ env.MONGO_TAG }}
         run: |
-          ls -l ${{ env.PATH_CACHE }}
-          
           docker images
 
   Docker-Image-Check:
