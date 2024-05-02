@@ -1,0 +1,17 @@
+name: Moto
+run-name: moto
+on:
+    workflow_dispatch:
+
+jobs:
+    moto_job:
+        runs-on: ubuntu-latest
+        environment: TEST
+        steps:
+            - run: echo "呼び出し元"
+            - name: Call reusable workflow
+              #   uses: ./.github/workflows/mongo_container_up.yml
+              uses: ./.github/workflows/saki.yml
+
+
+
