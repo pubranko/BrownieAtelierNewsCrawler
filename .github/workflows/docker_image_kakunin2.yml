@@ -1,5 +1,5 @@
-name: Docker Image Check2
-run-name: Docker Image Check2-run
+name: Docker Image Check & pull & recovery
+run-name: Docker Image Check & pull & recovery-run
 on: 
     # 以下のブランチにプッシュされた際起動
     # push:
