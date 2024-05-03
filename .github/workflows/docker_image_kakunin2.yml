@@ -77,6 +77,6 @@ jobs:
 
       - name: baseイメージをpull
         run: |
-          docker pull brownie_atelier_base:$BASE_TAG
+          docker pull mikuras/brownie_atelier_base:$BASE_TAG
           docker images
 
