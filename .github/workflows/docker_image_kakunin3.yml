@@ -78,10 +78,10 @@ jobs:
         # 上記のリポジトリ・ブランチにチェックアウト
         uses: actions/checkout@v4
 
-      - name: baseイメージをpull
-        run: |
-          docker pull mikuras/brownie_atelier_base:$BASE_TAG
-          docker images
+      # - name: baseイメージをpull
+      #   run: |
+      #     docker pull mikuras/brownie_atelier_base:$BASE_TAG
+      #     docker images
 
       - name: baseイメージ存在チェック
         id: check-image
@@ -92,7 +92,7 @@ jobs:
       - name: baseイメージが既にdocker hubに登録されていた場合、pullを実行
         if: steps.check-image.outputs.image_exists
         run: |
-          docker pull ghcr.io/OWNER/IMAGE_NAME:TAG
+          docker pull mikuras/brownie_atelier_base:$BASE_TAG
           docker images
       
       - name: baseイメージがない場合、baseイメージ用キャッシュの定義 & 復元
