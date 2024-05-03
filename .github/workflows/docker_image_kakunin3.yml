@@ -71,6 +71,9 @@ jobs:
 
         # Docker イメージの tar アーカイブ出力先のパス
         PATH_CACHE: /tmp/docker-img-arch
+
+        # ワーク
+        IMAGE_EXISTS:
     steps:
       - run: echo "🎉 起動イベントの種類 (${{ github.event_name }})"
       - run: echo "🐧 github上のOSの種類 (${{ runner.os }})"
@@ -85,18 +88,24 @@ jobs:
 
       - name: baseイメージ存在チェック
         id: check-image
+        # run: |
+        #   IMAGE_EXISTS=$(docker images -q mikuras/brownie_atelier_base:$BASE_TAG)
+        #   echo "::set-output name=image_exists::$IMAGE_EXISTS"
         run: |
           IMAGE_EXISTS=$(docker images -q mikuras/brownie_atelier_base:$BASE_TAG)
-          echo "::set-output name=image_exists::$IMAGE_EXISTS"
+          echo 'IMAGE_EXISTS=$IMAGE_EXISTS' >> $GITHUB_ENV
   
       - name: baseイメージが既にdocker hubに登録されていた場合、pullを実行
-        if: steps.check-image.outputs.image_exists
+        # if: steps.check-image.outputs.image_exists
+        if: startsWith(!'${{env.IMAGE_EXISTS}}','')
         run: |
+          echo $IMAGE_EXISTS
           docker pull mikuras/brownie_atelier_base:$BASE_TAG
           docker images
       
       - name: baseイメージがない場合、baseイメージ用キャッシュの定義 & 復元
-        if: steps.check-image.outputs.image_exists == 'false'
+        # if: steps.check-image.outputs.image_exists == 'false'
+        if: startsWith('${{env.IMAGE_EXISTS}}','')
         # キャッシュID の定義
         id: base_image_cache
         uses: actions/cache@v4
