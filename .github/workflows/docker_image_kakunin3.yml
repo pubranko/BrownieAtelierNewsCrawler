@@ -94,8 +94,8 @@ jobs:
         run: |
           echo $IMAGE_EXISTS
           docker images
-          docker images -quiet mikuras/brownie_atelier_base:test-0.15
-          BBB=$(docker images -quiet mikuras/brownie_atelier_base:test-0.15)
+          docker images --quiet mikuras/brownie_atelier_base:test-0.15
+          BBB=$(docker images --quiet mikuras/brownie_atelier_base:test-0.15)
           echo 'IMAGE_EXISTS=$BBB' >> $GITHUB_ENV
           echo $BBB
           echo ${{env.IMAGE_EXISTS}}
