@@ -92,14 +92,13 @@ jobs:
         #   IMAGE_EXISTS=$(docker images -q mikuras/brownie_atelier_base:$BASE_TAG)
         #   echo "::set-output name=image_exists::$IMAGE_EXISTS"
         run: |
-          echo IMAGE_EXISTS
           echo $IMAGE_EXISTS
-          echo docker images -q mikuras/brownie_atelier_base:$BASE_TAG
+          docker images -q mikuras/brownie_atelier_base:$BASE_TAG
           IMAGE_EXISTS=$(docker images -q mikuras/brownie_atelier_base:$BASE_TAG)
           echo 'IMAGE_EXISTS=$IMAGE_EXISTS' >> $GITHUB_ENV
-          echo IMAGE_EXISTS
           echo $IMAGE_EXISTS
           echo ${{env.IMAGE_EXISTS}}
+          echo $GITHUB_ENV
   
       - name: baseイメージが既にdocker hubに登録されていた場合、pullを実行
         # if: steps.check-image.outputs.image_exists
