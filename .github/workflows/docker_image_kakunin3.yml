@@ -93,6 +93,7 @@ jobs:
         #   echo "::set-output name=image_exists::$IMAGE_EXISTS"
         run: |
           echo $IMAGE_EXISTS
+          docker images
           docker images -q mikuras/brownie_atelier_base:$BASE_TAG
           IMAGE_EXISTS=$(docker images -q mikuras/brownie_atelier_base:$BASE_TAG)
           echo 'IMAGE_EXISTS=$IMAGE_EXISTS' >> $GITHUB_ENV
