@@ -106,7 +106,7 @@ jobs:
 
       # キャッシュがある場合は tar をロードしてイメージ一覧に追加
       - name: docker hubにbaseイメージがなくキャッシュがある場合は、キャッシュよりイメージをロード
-        if: ${{!steps.check-image.outputs.image_exists && steps.base_image_cache.outputs.cache-hit == 'true'}}
+        if: steps.base_image_cache.outputs.cache-hit == 'true'
         run: |
           ls -l ${{ env.PATH_CACHE }}
           docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}.tar
