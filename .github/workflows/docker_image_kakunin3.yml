@@ -96,7 +96,7 @@ jobs:
           docker images
       
       - name: baseイメージがない場合、baseイメージ用キャッシュの定義 & 復元
-        if: !steps.check-image.outputs.image_exists
+        if: steps.check-image.outputs.image_exists == 'false'
         # キャッシュID の定義
         id: base_image_cache
         uses: actions/cache@v4
