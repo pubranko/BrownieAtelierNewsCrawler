@@ -94,7 +94,7 @@ jobs:
         run: |
           echo IMAGE_EXISTS
           echo $IMAGE_EXISTS
-          echow docker images -q mikuras/brownie_atelier_base:$BASE_TAG
+          echo docker images -q mikuras/brownie_atelier_base:$BASE_TAG
           IMAGE_EXISTS=$(docker images -q mikuras/brownie_atelier_base:$BASE_TAG)
           echo 'IMAGE_EXISTS=$IMAGE_EXISTS' >> $GITHUB_ENV
           echo IMAGE_EXISTS
