@@ -1,5 +1,5 @@
 name: Prefect Flow Test
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+run-name: Prefect Flow Test!!!
 on:
     # 以下のブランチにプッシュされた際起動
     # push:

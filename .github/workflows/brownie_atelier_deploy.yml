@@ -1,5 +1,5 @@
 name: Brownie Atelier Deploy
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+run-name: Brownie Atelier Deploy!!!
 on:
     # 以下のブランチにプッシュされた際起動
     # push:
@@ -55,6 +55,26 @@ jobs:
         # Firefox の gecko driver
         GECKO_DRIVER: https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz
 
+
+        # mongoDBコンテナー一般ユーザー情報、mongoDB接続情報
+        BROWNIE_ATELIER_MONGO__MONGO_SERVER:
+        BROWNIE_ATELIER_MONGO__MONGO_PORT:
+        BROWNIE_ATELIER_MONGO__MONGO_USE_DB:
+        BROWNIE_ATELIER_MONGO__MONGO_USER:
+        BROWNIE_ATELIER_MONGO__MONGO_PASS:
+        BROWNIE_ATELIER_MONGO__MONGO_TLS:
+        BROWNIE_ATELIER_MONGO__MONGO_TLS_CA_FILE:
+        BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE:
+        # Email接続情報
+        BROWNIE_ATELIER_NOTICE__SMTP_HOST:
+        BROWNIE_ATELIER_NOTICE__SMTP_PORT:
+        BROWNIE_ATELIER_NOTICE__FROM_EMAIL:
+        BROWNIE_ATELIER_NOTICE__TO_EMAIL:
+        BROWNIE_ATELIER_NOTICE__PASSWORD:
+        # 
+        PREFECT__DATA:
+        SCRAPY__LOG_LEVEL:
+        UNIT_TEST_SCRIPT:
         # Prefect
         PREFECT_HOME: ${{ github.workspace }} # /home/runner/work/BrownieAtelier/BrownieAtelier
         PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
