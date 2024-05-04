@@ -1,4 +1,4 @@
-name: GitHub Actions Demo
+name: Prefect Flow Test
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on:
     # 以下のブランチにプッシュされた際起動
@@ -8,7 +8,7 @@ on:
     workflow_dispatch:
 
 jobs:
-  GitHub-Actions-Test:
+  Prefect-Flow-Test:
     runs-on: ubuntu-22.04
     environment:
       name: TEST

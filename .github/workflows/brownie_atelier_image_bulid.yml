@@ -1,4 +1,4 @@
-name: GitHub Actions Demo
+name: Brownie Atelier Build
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on:
     # 以下のブランチにプッシュされた際起動
