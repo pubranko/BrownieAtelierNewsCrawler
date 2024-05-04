@@ -84,7 +84,7 @@ jobs:
         PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
         PREFECT__API_KEY: ${{ secrets.PREFECT__API_KEY}}
         PREFECT__WORK_SPACE:
-        PREFECT__WORK_POOL:
+        PREFECT__WORK_POOL: ${{ secrets.PREFECT__WORK_POOL }}
         PREFECT__DATA:
         SCRAPY__LOG_LEVEL:
         # Docker イメージの tar アーカイブ出力先のパス
