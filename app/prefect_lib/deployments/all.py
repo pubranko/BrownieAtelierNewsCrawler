@@ -8,6 +8,9 @@
 ・Cloudの場合 → prefect config set PREFECT_API_URL="https://api.prefect.cloud/api/accounts/[ACCOUNT-ID]/workspaces/[WORKSPACE-ID]"
 """
 import os
+import sys
+current_dir = os.getcwd()
+sys.path.append(current_dir)
 
 from BrownieAtelierMongo.collection_models.asynchronous_report_model import \
     AsynchronousReportModel
