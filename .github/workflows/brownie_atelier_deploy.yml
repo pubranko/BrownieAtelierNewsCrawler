@@ -82,8 +82,8 @@ jobs:
         # PREFECT_HOME: ${{ github.workspace }} # /home/runner/work/BrownieAtelier/BrownieAtelier
         PREFECT_HOME:
         PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
-        PREFECT__API_KEY: ${{ secrets.PREFECT__API_KEY}}
-        PREFECT__WORK_SPACE:
+        PREFECT__API_KEY: ${{ secrets.PREFECT__API_KEY }}
+        PREFECT__WORK_SPACE: ${{ secrets.PREFECT__WORK_SPACE }}
         PREFECT__WORK_POOL: ${{ secrets.PREFECT__WORK_POOL }}
         PREFECT__DATA:
         SCRAPY__LOG_LEVEL:
@@ -173,5 +173,5 @@ jobs:
           TZ: ${{ vars.TZ}}
         # 各種フローテスト
         run: |
-          export UNIT_TEST_SCRIPT="prefect_lib/deployments/all.py"
+          export PREFECT_CLOUD_DEPLOY_SCRIPT="prefect_lib/deployments/all.py"
           docker-compose -f docker-compose__app-container.yml up
