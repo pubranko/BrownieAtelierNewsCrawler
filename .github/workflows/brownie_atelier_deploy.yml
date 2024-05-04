@@ -59,7 +59,7 @@ jobs:
         LOCAL_MONGO_KEY_DIR: /tmp
 
         # docker-compose command選択
-        CONTAINER_START_COMMAND: /home/common_user/BrownieAtelier/sh/github_actions_unit_test.sh
+        CONTAINER_START_COMMAND: /home/common_user/BrownieAtelier/sh/prefect_cloud_deploy.sh
 
         # mongoDBコンテナー一般ユーザー情報、mongoDB接続情報
         BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo-server
