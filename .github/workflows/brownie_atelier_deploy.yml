@@ -156,6 +156,12 @@ jobs:
         run: |
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/brownie_atelier_app:${{ env.APP_TAG}}
 
+      ########################################################################
+      # brownie_atelier_app起動時にdockerネットワークが必要であるため便宜上作成
+      ########################################################################
+      - name: brownie_atelier_app起動用にdockerネットワークを作成
+        run: docker network create brownie-atelier-net
+  
       #################################################
       # prefect flowをprefectクラウドへデプロイ
       #################################################
