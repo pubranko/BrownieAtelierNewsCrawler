@@ -24,7 +24,7 @@ jobs:
             echo "::set-output name=env_name::Test"
           fi         
           
-      - run: 環境名： ${{ steps.branch_check.outputs.env_name }}
+      - run: echo "環境名： ${{ steps.branch_check.outputs.env_name }}"
         
     outputs:
       env_name: ${{ steps.branch_check.outputs.env_name }}
