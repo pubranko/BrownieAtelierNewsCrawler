@@ -12,9 +12,9 @@ which python
 
 # prefectクラウドへのログイン
 # prefect cloud login --key $PREFECT__API_KEY --workspace $PREFECT__WORK_SPACE
-prefect cloud login --key $PREFECT__API_KEY
+prefect cloud login --key $PREFECT__API_KEY  --workspace $PREFECT__WORK_SPACE
 # prefect cloud logout
-# prefect cloud login --key $PREFECT__API_KEY
+# prefect cloud login --key $PREFECT__API_KEY  --workspace $PREFECT__WORK_SPACE
 
 # prefectエージェント起動
 cd $HOME/BrownieAtelier/app
