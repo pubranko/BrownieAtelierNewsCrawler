@@ -12,16 +12,15 @@ jobs:
   Branch-Controll:
     runs-on: ubuntu-22.04
     steps:
-      - name: ブランチより環境を選択
+      - name: ブランチより環境を選択 (現在のブランチ： ${{ github.ref }})
         id: branch_check
         run: |
-          echo "現在のブランチ： ${{ github.ref }}"
           if [ "${{ github.ref }}" = "refs/heads/master" ]; then
-            echo "::set-output name=env_name::Product"
+            echo "env_name=Product" >> $GITHUB_OUTPUT
           elif [ "${{ github.ref }}" = "refs/heads/develop" ]; then
-            echo "::set-output name=env_name::Test"
+            echo "env_name=Test" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=env_name::Test"
+            echo "env_name=Test" >> $GITHUB_OUTPUT
           fi         
           
       - run: echo "環境名： ${{ steps.branch_check.outputs.env_name }}"
