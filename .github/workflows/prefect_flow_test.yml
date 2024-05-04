@@ -108,6 +108,9 @@ jobs:
       #- run: sudo apt list --installed
       #- run: sudo dpkg-query -l
 
+      ########################################################################
+      # テスト用にdockerネットワークが必要であるため作成
+      ########################################################################
       - name: dockerネットワークをテスト用に作成
         # dockerネットワークを作成
         run: docker network create brownie-atelier-net
