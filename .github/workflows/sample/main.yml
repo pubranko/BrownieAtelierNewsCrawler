@@ -96,37 +96,7 @@ jobs:
       #################################################
       # mongoDBコンテナー
       #################################################
-
-      # この Workflow が正常に終了したら path をキャッシュ。
-      # すでに key が存在する場合、path にキャッシュをリストアする。
-      - name: mongoDB用キャッシュの定義 & 復元
-        id: mongo_image_cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.PATH_CACHE }}
-          key: ${{ runner.os }}-mongo-${{ env.MONGO_TAG }}
-          # restore-keys: |
-          #   ${{ runner.os }}-mongo-${{ env.MONGO_TAG }}
-          #   ${{ runner.os }}-mongo
-
-      # キャッシュがある場合は tar をロードしてイメージ一覧に追加
-      - name: mongoDB用キャッシュがある場合は tar をロードしてイメージ一覧に追加
-        if: steps.mongo_image_cache.outputs.cache-hit == 'true'
-        run: |
-          ls -l ${{ env.PATH_CACHE }}
-          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-mongo-${{ env.MONGO_TAG }}.tar
-          docker images
-
-      - name: mongoDBのイメージがキャッシュにない場合にpullとsave(キャッシュ)を実行
-        if: steps.mongo_image_cache.outputs.cache-hit != 'true'
-        run: |
-          mkdir ${{ env.PATH_CACHE }}
-          docker pull mongo:${MONGO_TAG}
-          docker save mongo:${MONGO_TAG} -o ${{ env.PATH_CACHE }}/${{ runner.os }}-mongo-${{ env.MONGO_TAG }}.tar
-          ls -l ${{ env.PATH_CACHE }}
-          docker images
-
-      - name: テスト用MongoDBコンテナー起動
+      - name: テスト用MongoDBコンテナーpull & 起動
         # mongoDBコンテナーの作成。
         #   rootユーザー、使用DB名を指定。
         #   一般ユーザーをcreate-user.jsで自動作成。
@@ -143,8 +113,9 @@ jobs:
           -e BROWNIE_ATELIER_MONGO__MONGO_PASS=${BROWNIE_ATELIER_MONGO__MONGO_PASS}
           mongo:${MONGO_TAG}
 
-      - run: docker ps -a
-
+      - run: |
+          docker images
+          docker ps -a
 
       #################################################
       # baseイメージコンテナー
@@ -158,7 +129,7 @@ jobs:
           path: ${{ env.PATH_CACHE }}
           key: ${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}
 
-      # キャッシュがある場合は tar をロードしてイメージ一覧に追加
+      # キャッシュがある場合は tar をdockerにロードしてイメージに追加
       - name: base用キャッシュがある場合は tar をロードしてイメージ一覧に追加
         if: steps.base_image_cache.outputs.cache-hit == 'true'
         run: |
@@ -166,7 +137,7 @@ jobs:
           docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}.tar
           docker images
 
-      - name: baseイメージがキャッシュにない場合にpullとsave(キャッシュ)を実行
+      - name: baseイメージがキャッシュにない場合にbuildとsave(キャッシュ)を実行
         if: steps.base_image_cache.outputs.cache-hit != 'true'
         run: |
           docker-compose -f docker-compose__base-image-build.yml build
@@ -179,7 +150,7 @@ jobs:
       # appイメージコンテナー
       #################################################
 
-      - name: appイメージ作成
+      - name: appイメージbuild
         # appイメージ作成
         run: |
           docker-compose -f docker-compose__app-image-build.yml build
@@ -187,7 +158,7 @@ jobs:
 
 
       #################################################
-      # 各種フロー実行
+      # appイメージコンテナーを起動して各種フロー実行
       #################################################
 
       - name: "<1>各ニュースサイト別スクレイピングの情報登録  <2>定期観測用のスパイダー登録  <3>初回定期観測"
@@ -195,7 +166,6 @@ jobs:
           TZ: ${{ vars.TZ}}
         # 各種フローテスト
         run: |
-          echo -e "### <github_actions_unit_test_01.py 実行> ###"
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_01.py"
           docker-compose -f docker-compose__app-container.yml up
 
@@ -203,7 +173,6 @@ jobs:
         env:
           TZ: ${{ vars.TZ}}
         run: |
-          echo -e "### <github_actions_unit_test_02.py 実行> ###"
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_02.py"
           docker-compose -f docker-compose__app-container.yml up
 
@@ -211,7 +180,6 @@ jobs:
         env:
           TZ: ${{ vars.TZ}}
         run: |
-          echo -e "### <github_actions_unit_test_03.py 実行> ###"
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_03.py"
           docker-compose -f docker-compose__app-container.yml up
 
@@ -219,7 +187,6 @@ jobs:
         env:
           TZ: ${{ vars.TZ}}
         run: |
-          echo -e "### <github_actions_unit_test_04.py 実行> ###"
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_04.py"
           docker-compose -f docker-compose__app-container.yml up
 
@@ -227,7 +194,6 @@ jobs:
         env:
           TZ: ${{ vars.TZ}}
         run: |
-          echo -e "### <github_actions_unit_test_05.py 実行> ###"
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_05.py"
           docker-compose -f docker-compose__app-container.yml up
 
@@ -235,7 +201,6 @@ jobs:
         env:
           TZ: ${{ vars.TZ}}
         run: |
-          echo -e "### <github_actions_unit_test_06.py 実行> ###"
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_06.py"
           docker-compose -f docker-compose__app-container.yml up
 
@@ -243,9 +208,8 @@ jobs:
         env:
           TZ: ${{ vars.TZ}}
         run: |
-          echo -e "### <github_actions_unit_test_07.py 実行> ###"
           export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_07.py"
           docker-compose -f docker-compose__app-container.yml up
 
       # "🍏 This job's status is success."
-      - run: echo "🍏 実行後のステータス： ${{ job.status }}."
+      - run: echo "🍏 Job実行後のステータス： ${{ job.status }}."

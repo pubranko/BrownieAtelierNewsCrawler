@@ -3,37 +3,22 @@ run-name: Mongo container up (ブランチ名:${{ github.ref }}) (ハッシュ�
 on: 
     # 他のフローより呼び出し
     workflow_call:
-        inputs:
-            docker-network: 
-              # ex) "--network sample-net"
-              type: string
-              required: false
-            path_cache: 
-              # ex) "/tmp/docker-img-arch"
-              type: string
-              required: false
-            mongo_tag: 
-              # ex) "7.0.1-jammy"
-              type: string
-              required: false
-            
-        #   image-name:
-        #     type: string
-        #     required: true
-        #   cluster-name:
-        #     type: string
-        #     required: true
-        #   service-name:
-        #     type: string
-        #     required: true
-        # secrets:
-        #   sample-secret-value:
-        #     required: true    
-    # Githubより手動で起動
-    workflow_dispatch:
+      inputs:
+        docker-network: 
+          # ex) "--network sample-net"
+          type: string
+          required: false
+        path_cache: 
+          # ex) "/tmp/docker-img-arch"
+          type: string
+          required: false
+        mongo_tag: 
+          # ex) "7.0.1-jammy"
+          type: string
+          required: false
 
 jobs:
-  Prefect-Flow-Test:
+  mongo-container-up:
     runs-on: ubuntu-22.04
     steps:
       - run: echo "🎉 起動イベントの種類 (${{ github.event_name }})"
@@ -55,7 +40,9 @@ jobs:
         if: steps.mongo_image_cache.outputs.cache-hit != 'true'
         run: |
           docker pull mongo:${{ inputs.mongo_tag }}
+
           docker save mongo:${{ inputs.mongo_tag }} -o ${{ inputs.path_cache }}
+
           ls -l ${{ inputs.path_cache }}
           docker images
 

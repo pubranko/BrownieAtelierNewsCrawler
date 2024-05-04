@@ -1,0 +1,120 @@
+name: GitHub Actions Demo
+run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+on:
+    # 以下のブランチにプッシュされた際起動
+    # push:
+    #     branches: ["develop","master"]
+    # Githubより手動で起動
+    workflow_dispatch:
+
+jobs:
+
+  Branch-Controll:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: ブランチより環境を選択
+        id: branch_check
+        run: |
+          echo "現在のブランチ： ${{ github.ref }}"
+          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
+            echo "::set-output name=env_name::Product"
+          elif [ "${{ github.ref }}" = "refs/heads/develop" ]; then
+            echo "::set-output name=env_name::Test"
+          else
+            echo "::set-output name=env_name::Test"
+          fi         
+          
+      - run: 環境名： ${{ steps.branch_check.outputs.env_name }}"
+        
+    outputs:
+      env_name: ${{ steps.branch_check.outputs.env_name }}
+
+  Brownie-Atelier-Build:
+    needs: [Branch-Controll]
+    runs-on: ubuntu-22.04
+    environment:
+      name: ${{ needs.Branch-Controll.outputs.env_name }}
+    env:
+        ## mongoDB用コンテナーで参照するイメージのタグ
+        MONGO_TAG: 7.0.1-jammy
+        ## dockerfile_baseで参照するubuntuイメージのタグ
+        UBUNTU_TAG: 22.04
+        ## # dockerfile_appで参照するbaseイメージのタグ
+        BASE_TAG: test-0.15
+        # docker-composeで参照するappイメージのタグ
+        APP_TAG: test-0.15
+        # コンテナー内rootユーザーパスワード
+        CONTAINER_ROOT_USER: root_user
+        CONTAINER_ROOT_PASS: password
+        # コンテナ内の一般ユーザー、パスワード
+        CONTAINER_USER: common_user
+        CONTAINER_USER_PASS: password
+        # ブラウニー工房のgitリモートリポジトリー
+        GIT_REMOTE_REPOSITORY: https://github.com/pubranko/BrownieAtelier.git
+        # 上記リポジトリーのgitブランチ
+        GIT_BRANCH: github-actions-test
+        # Firefox の gecko driver
+        GECKO_DRIVER: https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz
+
+        # Prefect
+        PREFECT_HOME: ${{ github.workspace }} # /home/runner/work/BrownieAtelier/BrownieAtelier
+        PREFECT_API_URL:
+        PREFECT__API_KEY:
+        PREFECT__WORK_SPACE:
+        PREFECT__WORK_POOL:
+
+        # Docker イメージの tar アーカイブ出力先のパス
+        PATH_CACHE: /tmp/docker-img-arch
+    steps:
+      - run: echo "🎉 起動イベントの種類 (${{ github.event_name }})"
+      - run: echo "🐧 github上のOSの種類 (${{ runner.os }})"
+      - name: リポジトリ(${{ github.repository }})・ブランチ(${{ github.ref }})にチェックアウト
+        # 上記のリポジトリ・ブランチにチェックアウト
+        uses: actions/checkout@v4
+
+      - name: ワークスペースチェック
+        # テスト前チェックを確認
+        # クローン後はここにソースが格納される /home/runner/work/BrownieAtelier/BrownieAtelier
+        run: |
+          ls -a ${{ github.workspace }}
+
+      #################################################
+      # baseイメージコンテナー
+      #################################################
+
+      - name: baseイメージ用キャッシュの定義 & 復元
+        # キャッシュID の定義
+        id: base_image_cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PATH_CACHE }}
+          key: ${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}
+
+      # キャッシュがある場合は tar をdockerにロードしてイメージに追加
+      - name: base用キャッシュがある場合は tar をロードしてイメージ一覧に追加
+        if: steps.base_image_cache.outputs.cache-hit == 'true'
+        run: |
+          ls -l ${{ env.PATH_CACHE }}
+          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}.tar
+          docker images
+
+      - name: baseイメージがキャッシュにない場合にbuildとsave(キャッシュ)を実行
+        if: steps.base_image_cache.outputs.cache-hit != 'true'
+        run: |
+          docker-compose -f docker-compose__base-image-build.yml build
+          docker save brownie_atelier_base:$BASE_TAG -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}.tar
+          ls -l ${{ env.PATH_CACHE }}
+          docker images
+
+
+      #################################################
+      # appイメージコンテナー
+      #################################################
+
+      - name: appイメージbuild
+        # appイメージ作成
+        run: |
+          docker-compose -f docker-compose__app-image-build.yml build
+          docker images
+
+
