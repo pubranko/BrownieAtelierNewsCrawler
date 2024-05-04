@@ -56,7 +56,7 @@ jobs:
         GECKO_DRIVER: https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz
 
         # ホスト（ローカル）側のmongoDB接続用のcrtやpemファイルの保管ディレクトリ
-        LOCAL_MONGO_KEY_DIR:
+        LOCAL_MONGO_KEY_DIR: /tmp
 
         # docker-compose command選択
         CONTAINER_START_COMMAND: /home/common_user/BrownieAtelier/sh/github_actions_unit_test.sh
@@ -146,17 +146,17 @@ jobs:
       # appイメージをdocker hubへpush
       #################################################
 
-      # dockerhubにログイン
-      - name: dockerhubにログイン
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      # # dockerhubにログイン
+      # - name: dockerhubにログイン
+      #   uses: docker/login-action@v3
+      #   with:
+      #     username: ${{ secrets.DOCKER_HUB_USERNAME }}
+      #     password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      # dockerhubへpush
-      - name: push - dockerhub
-        run: |
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/brownie_atelier_app:${{ env.APP_TAG}}
+      # # dockerhubへpush
+      # - name: push - dockerhub
+      #   run: |
+      #     docker push ${{ secrets.DOCKER_HUB_USERNAME }}/brownie_atelier_app:${{ env.APP_TAG}}
 
       ########################################################################
       # brownie_atelier_app起動時にdockerネットワークが必要であるため便宜上作成
