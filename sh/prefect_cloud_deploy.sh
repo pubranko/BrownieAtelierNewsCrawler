@@ -9,13 +9,12 @@ which python
 
 # prefect APIの向き先を指定生成
 # prefect config set PREFECT_API_URL=$PREFECT_API_URL
-echo $PREFECT__API_KEY
-echo $PREFECT__WORK_SPACE
+
 # prefectクラウドへのログイン
 # prefect cloud login --key $PREFECT__API_KEY --workspace $PREFECT__WORK_SPACE
-prefect cloud login --key $PREFECT__API_KEY  --workspace $PREFECT__WORK_SPACE
+prefect cloud login --key $PREFECT__API_KEY --workspace $PREFECT__WORK_SPACE
 # prefect cloud logout
-# prefect cloud login --key $PREFECT__API_KEY  --workspace $PREFECT__WORK_SPACE
+# prefect cloud login --key $PREFECT__API_KEY --workspace $PREFECT__WORK_SPACE
 
 # prefectエージェント起動
 cd $HOME/BrownieAtelier/app

@@ -6,8 +6,6 @@ which python
 
 # テスト用のシェルを起動
 cd app
-# python prefect_lib/test/github_actions_unit_test.py
-# python prefect_lib/github_actions_unit_tests/github_actions_unit_test_01.py
 echo "$PREFECT_RUN_SCRIPT"
 python "$PREFECT_RUN_SCRIPT"
 
