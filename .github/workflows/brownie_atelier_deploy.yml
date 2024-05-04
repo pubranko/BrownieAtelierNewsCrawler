@@ -137,3 +137,11 @@ jobs:
       # prefect flowをprefectクラウドへデプロイ
       #################################################
 
+      - name: "Prefect FlowをPrefectクラウドへデプロイ"
+        env:
+          TZ: ${{ vars.TZ}}
+        # 各種フローテスト
+        run: |
+          export UNIT_TEST_SCRIPT="prefect_lib/deployments/all.py"
+          docker-compose -f docker-compose__app-container.yml up
+
