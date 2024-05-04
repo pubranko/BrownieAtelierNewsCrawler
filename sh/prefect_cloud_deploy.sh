@@ -16,5 +16,5 @@ prefect cloud login --key $PREFECT__API_KEY --workspace $PREFECT__WORK_SPACE
 
 # prefectエージェント起動
 cd $HOME/BrownieAtelier/app
-echo "$PREFECT_CLOUD_DEPLOY_SCRIPT"
-python "$PREFECT_CLOUD_DEPLOY_SCRIPT"
+echo "$PREFECT_RUN_SCRIPT"
+python "$PREFECT_RUN_SCRIPT"

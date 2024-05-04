@@ -8,6 +8,6 @@ which python
 cd app
 # python prefect_lib/test/github_actions_unit_test.py
 # python prefect_lib/github_actions_unit_tests/github_actions_unit_test_01.py
-echo "$UNIT_TEST_SCRIPT"
-python "$UNIT_TEST_SCRIPT"
+echo "$PREFECT_RUN_SCRIPT"
+python "$PREFECT_RUN_SCRIPT"
 

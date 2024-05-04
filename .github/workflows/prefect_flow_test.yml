@@ -189,49 +189,49 @@ jobs:
           TZ: ${{ vars.TZ}}
         # 各種フローテスト
         run: |
-          export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_01.py"
+          export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_01.py"
           docker-compose -f docker-compose__app-container.yml up
 
       - name: "<4>手動クローリング"
         env:
           TZ: ${{ vars.TZ}}
         run: |
-          export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_02.py"
+          export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_02.py"
           docker-compose -f docker-compose__app-container.yml up
 
       - name: "<5>定期観測のON/OFF  <6>定期観測"
         env:
           TZ: ${{ vars.TZ}}
         run: |
-          export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_03.py"
+          export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_03.py"
           docker-compose -f docker-compose__app-container.yml up
 
       - name: "<7>手動スクレイピング  <8>手動ニュースクリップマスター保存"
         env:
           TZ: ${{ vars.TZ}}
         run: |
-          export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_04.py"
+          export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_04.py"
           docker-compose -f docker-compose__app-container.yml up
 
       - name: "<9>Scrapy統計情報集計  <10>Scrapy統計情報レポート"
         env:
           TZ: ${{ vars.TZ}}
         run: |
-          export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_05.py"
+          export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_05.py"
           docker-compose -f docker-compose__app-container.yml up
 
       - name: "<11>スクレイピング使用パターンレポート  <12>同期チェック"
         env:
           TZ: ${{ vars.TZ}}
         run: |
-          export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_06.py"
+          export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_06.py"
           docker-compose -f docker-compose__app-container.yml up
 
       - name: "<13>mongoDBエクスポート  <14>mongoDB削除  <15>mongoDBインポート"
         env:
           TZ: ${{ vars.TZ}}
         run: |
-          export UNIT_TEST_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_07.py"
+          export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_07.py"
           docker-compose -f docker-compose__app-container.yml up
 
       # "🍏 This job's status is success."

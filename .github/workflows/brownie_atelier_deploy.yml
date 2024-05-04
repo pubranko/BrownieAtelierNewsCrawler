@@ -173,5 +173,5 @@ jobs:
           TZ: ${{ vars.TZ}}
         # 各種フローテスト
         run: |
-          export PREFECT_CLOUD_DEPLOY_SCRIPT="prefect_lib/deployments/all.py"
+          export PREFECT_RUN_SCRIPT="prefect_lib/deployments/all.py"
           docker-compose -f docker-compose__app-container.yml up
