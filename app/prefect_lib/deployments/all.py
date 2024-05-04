@@ -75,17 +75,18 @@ if not (prefect_api_url):
     raise ValueError(
         "prefect_api_urlが参照できませんでしたので、処理を停止します。環境変数にPREFECT_HOMEが存在しない、またはPREFECT_API_URLが設定されていない可能性が高いです。"
     )
-elif prefect_api_url.startswith("http://127.0.0.1") or prefect_api_url.startswith(
-    "http://localhost"
-):
-    # ローカル開発環境用の場合
-    path = os.getcwd()
-elif prefect_api_url.startswith("http://0.0.0.0"):
-    # ローカルコンテナー開発環境用の場合
-    path = f'/home/{str(config("CONTAINER_USER"))}/BrownieAtelier/app'
-else:
-    # コンテナー内で実行する際のカレントディレクトリ
-    path = f'/home/{str(config("CONTAINER_USER"))}/BrownieAtelier/app'
+# elif prefect_api_url.startswith("http://127.0.0.1") or prefect_api_url.startswith(
+#     "http://localhost"
+# ):
+#     # ローカル開発環境用の場合
+#     path = os.getcwd()
+# elif prefect_api_url.startswith("http://0.0.0.0"):
+#     # ローカルコンテナー開発環境用の場合
+#     path = f'/home/{str(config("CONTAINER_USER"))}/BrownieAtelier/app'
+# else:
+#     # コンテナー内で実行する際のカレントディレクトリ
+#     path = f'/home/{str(config("CONTAINER_USER"))}/BrownieAtelier/app'
+path = current_dir
 print(f"=== {path = }")
 
 work_pool_name = str(config("PREFECT__WORK_POOL", default="default-agent-pool"))
