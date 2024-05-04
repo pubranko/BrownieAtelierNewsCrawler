@@ -80,7 +80,7 @@ jobs:
         HOST_OS_IP_ADDRESS: 192.0.0.1
         # Prefect
         # PREFECT_HOME: ${{ github.workspace }} # /home/runner/work/BrownieAtelier/BrownieAtelier
-        PREFECT_HOME:
+        PREFECT_HOME: ${{ github.workspace }}
         PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
         PREFECT__API_KEY: ${{ secrets.PREFECT__API_KEY }}
         PREFECT__WORK_SPACE: ${{ secrets.PREFECT__WORK_SPACE }}
