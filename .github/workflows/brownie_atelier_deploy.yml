@@ -178,6 +178,8 @@ jobs:
 
       - name: "Prefect FlowをPrefectクラウドへデプロイ"
         run: |
+          cd ${{ github.workspace }}
+          ls -la
           . .venv/bin/activate
           cd app
           python prefect_lib/deployments/all.py
