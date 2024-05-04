@@ -72,15 +72,18 @@ jobs:
         BROWNIE_ATELIER_NOTICE__TO_EMAIL:
         BROWNIE_ATELIER_NOTICE__PASSWORD:
         # 
-        PREFECT__DATA:
         SCRAPY__LOG_LEVEL:
         UNIT_TEST_SCRIPT:
+        LOCAL_MONGO_KEY_DIR:
+        HOST_OS_IP_ADDRESS:
+        CONTAINER_START_COMMAND:
         # Prefect
         PREFECT_HOME: ${{ github.workspace }} # /home/runner/work/BrownieAtelier/BrownieAtelier
         PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
         PREFECT__API_KEY: ${{ secrets.PREFECT__API_KEY}}
         PREFECT__WORK_SPACE:
         PREFECT__WORK_POOL:
+        PREFECT__DATA:
 
         # Docker イメージの tar アーカイブ出力先のパス
         PATH_CACHE: /tmp/docker-img-arch
