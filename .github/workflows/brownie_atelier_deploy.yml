@@ -125,6 +125,7 @@ jobs:
       - name: baseイメージがキャッシュにない場合にbuildとsave(キャッシュ)を実行
         if: steps.base_image_cache.outputs.cache-hit != 'true'
         run: |
+          mkdir ${{ env.PATH_CACHE }}
           docker-compose -f docker-compose__base-image-build.yml build
           docker save brownie_atelier_base:$BASE_TAG -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}.tar
           ls -l ${{ env.PATH_CACHE }}
