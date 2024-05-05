@@ -38,17 +38,23 @@ def mongo_import_task(
     import_files_info: dict[str, str] = {}
     import_file_name_list: list[str] = []
 
-    for collection_name in collections_name:
-        file_path: str = os.path.join(
-            DATA__BACKUP_BASE_DIR, folder_name, collection_name
-        )
-        if os.path.exists(file_path):
-            import_file_name_list.append(collection_name)
-            import_files_info[
-                collection_name
-            ] = file_path  # ファイル名(コレクション名)をkey、インポートファイルフルパスをvalueとする。
-        else:
-            logger.error(f"=== 指定されたフォルダーに対象のコレクションファイルはありませんでした。 ({collection_name})")
+    folder_path: str = os.path.join(DATA__BACKUP_BASE_DIR, folder_name)
+    if os.path.exists(folder_path):
+        logger.info(f"=== フォルダー存在確認OK ({folder_path})")
+
+        for collection_name in collections_name:
+            file_path: str = os.path.join(
+                DATA__BACKUP_BASE_DIR, folder_name, collection_name
+            )
+            if os.path.exists(file_path):
+                import_file_name_list.append(collection_name)
+                import_files_info[
+                    collection_name
+                ] = file_path  # ファイル名(コレクション名)をkey、インポートファイルフルパスをvalueとする。
+            else:
+                logger.error(f"=== 指定されたフォルダーに対象のコレクションファイルは存在しませんでした。 ({collection_name})")
+    else:
+        logger.error(f"=== 指定されたフォルダーは存在しませんでした。({folder_path})")
 
     logger.info(f"=== インポート対象ファイル : {str(import_file_name_list)}")
 
