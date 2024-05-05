@@ -1,0 +1,140 @@
+name: Docker Image Check
+run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+on: 
+    # 以下のブランチにプッシュされた際起動
+    # push:
+    #     branches: ["github-actions-test"]
+    # Githubより手動で起動
+    workflow_dispatch:
+
+jobs:
+  Docker-Image-Create:
+    runs-on: ubuntu-22.04
+    environment:
+      name: TEST
+    env:
+        ## mongoDB用コンテナーで参照するイメージのタグ
+        MONGO_TAG: 7.0.1-jammy
+        ## dockerfile_baseで参照するubuntuイメージのタグ
+        UBUNTU_TAG: 22.04
+        ## # dockerfile_appで参照するbaseイメージのタグ
+        BASE_TAG: test-0.15
+        # docker-composeで参照するappイメージのタグ
+        APP_TAG: test-0.15
+        # コンテナー内rootユーザーパスワード
+        CONTAINER_ROOT_USER: root_user
+        CONTAINER_ROOT_PASS: password
+        # コンテナ内の一般ユーザー、パスワード
+        CONTAINER_USER: common_user
+        CONTAINER_USER_PASS: password
+        # ブラウニー工房のgitリモートリポジトリー
+        GIT_REMOTE_REPOSITORY: https://github.com/pubranko/BrownieAtelier.git
+        # 上記リポジトリーのgitブランチ
+        GIT_BRANCH: github-actions-test
+        # Firefox の gecko driver
+        GECKO_DRIVER: https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz
+
+        # ホスト（ローカル）側のmongoDB接続用のcrtやpemファイルの保管ディレクトリ
+        LOCAL_MONGO_KEY_DIR: /tmp
+
+        # docker-compose command選択
+        CONTAINER_START_COMMAND: /home/common_user/BrownieAtelier/sh/github_actions_unit_test.sh
+
+        # mongoDBコンテナー一般ユーザー情報、mongoDB接続情報
+        BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo-server
+        BROWNIE_ATELIER_MONGO__MONGO_PORT: 27017
+        BROWNIE_ATELIER_MONGO__MONGO_USE_DB: test_crawler_db
+        BROWNIE_ATELIER_MONGO__MONGO_USER: mongo_user
+        BROWNIE_ATELIER_MONGO__MONGO_PASS: mongo_pass
+        BROWNIE_ATELIER_MONGO__MONGO_TLS: false
+        BROWNIE_ATELIER_MONGO__MONGO_TLS_CA_FILE: 
+        BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE: 
+        # mongoDBコンテナーroot情報
+        BROWNIE_ATELIER_MONGO__MONGO_INITDB_ROOT_USERNAME: root_user
+        BROWNIE_ATELIER_MONGO__MONGO_INITDB_ROOT_PASSWORD: password
+        # Email接続情報
+        BROWNIE_ATELIER_NOTICE__SMTP_HOST: ${{ secrets.BROWNIE_ATELIER_NOTICE__SMTP_HOST }}
+        BROWNIE_ATELIER_NOTICE__SMTP_PORT: ${{ secrets.BROWNIE_ATELIER_NOTICE__SMTP_PORT }}
+        BROWNIE_ATELIER_NOTICE__FROM_EMAIL: ${{ secrets.BROWNIE_ATELIER_NOTICE__FROM_EMAIL }}
+        BROWNIE_ATELIER_NOTICE__TO_EMAIL: ${{ secrets.BROWNIE_ATELIER_NOTICE__TO_EMAIL }}
+        BROWNIE_ATELIER_NOTICE__PASSWORD: ${{ secrets.BROWNIE_ATELIER_NOTICE__PASSWORD }}
+
+        # dummy
+        HOST_OS_IP_ADDRESS: 192.0.0.1
+        # dummy
+        PREFECT_HOME: /home/root_user/BrownieAtelier
+        PREFECT_API_URL: 
+        PREFECT__API_KEY: 
+        PREFECT__WORK_SPACE: 
+        PREFECT__WORK_POOL: 
+        SCRAPY__LOG_LEVEL: INFO
+
+        # Docker イメージの tar アーカイブ出力先のパス
+        PATH_CACHE: /tmp/docker-img-arch
+    steps:
+      - run: echo "🎉 起動イベントの種類 (${{ github.event_name }})"
+      - run: echo "🐧 github上のOSの種類 (${{ runner.os }})"
+      - name: リポジトリ(${{ github.repository }})・ブランチ(${{ github.ref }})にチェックアウト
+        # 上記のリポジトリ・ブランチにチェックアウト
+        uses: actions/checkout@v4
+
+      - name: ワークスペースチェック
+        # テスト前チェックを確認
+        # クローン後はここにソースが格納される /home/runner/work/BrownieAtelier/BrownieAtelier
+        run: |
+          ls -a ${{ github.workspace }}
+
+      # インストールされているものの一覧を調べてみた。
+      #- run: sudo apt list --installed
+      #- run: sudo dpkg-query -l
+
+      - name: dockerネットワークをテスト用に作成
+        # dockerネットワークを作成
+        run: docker network create brownie-atelier-net
+
+
+      # この Workflow が正常に終了したら path をキャッシュ。
+      # すでに key が存在する場合、path にキャッシュをリストアする。
+      - name: mongoDB用キャッシュの定義 & 復元
+        id: mongo_image_cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PATH_CACHE }}
+          key: ${{ runner.os }}-mongo-${{ env.MONGO_TAG }}
+          # restore-keys: |
+          #   ${{ runner.os }}-mongo-${{ env.MONGO_TAG }}
+          #   ${{ runner.os }}-mongo
+
+      # キャッシュがある場合は tar をロードしてイメージ一覧に追加
+      - name: mongoDB用キャッシュがある場合は tar をロードしてイメージ一覧に追加
+        if: steps.mongo_image_cache.outputs.cache-hit == 'true'
+        run: |
+          ls -l ${{ env.PATH_CACHE }}
+          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-mongo-${{ env.MONGO_TAG }}.tar
+          docker images
+
+      - name: mongoDBのイメージがキャッシュにない場合にpullとsave(キャッシュ)を実行
+        if: steps.mongo_image_cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir ${{ env.PATH_CACHE }}
+          docker pull mongo:${MONGO_TAG}
+          docker save mongo:${MONGO_TAG} -o ${{ env.PATH_CACHE }}/${{ runner.os }}-mongo-${{ env.MONGO_TAG }}.tar
+          ls -l ${{ env.PATH_CACHE }}
+          docker images
+
+  Docker-Image-Check:
+    needs: Docker-Image-Create
+    runs-on: ubuntu-22.04
+    environment:
+      name: TEST
+    steps:
+      - run: echo "🎉 起動イベントの種類 (${{ github.event_name }})"
+      - run: echo "🐧 github上のOSの種類 (${{ runner.os }})"
+      - name: リポジトリ(${{ github.repository }})・ブランチ(${{ github.ref }})にチェックアウト
+        # 上記のリポジトリ・ブランチにチェックアウト
+        uses: actions/checkout@v4
+
+      - name: 別ジョブで作成したdockerイメージ参照できる？ -> 答え：できない
+        run: |
+          docker images
+
