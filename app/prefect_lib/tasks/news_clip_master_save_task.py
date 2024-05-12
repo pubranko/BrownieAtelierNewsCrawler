@@ -56,15 +56,15 @@ def news_clip_master_save_task(
         )
 
     if conditions:
-        filter: Any = {"$and": conditions}
+        scraped_from_response_filter: Any = {"$and": conditions}
     else:
-        filter = None
+        scraped_from_response_filter = None
 
-    logger.info("=== scraped_from_response へのfilter: " + str(filter))
+    logger.info("=== scraped_from_response へのfilter: " + str(scraped_from_response_filter))
 
     # 対象件数を確認
     record_count = scraped_from_response.count(
-        filter=filter,
+        filter=scraped_from_response_filter,
     )
     logger.info("=== news_clip_master への登録チェック対象件数 : " + str(record_count))
 
@@ -75,7 +75,7 @@ def news_clip_master_save_task(
     for skip in skip_list:
         records: Cursor = (
             scraped_from_response.find(
-                filter=filter,
+                filter=scraped_from_response_filter,
                 sort=[(ScrapedFromResponseModel.RESPONSE_TIME, ASCENDING)],
             )
             .skip(skip)
@@ -86,7 +86,7 @@ def news_clip_master_save_task(
             # # データチェック
             # if not scraped_record_error_check(record):
             # 重複チェック
-            filter = {
+            news_clip_records_filter = {
                 "$and": [
                     {NewsClipMasterModel.URL: record[ScrapedFromResponseModel.URL]},
                     {NewsClipMasterModel.TITLE: record[ScrapedFromResponseModel.TITLE]},
@@ -97,10 +97,10 @@ def news_clip_master_save_task(
                     },
                 ]
             }
-            news_clip_records = news_clip_master.find(filter=filter)
+            news_clip_records = news_clip_master.find(filter=news_clip_records_filter)
 
             # 重複するレコードがなければ保存する。
-            if news_clip_master.count(filter) == 0:
+            if news_clip_master.count(news_clip_records_filter) == 0:
                 # record[news_clip_master.SCRAPED_SAVE_START_TIME] = start_time
                 _ = {}
                 _[NewsClipMasterModel.SCRAPED_SAVE_START_TIME] = START_TIME

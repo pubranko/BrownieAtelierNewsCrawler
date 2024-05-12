@@ -9,30 +9,10 @@ on:
     workflow_dispatch:
 
 jobs:
-  Branch-Controll:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: ブランチより環境を選択 (現在のブランチ： ${{ github.ref }})
-        id: branch_check
-        run: |
-          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
-            echo "env_name=Product" >> $GITHUB_OUTPUT
-          elif [ "${{ github.ref }}" = "refs/heads/develop" ]; then
-            echo "env_name=TEST" >> $GITHUB_OUTPUT
-          else
-            echo "env_name=TEST" >> $GITHUB_OUTPUT
-          fi         
-          
-      - run: echo "環境名： ${{ steps.branch_check.outputs.env_name }}"
-        
-    outputs:
-      env_name: ${{ steps.branch_check.outputs.env_name }}
-
   Prefect-Flow-Test:
-    needs: [Branch-Controll]
     runs-on: ubuntu-22.04
     environment:
-      name: ${{ needs.Branch-Controll.outputs.env_name }}
+      name: TEST
     env:
         ## mongoDB用コンテナーで参照するイメージのタグ
         MONGO_TAG: 7.0.1-jammy
