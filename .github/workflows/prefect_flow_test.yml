@@ -174,7 +174,6 @@ jobs:
           TZ: ${{ vars.TZ}}
         # 各種フローテスト
         run: |
-          export TZ=${{ vars.TZ}}
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_01.py"
           docker-compose -f docker-compose__app-container.yml up
 
@@ -182,7 +181,6 @@ jobs:
         env:
           TZ: ${{ vars.TZ}}
         run: |
-          export TZ=${{ vars.TZ}}
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_02.py"
           docker-compose -f docker-compose__app-container.yml up
 
@@ -190,7 +188,6 @@ jobs:
         env:
           TZ: ${{ vars.TZ}}
         run: |
-          export TZ=${{ vars.TZ}}
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_03.py"
           docker-compose -f docker-compose__app-container.yml up
 
@@ -198,7 +195,6 @@ jobs:
         env:
           TZ: ${{ vars.TZ}}
         run: |
-          export TZ=${{ vars.TZ}}
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_04.py"
           docker-compose -f docker-compose__app-container.yml up
 
@@ -206,7 +202,6 @@ jobs:
         env:
           TZ: ${{ vars.TZ}}
         run: |
-          export TZ=${{ vars.TZ}}
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_05.py"
           docker-compose -f docker-compose__app-container.yml up
 
@@ -214,7 +209,6 @@ jobs:
         env:
           TZ: ${{ vars.TZ}}
         run: |
-          export TZ=${{ vars.TZ}}
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_06.py"
           docker-compose -f docker-compose__app-container.yml up
 
@@ -222,7 +216,6 @@ jobs:
         env:
           TZ: ${{ vars.TZ}}
         run: |
-          export TZ=${{ vars.TZ}}
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_07.py"
           docker-compose -f docker-compose__app-container.yml up
 
