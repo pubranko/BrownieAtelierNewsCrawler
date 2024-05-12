@@ -10,6 +10,8 @@ from BrownieAtelierMongo.collection_models.news_clip_master_model import \
     NewsClipMasterModel
 from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
     ScrapedFromResponseModel
+from BrownieAtelierMongo.collection_models.stats_info_collect_model import \
+    StatsInfoCollectModel
 from prefect_lib.flows.mongo_export_selector_flow import \
     mongo_export_selector_flow
 
@@ -21,11 +23,12 @@ mongo_export_selector_flow(
         CrawlerLogsModel.COLLECTION_NAME,
         AsynchronousReportModel.COLLECTION_NAME,
         ControllerModel.COLLECTION_NAME,
+        StatsInfoCollectModel.COLLECTION_NAME,
     ],
-    prefix="",  # export先のフォルダyyyy-mmの先頭に拡張した名前を付与する。
-    suffix="",
+    prefix="pre",  # export先のフォルダyyyy-mmの先頭に拡張した名前を付与する。
+    suffix="suf",
     period_month_from=3,  # 月次エクスポートを行うデータの基準年月
-    period_month_to=3,  # 月次エクスポートを行うデータの基準年月
+    period_month_to=0,  # 月次エクスポートを行うデータの基準年月
     crawler_response__registered=True,  # crawler_responseの場合、登録済みになったレコードのみエクスポートする場合True、登録済み以外のレコードも含めてエクスポートする場合False
 )
 """
@@ -36,7 +39,8 @@ mongo_export_selector_flow(
     "news_clip_master",
     "crawler_logs",
     "asynchronous_report",
-    "controller"
+    "controller",
+    "stats_info_collect",
   ],
   "prefix": "test",
   "suffix": "20240128",

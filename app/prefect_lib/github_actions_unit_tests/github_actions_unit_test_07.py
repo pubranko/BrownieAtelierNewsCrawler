@@ -27,6 +27,8 @@ if __name__ == "__main__":
         NewsClipMasterModel
     from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
         ScrapedFromResponseModel
+    from BrownieAtelierMongo.collection_models.stats_info_collect_model import \
+        StatsInfoCollectModel
     from prefect_lib.flows.mongo_export_selector_flow import \
         mongo_export_selector_flow
         
@@ -40,6 +42,7 @@ if __name__ == "__main__":
             CrawlerLogsModel.COLLECTION_NAME,
             AsynchronousReportModel.COLLECTION_NAME,
             ControllerModel.COLLECTION_NAME,
+            StatsInfoCollectModel.COLLECTION_NAME,
         ],
         prefix="",  # export先のフォルダyyyy-mmの先頭に拡張した名前を付与する。
         suffix="",
@@ -63,6 +66,8 @@ if __name__ == "__main__":
         NewsClipMasterModel
     from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
         ScrapedFromResponseModel
+    from BrownieAtelierMongo.collection_models.stats_info_collect_model import \
+        StatsInfoCollectModel
     from prefect_lib.flows.mongo_delete_selector_flow import \
         mongo_delete_selector_flow
 
@@ -74,6 +79,7 @@ if __name__ == "__main__":
             CrawlerLogsModel.COLLECTION_NAME,
             AsynchronousReportModel.COLLECTION_NAME,
             ControllerModel.COLLECTION_NAME,
+            StatsInfoCollectModel.COLLECTION_NAME,
         ],
         period_month_from=1,  # 月次エクスポートを行うデータの基準年月
         period_month_to=0,  # 月次エクスポートを行うデータの基準年月
@@ -95,6 +101,8 @@ if __name__ == "__main__":
         NewsClipMasterModel
     from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
         ScrapedFromResponseModel
+    from BrownieAtelierMongo.collection_models.stats_info_collect_model import \
+        StatsInfoCollectModel
     from prefect_lib.flows.mongo_import_selector_flow import \
         mongo_import_selector_flow
 
@@ -112,6 +120,7 @@ if __name__ == "__main__":
             CrawlerLogsModel.COLLECTION_NAME,
             AsynchronousReportModel.COLLECTION_NAME,
             ControllerModel.COLLECTION_NAME,
+            StatsInfoCollectModel.COLLECTION_NAME,
         ],
     )
 
