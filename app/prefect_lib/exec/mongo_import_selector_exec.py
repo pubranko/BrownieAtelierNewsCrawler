@@ -10,6 +10,8 @@ from BrownieAtelierMongo.collection_models.news_clip_master_model import \
     NewsClipMasterModel
 from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
     ScrapedFromResponseModel
+from BrownieAtelierMongo.collection_models.stats_info_collect_model import \
+    StatsInfoCollectModel
 from prefect_lib.flows.mongo_import_selector_flow import \
     mongo_import_selector_flow
 
@@ -22,5 +24,6 @@ mongo_import_selector_flow(
         # CrawlerLogsModel.COLLECTION_NAME,
         # AsynchronousReportModel.COLLECTION_NAME,
         # ControllerModel.COLLECTION_NAME,
+        # StatsInfoCollectModel.COLLECTION_NAME,
     ],
 )
