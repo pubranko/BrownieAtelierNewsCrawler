@@ -72,6 +72,9 @@ jobs:
 
         # Docker イメージの tar アーカイブ出力先のパス
         PATH_CACHE: /tmp/docker-img-arch
+
+        # タイムゾーン
+        TZ: "Asia/Tokyo"
     steps:
       - run: echo "🎉 起動イベントの種類 (${{ github.event_name }})"
       - run: echo "🐧 github上のOSの種類 (${{ runner.os }})"
@@ -171,6 +174,7 @@ jobs:
           TZ: ${{ vars.TZ}}
         # 各種フローテスト
         run: |
+          export TZ=${{ vars.TZ}}
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_01.py"
           docker-compose -f docker-compose__app-container.yml up
 
@@ -178,6 +182,7 @@ jobs:
         env:
           TZ: ${{ vars.TZ}}
         run: |
+          export TZ=${{ vars.TZ}}
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_02.py"
           docker-compose -f docker-compose__app-container.yml up
 
@@ -185,6 +190,7 @@ jobs:
         env:
           TZ: ${{ vars.TZ}}
         run: |
+          export TZ=${{ vars.TZ}}
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_03.py"
           docker-compose -f docker-compose__app-container.yml up
 
@@ -192,6 +198,7 @@ jobs:
         env:
           TZ: ${{ vars.TZ}}
         run: |
+          export TZ=${{ vars.TZ}}
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_04.py"
           docker-compose -f docker-compose__app-container.yml up
 
@@ -199,6 +206,7 @@ jobs:
         env:
           TZ: ${{ vars.TZ}}
         run: |
+          export TZ=${{ vars.TZ}}
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_05.py"
           docker-compose -f docker-compose__app-container.yml up
 
@@ -206,6 +214,7 @@ jobs:
         env:
           TZ: ${{ vars.TZ}}
         run: |
+          export TZ=${{ vars.TZ}}
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_06.py"
           docker-compose -f docker-compose__app-container.yml up
 
@@ -213,6 +222,7 @@ jobs:
         env:
           TZ: ${{ vars.TZ}}
         run: |
+          export TZ=${{ vars.TZ}}
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_07.py"
           docker-compose -f docker-compose__app-container.yml up
 
