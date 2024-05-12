@@ -5,7 +5,10 @@ from prefect_lib.data_models.stats_analysis_report_input import \
 from prefect_lib.flows.stats_analysis_report_flow import \
     stats_analysis_report_flow
 
-"""基準日(0:00:00)〜翌日(0:00:00)までの期間が対象となる。"""
+"""
+from(0:00:00)〜基準日(0:00:00)までの期間が対象となる。
+from部分はreport_termで変更される。
+"""
 stats_analysis_report_flow(
     # report_term=StatsAnalysisReportConst.REPORT_TERM__DAILY,
     # report_term=StatsAnalysisReportConst.REPORT_TERM__WEEKLY,

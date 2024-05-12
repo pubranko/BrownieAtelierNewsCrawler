@@ -72,6 +72,9 @@ jobs:
 
         # Docker イメージの tar アーカイブ出力先のパス
         PATH_CACHE: /tmp/docker-img-arch
+
+        # タイムゾーン
+        TZ: "Asia/Tokyo"
     steps:
       - run: echo "🎉 起動イベントの種類 (${{ github.event_name }})"
       - run: echo "🐧 github上のOSの種類 (${{ runner.os }})"
