@@ -31,7 +31,7 @@ jobs:
         # ブラウニー工房のgitリモートリポジトリー
         GIT_REMOTE_REPOSITORY: https://github.com/pubranko/BrownieAtelier.git
         # 上記リポジトリーのgitブランチ
-        # GIT_BRANCH: ${branch_name}
+        # GIT_BRANCH: ${{ github.ref }}
         # GIT_BRANCH: ${{github.head_ref}}
         GIT_BRANCH: ${{github.ref_name}}
         # Firefox の gecko driver
@@ -80,7 +80,6 @@ jobs:
     steps:
       - run: echo "🎉 起動イベントの種類 (${{ github.event_name }})"
       - run: echo "🐧 github上のOSの種類 (${{ runner.os }})"
-      # - name: リポジトリ(${{ github.repository }})・ブランチ(${{ github.ref }})にチェックアウト
       - name: リポジトリ(${{ github.repository }})・ブランチ(${{github.ref_name}})にチェックアウト
         # 上記のリポジトリ・ブランチにチェックアウト
         uses: actions/checkout@v4
