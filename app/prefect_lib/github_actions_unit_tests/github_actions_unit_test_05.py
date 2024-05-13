@@ -37,7 +37,11 @@ if __name__ == "__main__":
     # 一週間分を1日ごとに集計した結果を取得する。
     # 本来は前日までのデータを取得するためのものであるため、基準日を＋1日にし当日分も対象となるよう調整。
     _ = datetime.now().astimezone(TIMEZONE) + timedelta(days=1)
-    print(f"＝＝＝　確認！ {_}")
+    from logging import Logger
+    import logging
+    logger: Logger = logging.getLogger()
+    logger.info(f"＝＝＝　確認！ {datetime.now().isoformat()}")
+    logger.info(f"＝＝＝　確認！ {_}")
     stats_analysis_report_flow(
         report_term=StatsAnalysisReportConst.REPORT_TERM__WEEKLY,
         totalling_term=StatsAnalysisReportConst.TOTALLING_TERM__DAILY,
