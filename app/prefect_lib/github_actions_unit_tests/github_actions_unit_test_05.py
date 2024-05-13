@@ -36,9 +36,9 @@ if __name__ == "__main__":
     # From(0:00:00)〜基準日(0:00:00)までの期間が対象となる。
     # 一週間分を1日ごとに集計した結果を取得する。
     # 本来は前日までのデータを取得するためのものであるため、基準日を＋1日にし当日分も対象となるよう調整。
-    base_date = datetime.now().astimezone(TIMEZONE) + timedelta(days=1)
+    _ = datetime.now().astimezone(TIMEZONE) + timedelta(days=1)
     stats_analysis_report_flow(
         report_term=StatsAnalysisReportConst.REPORT_TERM__WEEKLY,
         totalling_term=StatsAnalysisReportConst.TOTALLING_TERM__DAILY,
-        base_date=base_date.date(),
+        base_date=_.date(),
     )
