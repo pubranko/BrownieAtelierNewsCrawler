@@ -1,0 +1,129 @@
+name: Docker Image Check & pull & recovery
+run-name: Docker Image Check & pull & recovery-run
+on: 
+    # 以下のブランチにプッシュされた際起動
+    # push:
+    #     branches: ["github-actions-test"]
+    # Githubより手動で起動
+    workflow_dispatch:
+
+jobs:
+  Docker-Image-Create:
+    runs-on: ubuntu-22.04
+    environment:
+      name: TEST
+    env:
+        ## mongoDB用コンテナーで参照するイメージのタグ
+        MONGO_TAG: 7.0.1-jammy
+        ## dockerfile_baseで参照するubuntuイメージのタグ
+        UBUNTU_TAG: 22.04
+        ## # dockerfile_appで参照するbaseイメージのタグ
+        BASE_TAG: test-0.15
+        # docker-composeで参照するappイメージのタグ
+        APP_TAG: test-0.15
+        # コンテナー内rootユーザーパスワード
+        CONTAINER_ROOT_USER: root_user
+        CONTAINER_ROOT_PASS: password
+        # コンテナ内の一般ユーザー、パスワード
+        CONTAINER_USER: common_user
+        CONTAINER_USER_PASS: password
+        # ブラウニー工房のgitリモートリポジトリー
+        GIT_REMOTE_REPOSITORY: https://github.com/pubranko/BrownieAtelier.git
+        # 上記リポジトリーのgitブランチ
+        GIT_BRANCH: github-actions-test
+        # Firefox の gecko driver
+        GECKO_DRIVER: https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz
+
+        # ホスト（ローカル）側のmongoDB接続用のcrtやpemファイルの保管ディレクトリ
+        LOCAL_MONGO_KEY_DIR: /tmp
+
+        # docker-compose command選択
+        CONTAINER_START_COMMAND: /home/common_user/BrownieAtelier/sh/github_actions_unit_test.sh
+
+        # mongoDBコンテナー一般ユーザー情報、mongoDB接続情報
+        BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo-server
+        BROWNIE_ATELIER_MONGO__MONGO_PORT: 27017
+        BROWNIE_ATELIER_MONGO__MONGO_USE_DB: test_crawler_db
+        BROWNIE_ATELIER_MONGO__MONGO_USER: mongo_user
+        BROWNIE_ATELIER_MONGO__MONGO_PASS: mongo_pass
+        BROWNIE_ATELIER_MONGO__MONGO_TLS: false
+        BROWNIE_ATELIER_MONGO__MONGO_TLS_CA_FILE: 
+        BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE: 
+        # mongoDBコンテナーroot情報
+        BROWNIE_ATELIER_MONGO__MONGO_INITDB_ROOT_USERNAME: root_user
+        BROWNIE_ATELIER_MONGO__MONGO_INITDB_ROOT_PASSWORD: password
+        # Email接続情報
+        BROWNIE_ATELIER_NOTICE__SMTP_HOST: ${{ secrets.BROWNIE_ATELIER_NOTICE__SMTP_HOST }}
+        BROWNIE_ATELIER_NOTICE__SMTP_PORT: ${{ secrets.BROWNIE_ATELIER_NOTICE__SMTP_PORT }}
+        BROWNIE_ATELIER_NOTICE__FROM_EMAIL: ${{ secrets.BROWNIE_ATELIER_NOTICE__FROM_EMAIL }}
+        BROWNIE_ATELIER_NOTICE__TO_EMAIL: ${{ secrets.BROWNIE_ATELIER_NOTICE__TO_EMAIL }}
+        BROWNIE_ATELIER_NOTICE__PASSWORD: ${{ secrets.BROWNIE_ATELIER_NOTICE__PASSWORD }}
+
+        # dummy
+        HOST_OS_IP_ADDRESS: 192.0.0.1
+        # dummy
+        PREFECT_HOME: /home/root_user/BrownieAtelier
+        PREFECT_API_URL: 
+        PREFECT__API_KEY: 
+        PREFECT__WORK_SPACE: 
+        PREFECT__WORK_POOL: 
+        SCRAPY__LOG_LEVEL: INFO
+
+        # Docker イメージの tar アーカイブ出力先のパス
+        PATH_CACHE: /tmp/docker-img-arch
+
+        # ワーク
+        IMAGE_EXISTS:
+    steps:
+      - run: echo "🎉 起動イベントの種類 (${{ github.event_name }})"
+      - run: echo "🐧 github上のOSの種類 (${{ runner.os }})"
+      - name: リポジトリ(${{ github.repository }})・ブランチ(${{ github.ref }})にチェックアウト
+        # 上記のリポジトリ・ブランチにチェックアウト
+        uses: actions/checkout@v4
+
+      # - name: baseイメージをpull
+      #   run: |
+      #     docker pull mikuras/brownie_atelier_base:$BASE_TAG
+      #     docker images
+
+      - name: baseイメージ存在チェック
+        id: check-image
+        # run: |
+        #   IMAGE_EXISTS=$(docker images -q mikuras/brownie_atelier_base:$BASE_TAG)
+        #   echo "::set-output name=image_exists::$IMAGE_EXISTS"
+        run: |
+          echo $IMAGE_EXISTS
+          docker images
+          docker images --quiet mikuras/brownie_atelier_base:test-0.15
+          BBB=$(docker images --quiet mikuras/brownie_atelier_base:test-0.15)
+          echo 'IMAGE_EXISTS=$BBB' >> $GITHUB_ENV
+          echo $BBB
+          echo ${{env.IMAGE_EXISTS}}
+          echo $GITHUB_ENV
+  
+      - name: baseイメージが既にdocker hubに登録されていた場合、pullを実行
+        # if: steps.check-image.outputs.image_exists
+        if: startsWith(!'${{env.IMAGE_EXISTS}}','')
+        run: |
+          echo IMAGE_EXISTS
+          echo $IMAGE_EXISTS
+          docker pull mikuras/brownie_atelier_base:$BASE_TAG
+          docker images
+      
+      - name: baseイメージがない場合、baseイメージ用キャッシュの定義 & 復元
+        # if: steps.check-image.outputs.image_exists == 'false'
+        if: startsWith('${{env.IMAGE_EXISTS}}','')
+        # キャッシュID の定義
+        id: base_image_cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PATH_CACHE }}
+          key: ${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}
+
+      # キャッシュがある場合は tar をロードしてイメージ一覧に追加
+      - name: docker hubにbaseイメージがなくキャッシュがある場合は、キャッシュよりイメージをロード
+        if: steps.base_image_cache.outputs.cache-hit == 'true'
+        run: |
+          ls -l ${{ env.PATH_CACHE }}
+          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}.tar
+          docker images

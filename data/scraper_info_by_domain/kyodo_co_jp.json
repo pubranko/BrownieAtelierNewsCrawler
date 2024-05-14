@@ -17,6 +17,12 @@
         ],
         "article_scraper": [
             {
+                "pattern": 2,
+                "css_selecter": "section[class=post_container] > p",
+                "priority": 2,
+                "register_date":"2024-04-30T16:00:00+09:00"
+            },
+            {
                 "pattern": 1,
                 "css_selecter": "div.area-content > div.entry-content p",
                 "priority": 1,
@@ -24,6 +30,12 @@
             }
         ],
         "publish_date_scraper": [
+            {
+                "pattern": 3,
+                "css_selecter": "section[class=post_ttl] time[class=post_detail__date]",
+                "priority": 3,
+                "register_date":"2024-04-30T16:00:00+09:00"
+            },
             {
                 "pattern": 2,
                 "css_selecter": "head > meta[name=\"iso-8601-publish-date\"]",

@@ -45,6 +45,8 @@ services:
             # Scrapyの環境設定
             # SCRAPY_SETTINGS_MODULE: "news_crawl.settings"
             SCRAPY__LOG_LEVEL: ${SCRAPY__LOG_LEVEL}
+            # github actions unit testのスクリプトで使用
+            PREFECT_RUN_SCRIPT: ${PREFECT_RUN_SCRIPT}
 
 # 既存のネットワークbrownie-atelier-netを利用する。
 networks:

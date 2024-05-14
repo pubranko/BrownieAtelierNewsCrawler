@@ -1,0 +1,178 @@
+name: Brownie Atelier Deploy
+run-name: Brownie Atelier Deploy!!!
+on:
+    # 以下のブランチにプッシュされた際起動
+    push:
+        branches: ['develop','master']
+    # Githubより手動で起動
+    workflow_dispatch:
+
+jobs:
+
+  Branch-Controll:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: ブランチより環境を選択 (現在のブランチ： ${{ github.ref }})
+        id: branch_check
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
+            echo "env_name=PRODUCT" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" = "refs/heads/develop" ]; then
+            echo "env_name=TEST" >> $GITHUB_OUTPUT
+          else
+            echo "env_name=TEST" >> $GITHUB_OUTPUT
+          fi         
+          
+      - run: echo "環境名： ${{ steps.branch_check.outputs.env_name }}"
+        
+    outputs:
+      env_name: ${{ steps.branch_check.outputs.env_name }}
+
+  Brownie-Atelier-Deploy:
+    needs: [Branch-Controll]
+    runs-on: ubuntu-22.04
+    environment:
+      name: ${{ needs.Branch-Controll.outputs.env_name }}
+    env:
+        ## mongoDB用コンテナーで参照するイメージのタグ
+        MONGO_TAG: 7.0.1-jammy
+        ## dockerfile_baseで参照するubuntuイメージのタグ
+        UBUNTU_TAG: 22.04
+        ## # dockerfile_appで参照するbaseイメージのタグ
+        BASE_TAG: test-0.15
+        # docker-composeで参照するappイメージのタグ
+        APP_TAG: test-0.15
+        # コンテナー内rootユーザーパスワード
+        CONTAINER_ROOT_USER: root_user
+        CONTAINER_ROOT_PASS: password
+        # コンテナ内の一般ユーザー、パスワード
+        CONTAINER_USER: common_user
+        CONTAINER_USER_PASS: password
+        # ブラウニー工房のgitリモートリポジトリー
+        GIT_REMOTE_REPOSITORY: https://github.com/pubranko/BrownieAtelier.git
+        # 上記リポジトリーのgitブランチ
+        GIT_BRANCH: github-actions-test
+        # Firefox の gecko driver
+        GECKO_DRIVER: https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz
+
+        # ホスト（ローカル）側のmongoDB接続用のcrtやpemファイルの保管ディレクトリ
+        LOCAL_MONGO_KEY_DIR: /tmp
+
+        # docker-compose command選択
+        CONTAINER_START_COMMAND: /home/common_user/BrownieAtelier/sh/prefect_cloud_deploy.sh
+
+        # mongoDBコンテナー一般ユーザー情報、mongoDB接続情報
+        BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo-server
+        BROWNIE_ATELIER_MONGO__MONGO_PORT: 27017
+        BROWNIE_ATELIER_MONGO__MONGO_USE_DB: test_crawler_db
+        BROWNIE_ATELIER_MONGO__MONGO_USER: mongo_user
+        BROWNIE_ATELIER_MONGO__MONGO_PASS: mongo_pass
+        BROWNIE_ATELIER_MONGO__MONGO_TLS: false
+        BROWNIE_ATELIER_MONGO__MONGO_TLS_CA_FILE:
+        BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE:
+        # Email接続情報
+        BROWNIE_ATELIER_NOTICE__SMTP_HOST: ${{ secrets.BROWNIE_ATELIER_NOTICE__SMTP_HOST }}
+        BROWNIE_ATELIER_NOTICE__SMTP_PORT: ${{ secrets.BROWNIE_ATELIER_NOTICE__SMTP_PORT }}
+        BROWNIE_ATELIER_NOTICE__FROM_EMAIL: ${{ secrets.BROWNIE_ATELIER_NOTICE__FROM_EMAIL }}
+        BROWNIE_ATELIER_NOTICE__TO_EMAIL: ${{ secrets.BROWNIE_ATELIER_NOTICE__TO_EMAIL }}
+        BROWNIE_ATELIER_NOTICE__PASSWORD: ${{ secrets.BROWNIE_ATELIER_NOTICE__PASSWORD }}
+        # 
+        HOST_OS_IP_ADDRESS: 192.0.0.1
+        # Prefect
+        # PREFECT_HOME: ${{ github.workspace }} # /home/runner/work/BrownieAtelier/BrownieAtelier
+        PREFECT_HOME: ${{ github.workspace }}
+        PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
+        PREFECT__API_KEY: ${{ secrets.PREFECT__API_KEY }}
+        PREFECT__WORK_SPACE: ${{ secrets.PREFECT__WORK_SPACE }}
+        PREFECT__WORK_POOL: ${{ secrets.PREFECT__WORK_POOL }}
+        PREFECT__DATA:
+        SCRAPY__LOG_LEVEL:
+        # Docker イメージの tar アーカイブ出力先のパス
+        PATH_CACHE: /tmp/docker-img-arch
+    steps:
+      - run: echo "🎉 起動イベントの種類 (${{ github.event_name }})"
+      - run: echo "🐧 github上のOSの種類 (${{ runner.os }})"
+      - name: リポジトリ(${{ github.repository }})・ブランチ(${{ github.ref }})にチェックアウト
+        # 上記のリポジトリ・ブランチにチェックアウト
+        uses: actions/checkout@v4
+
+      - name: ワークスペースチェック
+        # テスト前チェックを確認
+        # クローン後はここにソースが格納される /home/runner/work/BrownieAtelier/BrownieAtelier
+        run: |
+          ls -a ${{ github.workspace }}
+
+      #################################################
+      # baseイメージコンテナー
+      #################################################
+
+      - name: baseイメージ用キャッシュの定義 & 復元
+        # キャッシュID の定義
+        id: base_image_cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PATH_CACHE }}
+          key: ${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}
+
+      # キャッシュがある場合は tar をdockerにロードしてイメージに追加
+      - name: base用キャッシュがある場合は tar をロードしてイメージ一覧に追加
+        if: steps.base_image_cache.outputs.cache-hit == 'true'
+        run: |
+          ls -l ${{ env.PATH_CACHE }}
+          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}.tar
+          docker images
+
+      - name: baseイメージがキャッシュにない場合にbuildとsave(キャッシュ)を実行
+        if: steps.base_image_cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir ${{ env.PATH_CACHE }}
+          docker-compose -f docker-compose__base-image-build.yml build
+          docker save brownie_atelier_base:$BASE_TAG -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}.tar
+          ls -l ${{ env.PATH_CACHE }}
+          docker images
+
+
+      #################################################
+      # appイメージコンテナー
+      #################################################
+
+      - name: appイメージbuild
+        # appイメージ作成
+        run: |
+          docker-compose -f docker-compose__app-image-build.yml build
+          docker tag brownie_atelier_app:${{ env.APP_TAG }} ${{ secrets.DOCKER_HUB_USERNAME }}/brownie_atelier_app:${{ env.APP_TAG }}
+          docker images
+
+      #################################################
+      # appイメージをdocker hubへpush
+      #################################################
+
+      # dockerhubにログイン
+      - name: dockerhubにログイン
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      # dockerhubへpush
+      - name: push - dockerhub
+        run: |
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/brownie_atelier_app:${{ env.APP_TAG}}
+
+      ########################################################################
+      # brownie_atelier_app起動時にdockerネットワークが必要であるため便宜上作成
+      ########################################################################
+      - name: brownie_atelier_app起動用にdockerネットワークを作成
+        run: docker network create brownie-atelier-net
+  
+      #################################################
+      # prefect flowをprefectクラウドへデプロイ
+      #################################################
+
+      - name: "Prefect FlowをPrefectクラウドへデプロイ"
+        env:
+          TZ: ${{ vars.TZ}}
+        # 各種フローテスト
+        run: |
+          export PREFECT_RUN_SCRIPT="prefect_lib/deployments/all.py"
+          docker-compose -f docker-compose__app-container.yml up

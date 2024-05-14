@@ -67,13 +67,13 @@ def scrapying_task(
         conditions.append({CrawlerResponseModel.DOMAIN: {"$nin": stop_domain}})
 
     if conditions:
-        filter: Any = {"$and": conditions}
+        crawler_response_filter: Any = {"$and": conditions}
     else:
-        filter = None
-    logger.info(f"=== crawler_responseへのfilter: {str(filter)}")
+        crawler_response_filter = None
+    logger.info(f"=== crawler_responseへのfilter: {str(crawler_response_filter)}")
 
     # スクレイピング対象件数を確認
-    record_count = crawler_response.count(filter=filter)
+    record_count = crawler_response.count(filter=crawler_response_filter)
     logger.info(f"=== crawler_response スクレイピング対象件数 : {str(record_count)}")
 
     # 件数制限でスクレイピング処理を実施
@@ -88,7 +88,7 @@ def scrapying_task(
         records: Cursor = (
             crawler_response.find(
                 projection=None,
-                filter=filter,
+                filter=crawler_response_filter,
                 sort=[
                     (CrawlerResponseModel.DOMAIN, ASCENDING),
                     (CrawlerResponseModel.RESPONSE_TIME, ASCENDING),
