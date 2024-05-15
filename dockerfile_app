@@ -16,7 +16,7 @@ RUN echo ${CONTAINER_USER} | sudo -S apt -y upgrade
 WORKDIR /home/${CONTAINER_USER}/BrownieAtelier
 # リモートリポジトリよりpullを実行し最新ソースを取得する。
 RUN git config pull.rebase false
-RUN git switch "${GIT_BRANCH}"
+RUN git switch --track origin/"${GIT_BRANCH}"
 RUN git pull origin "${GIT_BRANCH}"
 RUN git submodule update --recursive
 
