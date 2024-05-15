@@ -15,7 +15,7 @@ RUN echo ${CONTAINER_USER} | sudo -S apt -y upgrade
 # アプリ用ディレクトリへ移動
 WORKDIR /home/${CONTAINER_USER}/BrownieAtelier
 # リモートリポジトリよりpullを実行し最新ソースを取得する。
-RUN git pull origin ${GIT_BRANCH}
+RUN git pull origin "${GIT_BRANCH}"
 RUN git submodule update --recursive
 
 # シェルに実行権限を付与
