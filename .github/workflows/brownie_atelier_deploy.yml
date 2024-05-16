@@ -40,9 +40,9 @@ jobs:
         ## dockerfile_baseで参照するubuntuイメージのタグ
         UBUNTU_TAG: 22.04
         ## # dockerfile_appで参照するbaseイメージのタグ
-        BASE_TAG: test-0.15
+        # BASE_TAG: test-0.15
         # docker-composeで参照するappイメージのタグ
-        APP_TAG: test-0.15
+        # APP_TAG: test-0.15
         # コンテナー内rootユーザーパスワード
         CONTAINER_ROOT_USER: root_user
         CONTAINER_ROOT_PASS: password
@@ -113,29 +113,33 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.PATH_CACHE }}
-          key: ${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}
+          key: ${{ runner.os }}-brownie_atelier_base-${{ vars.BASE_TAG }}
 
       # キャッシュがある場合は tar をdockerにロードしてイメージに追加
       - name: base用キャッシュがある場合は tar をロードしてイメージ一覧に追加
         if: steps.base_image_cache.outputs.cache-hit == 'true'
         run: |
           ls -l ${{ env.PATH_CACHE }}
-          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}.tar
+          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ vars.BASE_TAG }}.tar
           docker images
 
       - name: baseイメージがキャッシュにない場合にbuildとsave(キャッシュ)を実行
         if: steps.base_image_cache.outputs.cache-hit != 'true'
+        # git branchにはdevelopを固定で割り当てとする。 appイメージ作成側で修正中のブランチやmaster等を適用する運用とする。 
         run: |
           mkdir ${{ env.PATH_CACHE }}
+          export GIT_BRANCH=develop
           docker-compose -f docker-compose__base-image-build.yml build
-          docker save brownie_atelier_base:$BASE_TAG -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}.tar
+          docker save brownie_atelier_base:${{ vars.BASE_TAG }} -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ vars.BASE_TAG }}.tar
           ls -l ${{ env.PATH_CACHE }}
           docker images
-
 
       #################################################
       # appイメージコンテナー
       #################################################
+      - name: appイメージタグ採番
+        run: |
+          echo "APP_TAG=$(python app/scripts/tag_create.py --mode ${{ needs.Branch-Controll.outputs.env_name }})" >> $GITHUB_ENV
 
       - name: appイメージbuild
         # appイメージ作成

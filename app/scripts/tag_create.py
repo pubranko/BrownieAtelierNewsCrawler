@@ -6,7 +6,13 @@ import sys
 from typing import Union
 
 """
-tagのナンバリングについて
+当スクリプトの呼び出し元へタグを文字列として返す。
+呼び出し元では次のように利用することを想定している。
+  export NEXT_TAG=$(python app/scripts/tag_create.py --mode TEST)
+このNEXT_TAGを使用し、docker imageをビルドさせる。
+
+
+appイメージのtagのナンバリングについて
 例）1.2.3
 1.メジャーバージョン (Major Version):
     メジャーバージョンは、大規模な変更や互換性のない変更があった場合に上げられます。
@@ -22,6 +28,11 @@ tagのナンバリングについて
     パッチバージョンは、細かな修正やバグ修正があった場合に上げられます。
     例えば、セキュリティの修正、バグの修正、パフォーマンスの最適化などが該当します。
     パッチバージョンは通常、3番目の番号として表されます（例: 1.2.3 の 3）。
+
+baseイメージのtagのナンバリングについて
+例）16.1
+1.メジャーバージョン (Major Version)、2.マイナーバージョン (Minor Version)のみとする。
+内容は上記appイメージと同様
 """
 
 def init_check(
@@ -122,7 +133,7 @@ def tag_create(mode: str, tags_product: list[str], base_tag: str) -> str:
         # マイナーアップデートの場合、パッチも併せてバージョンを更新
         max_tag["minor"] = int(major_minor[1])
         max_tag["patch"] = 1
-        
+
     else:
         # baseタグに変更が無ければ、パッチをカウントアップ
         max_tag["patch"] = max_tag["patch"] + 1
@@ -140,19 +151,19 @@ if __name__ == "__main__":
     # docker hubよりタグの一覧情報を取得。
     tags_product = dockerhub_tag_info_get(str(docker_hub_username))
 
-    # 
+    #
     new_tag = tag_create(mode, tags_product, str(base_tag))
-        
+
     # 当スクリプトの呼び出し元へタグを文字列として返す。
     # 呼び出し元では次のように利用することを想定している。
     #   export NEXT_TAG=$(python scripts/tag_create.py --mode TEST)
     # このNEXT_TAGを使用し、docker imageをビルドさせる。
     print(new_tag)
-    
 
 
 
-""" 
+
+"""
 response.textの中のjsonデータイメージ。
 resultsのリスト内にタグごとの情報が格納されている。
 
