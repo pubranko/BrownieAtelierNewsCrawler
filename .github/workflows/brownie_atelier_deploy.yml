@@ -129,6 +129,7 @@ jobs:
         run: |
           mkdir ${{ env.PATH_CACHE }}
           export GIT_BRANCH=develop
+          export BASE_TAG=${{ vars.BASE_TAG }}
           docker-compose -f docker-compose__base-image-build.yml build
           docker save brownie_atelier_base:${{ vars.BASE_TAG }} -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ vars.BASE_TAG }}.tar
           ls -l ${{ env.PATH_CACHE }}
@@ -144,6 +145,7 @@ jobs:
       - name: appイメージbuild
         # appイメージ作成
         run: |
+          export BASE_TAG=${{ vars.BASE_TAG }}
           docker-compose -f docker-compose__app-image-build.yml build
           docker tag brownie_atelier_app:${{ env.APP_TAG }} ${{ secrets.DOCKER_HUB_USERNAME }}/brownie_atelier_app:${{ env.APP_TAG }}
           docker images
