@@ -88,7 +88,7 @@ USER ${CONTAINER_USER}
 RUN whoami
 
 # git clone (サブモジュールごとクローンする)
-RUN git clone --recursive ${GIT_REMOTE_REPOSITORY} -b ${GIT_BRANCH}
+RUN git clone --recursive ${GIT_REMOTE_REPOSITORY} -b "${GIT_BRANCH}"
 # リポジトリの所有権でエラーが出ないように例外をコンフィグに登録
 RUN git config --global --add safe.directory /home/${CONTAINER_USER}/BrownieAtelier
 
