@@ -164,6 +164,7 @@ jobs:
       #################################################
       - name: appイメージタグ採番
         run: |
+          export BASE_TAG=${{ vars.BASE_TAG }}
           export DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
           echo "APP_TAG=$(python app/scripts/tag_create.py --mode TEST)" >> $GITHUB_ENV
 
