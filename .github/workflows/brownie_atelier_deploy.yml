@@ -140,6 +140,7 @@ jobs:
       #################################################
       - name: appイメージタグ採番
         run: |
+          export DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
           echo "APP_TAG=$(python app/scripts/tag_create.py --mode ${{ needs.Branch-Controll.outputs.env_name }})" >> $GITHUB_ENV
 
       - name: appイメージbuild
