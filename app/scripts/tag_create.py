@@ -64,10 +64,10 @@ def init_check(
             f"必要な環境変数(BASE_TAG)がありません。「BASE_TAG」に現在のメジャーバージョン、マイナーバージョンを指定してください。(例: 1.15)"
         )
 
-    pattern = r"^\d*\.\d*$"  # nn.nn の形式
+    pattern = r"^[test-]*\d*\.\d*$"  # nn.nn の形式
     if not re.match(pattern, str(base_tag)):
         raise ValueError(
-            f"環境変数(BASE_TAG)の形式が不正です。「BASE_TAG」に現在のメジャーバージョン、マイナーバージョンを指定してください。(例: 1.15)"
+            f"環境変数(BASE_TAG:{base_tag})の形式が不正です。「BASE_TAG」に現在のメジャーバージョン、マイナーバージョンを指定してください。(例: test-1.15、1.15)"
         )
 
     return args[2]
@@ -101,44 +101,51 @@ def dockerhub_tag_info_get(docker_hub_username: str) -> list:
 
 def tag_create(mode: str, tags_product: list[str], base_tag: str) -> str:
 
+    #################################################
     # docker hub上での現在の最大バージョンを求める。
+    #################################################
     max_tag: dict[str, int] = {"major": 0, "minor": 0, "patch": 1}
     for tag in tags_product:
-        major_minor_patch = tag.split(".")
+        product_major, product_minor, product_patch = tag.split(".")
 
-        if int(major_minor_patch[0]) > max_tag["major"]:
+        if int(product_major) > max_tag["major"]:
             # メジャーアップデートの場合、マイナー、パッチも併せてバージョンを更新
-            max_tag["major"] = int(major_minor_patch[0])
-            max_tag["minor"] = int(major_minor_patch[1])
-            max_tag["patch"] = int(major_minor_patch[2])
+            max_tag["major"] = int(product_major)
+            max_tag["minor"] = int(product_minor)
+            max_tag["patch"] = int(product_patch)
 
-        elif int(major_minor_patch[1]) > max_tag["minor"]:
+        elif int(product_minor) > max_tag["minor"]:
             # マイナーアップデートの場合、パッチも併せてバージョンを更新
-            max_tag["minor"] = int(major_minor_patch[1])
-            max_tag["patch"] = int(major_minor_patch[2])
+            max_tag["minor"] = int(product_minor)
+            max_tag["patch"] = int(product_patch)
 
-        elif int(major_minor_patch[2]) > max_tag["patch"]:
+        elif int(product_patch) > max_tag["patch"]:
             # パッチアップデート
-            max_tag["patch"] = int(major_minor_patch[2])
+            max_tag["patch"] = int(product_patch)
 
-    # baseタグ
-    major_minor = base_tag.split(".")
-    if int(major_minor[0]) > max_tag["major"]:
+    ########################################
+    # baseタグと比較し今回のタグを決定する。
+    ########################################
+    base_major, base_minor = base_tag.replace("test-","").split(".")
+    if int(base_major) > max_tag["major"]:
         # メジャーアップデートの場合、マイナー、パッチも併せてバージョンを更新
-        max_tag["major"] = int(major_minor[0])
-        max_tag["minor"] = int(major_minor[1])
+        max_tag["major"] = int(base_major)
+        max_tag["minor"] = int(base_minor)
         max_tag["patch"] = 1
 
-    elif int(major_minor[1]) > max_tag["minor"]:
+    elif int(base_minor) > max_tag["minor"]:
         # マイナーアップデートの場合、パッチも併せてバージョンを更新
-        max_tag["minor"] = int(major_minor[1])
+        max_tag["minor"] = int(base_minor)
         max_tag["patch"] = 1
 
     else:
         # baseタグに変更が無ければ、パッチをカウントアップ
         max_tag["patch"] = max_tag["patch"] + 1
 
-    return f'{max_tag["major"]}.{max_tag["minor"]}.{max_tag["patch"]}'
+    # modeがTESTならばタグの頭に「test-」を付与する。
+    prefix =  "test-" if mode == 'TEST' else ""
+
+    return f'{prefix}{max_tag["major"]}.{max_tag["minor"]}.{max_tag["patch"]}'
 
 
 if __name__ == "__main__":
