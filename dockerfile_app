@@ -14,9 +14,6 @@ RUN echo ${CONTAINER_USER} | sudo -S apt -y upgrade
 
 # アプリ用ディレクトリへ移動
 WORKDIR /home/${CONTAINER_USER}/BrownieAtelier
-# git仮ユーザー登録
-RUN git config --global user.email "kari@example.com"
-RUN git config --global user.name "kari Name"
 
 # リモートリポジトリよりpullを実行し最新ソースを取得する。
 RUN git config pull.rebase false
