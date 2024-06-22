@@ -1,11 +1,8 @@
 version: '3.1'
-##############################################
-# 本番環境用(tls指定あり)
-##############################################
 services:
 
     brownie_atelier:
-        image: brownie_atelier_app:${APP_TAG}
+        image: mikuras/brownie_atelier_app:${APP_TAG}
         container_name: brownie_atelier_app
         # restart: always
         networks:

@@ -5,10 +5,7 @@
 
 # Where and how to store data.
 storage:
-  # dbPath: /var/lib/mongodb
-
-  dbPath: /data/db
-
+  dbPath: /var/lib/mongodb
 #  engine:
 #  wiredTiger:
 
@@ -21,16 +18,14 @@ systemLog:
 # network interfaces
 net:
   port: 27017
-  # bindIp: 127.0.0.1
-  bindIpAll: true
+  bindIp: 127.0.0.1
+
 
 # how the process runs
 processManagement:
   timeZoneInfo: /usr/share/zoneinfo
 
 #security:
-# security:
-#   authorization: enabled
 
 #operationProfiling:
 
@@ -41,5 +36,3 @@ processManagement:
 ## Enterprise-Only Options:
 
 #auditLog:
-
-#snmp:
