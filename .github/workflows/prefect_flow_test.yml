@@ -40,7 +40,7 @@ jobs:
         # ホスト（ローカル）側のmongoDB接続用のcrtやpemファイルの保管ディレクトリ
         LOCAL_MONGO_KEY_DIR: /tmp
 
-        # docker-compose command選択
+        # docker compose command選択
         CONTAINER_START_COMMAND: /home/common_user/BrownieAtelier/sh/github_actions_unit_test.sh
 
         # mongoDBコンテナー一般ユーザー情報、mongoDB接続情報
@@ -153,7 +153,7 @@ jobs:
           mkdir ${{ env.PATH_CACHE }}
           export GIT_BRANCH=develop
           export BASE_TAG=${{ vars.BASE_TAG }}
-          docker-compose -f docker-compose__base-image-build.yml build
+          docker compose -f docker-compose__base-image-build.yml build
           docker save brownie_atelier_base:${{ vars.BASE_TAG }} -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ vars.BASE_TAG }}.tar
           ls -l ${{ env.PATH_CACHE }}
           docker images
@@ -173,7 +173,7 @@ jobs:
         run: |
           export BASE_TAG=${{ vars.BASE_TAG }}
           export APP_TAG=${{ env.APP_TAG }}
-          docker-compose -f docker-compose__app-image-build.yml build
+          docker compose -f docker-compose__app-image-build.yml build
           docker images
 
 
@@ -187,49 +187,49 @@ jobs:
         # 各種フローテスト
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_01.py"
-          docker-compose -f docker-compose__app-container.yml up
+          docker compose -f docker-compose__app-container.yml up
 
       - name: "<4>手動クローリング"
         env:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_02.py"
-          docker-compose -f docker-compose__app-container.yml up
+          docker compose -f docker-compose__app-container.yml up
 
       - name: "<5>定期観測のON/OFF  <6>定期観測"
         env:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_03.py"
-          docker-compose -f docker-compose__app-container.yml up
+          docker compose -f docker-compose__app-container.yml up
 
       - name: "<7>手動スクレイピング  <8>手動ニュースクリップマスター保存"
         env:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_04.py"
-          docker-compose -f docker-compose__app-container.yml up
+          docker compose -f docker-compose__app-container.yml up
 
       - name: "<9>Scrapy統計情報集計  <10>Scrapy統計情報レポート"
         env:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_05.py"
-          docker-compose -f docker-compose__app-container.yml up
+          docker compose -f docker-compose__app-container.yml up
 
       - name: "<11>スクレイピング使用パターンレポート  <12>同期チェック"
         env:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_06.py"
-          docker-compose -f docker-compose__app-container.yml up
+          docker compose -f docker-compose__app-container.yml up
 
       - name: "<13>mongoDBエクスポート  <14>mongoDB削除  <15>mongoDBインポート"
         env:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_07.py"
-          docker-compose -f docker-compose__app-container.yml up
+          docker compose -f docker-compose__app-container.yml up
 
       # "🍏 This job's status is success."
       - run: echo "🍏 Job実行後のステータス： ${{ job.status }}."
