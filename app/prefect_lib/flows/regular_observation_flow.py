@@ -54,6 +54,7 @@ def regular_observation_flow():
                 #   azure functions BLOBトリガーを動かすためのBLOBファイルを削除＆作成を実行する。
                 #   ※テスト環境の場合は実行しない。AZURE_STORAGE__CONNECTION_STRINGに値がある＝本番環境。
                 if AZURE_STORAGE__CONNECTION_STRING:
+                    logger.info('=== BLOB TRIGGERを起動させコンテナーを停止させます。')
                     controller_blob_model = ControllerBlobModel()
                     controller_blob_model.delete_blob()
                     controller_blob_model.upload_blob()
