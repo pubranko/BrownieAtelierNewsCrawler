@@ -146,7 +146,7 @@ deployment__regular_observation_flow = Deployment.build_from_flow(
     name="daily",
     tags=["auto", "crawl-scrape", "daily"],
     # 毎日 6時〜24時の間、3時間毎、毎時1分に起動
-    schedule=CronSchedule(cron="1 0,6-21/3 * * *", timezone="Asia/Tokyo"),
+    # schedule=CronSchedule(cron="1 0,6-21/3 * * *", timezone="Asia/Tokyo"),
     version="0.1",
     apply=True,
     is_schedule_active=False,
@@ -197,7 +197,7 @@ deployment__crawl_sync_check_flow = Deployment.build_from_flow(
     flow=crawl_sync_check_flow,
     name="daily",
     tags=["auto", "check", "daily"],
-    schedule=CronSchedule(cron="50 5 * * *", timezone="Asia/Tokyo"),  # 毎日 5時50分に起動
+    # schedule=CronSchedule(cron="50 5 * * *", timezone="Asia/Tokyo"),  # 毎日 5時50分に起動
     version="0.1",
     apply=True,
     is_schedule_active=False,
@@ -251,7 +251,7 @@ deployment__mongo_delete_selector_flow_daily = Deployment.build_from_flow(
         period_month_to=0,
         crawler_response__registered=True,
     ),  # crawl結果の登録処理が完了したものを削除対象とする。
-    schedule=CronSchedule(cron="51 5 * * *", timezone="Asia/Tokyo"),  # 毎日 5時51分に起動
+    # schedule=CronSchedule(cron="51 5 * * *", timezone="Asia/Tokyo"),  # 毎日 5時51分に起動
     version="0.1",
     apply=True,
     is_schedule_active=False,
@@ -274,7 +274,7 @@ deployment__mongo_delete_selector_flow_monthly = Deployment.build_from_flow(
         period_month_to=3,  # 作業年月より３ヶ月経過したものを削除対象とする。
         crawler_response__registered=True,
     ),  # crawl結果の登録処理が完了したものを削除対象とする。
-    schedule=CronSchedule(cron="51 5 1 * *", timezone="Asia/Tokyo"),  # 月初 5時51分に起動
+    # schedule=CronSchedule(cron="51 5 1 * *", timezone="Asia/Tokyo"),  # 月初 5時51分に起動
     version="0.1",
     apply=True,
     is_schedule_active=False,
@@ -317,7 +317,7 @@ deployment__stats_info_collect_flow = Deployment.build_from_flow(
     name="daily",
     tags=["auto", "report", "daily"],
     # parameters=dict(base_date=None),
-    schedule=CronSchedule(cron="52 5 * * *", timezone="Asia/Tokyo"),  # 毎日 5時51分に起動
+    # schedule=CronSchedule(cron="52 5 * * *", timezone="Asia/Tokyo"),  # 毎日 5時51分に起動
     version="0.1",
     apply=True,
     is_schedule_active=False,
@@ -334,7 +334,7 @@ deployment__stats_analysis_report_flow = Deployment.build_from_flow(
         totalling_term=StatsAnalysisReportConst.TOTALLING_TERM__DAILY,
     ),
     # 日曜日 5時55分に起動。上記stats_info_collect_flow後に動かす必要あり
-    schedule=CronSchedule(cron="55 5 * * 0", timezone="Asia/Tokyo"),
+    # schedule=CronSchedule(cron="55 5 * * 0", timezone="Asia/Tokyo"),
     version="0.1",
     apply=True,
     is_schedule_active=False,
@@ -349,7 +349,7 @@ deployment__scraper_pattern_report_flow = Deployment.build_from_flow(
     parameters=dict(
         report_term=ScraperPatternReportConst.REPORT_TERM__WEEKLY,
     ),  # １週間分の集計結果を求める。
-    schedule=CronSchedule(cron="53 5 * * 0", timezone="Asia/Tokyo"),  # 日曜日 5時53分に起動
+    # schedule=CronSchedule(cron="53 5 * * 0", timezone="Asia/Tokyo"),  # 日曜日 5時53分に起動
     version="0.1",
     apply=True,
     is_schedule_active=False,
