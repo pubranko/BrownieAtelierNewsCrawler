@@ -1,9 +1,5 @@
-from typing import Any, Awaitable
-
+from typing import Any
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierStorage.models.controller_blob_model import \
-    ControllerBlobModel
-from BrownieAtelierStorage.settings import AZURE_STORAGE__CONNECTION_STRING
 from news_crawl.news_crawl_input import NewsCrawlInput
 from prefect import flow, get_run_logger
 from prefect.futures import PrefectFuture
@@ -16,6 +12,7 @@ from prefect_lib.tasks.crawling_input_create_task import \
 from prefect_lib.tasks.crawling_task import crawling_task
 from prefect_lib.tasks.end_task import end_task
 from prefect_lib.tasks.init_task import init_task
+from prefect_lib.tasks.container_end_task import container_end_task
 from prefect_lib.tasks.news_clip_master_save_task import \
     news_clip_master_save_task
 from prefect_lib.tasks.regular_observation_task import regular_observation_task
@@ -51,13 +48,7 @@ def regular_observation_flow():
                 news_clip_master_save_task(mongo, "", START_TIME, START_TIME)
 
                 # 定期観測終了後コンテナーを停止させる。
-                #   azure functions BLOBトリガーを動かすためのBLOBファイルを削除＆作成を実行する。
-                #   ※テスト環境の場合は実行しない。AZURE_STORAGE__CONNECTION_STRINGに値がある＝本番環境。
-                if AZURE_STORAGE__CONNECTION_STRING:
-                    logger.info('=== BLOB TRIGGERを起動させコンテナーを停止させます。')
-                    controller_blob_model = ControllerBlobModel()
-                    controller_blob_model.delete_blob()
-                    controller_blob_model.upload_blob()
+                container_end_task()
 
         except Exception as e:
             # 例外をキャッチしてログ出力等の処理を行う
