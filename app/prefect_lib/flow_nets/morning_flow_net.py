@@ -48,8 +48,7 @@ def morning_flow_net():
     stats_info_collect_flow()
 
     # 週次・月次：フロー用に曜日を確認
-    # now = datetime.now().astimezone(TIMEZONE)
-    now = datetime(2024,10,6,5,0,0,0).astimezone(TIMEZONE)  # テスト用
+    now = datetime.now().astimezone(TIMEZONE)
     today = now.date()
     weekday = today.weekday()   # 0:月曜日～6:日曜日
     

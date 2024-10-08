@@ -229,5 +229,12 @@ jobs:
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_07.py"
           docker compose -f docker-compose__app-container.yml up
 
+      - name: "<16>日次朝処理"
+        env:
+          TZ: ${{ vars.TZ}}
+        run: |
+          export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_08.py"
+          docker compose -f docker-compose__app-container.yml up
+
       # "🍏 This job's status is success."
       - run: echo "🍏 Job実行後のステータス： ${{ job.status }}."
