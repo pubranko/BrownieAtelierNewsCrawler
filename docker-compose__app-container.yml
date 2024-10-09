@@ -1,8 +1,7 @@
-version: '3.1'
 services:
 
     brownie_atelier:
-        image: mikuras/brownie_atelier_app:${APP_TAG}
+        image: brownie_atelier_app:${APP_TAG}
         container_name: brownie_atelier_app
         # restart: always
         networks:
@@ -45,6 +44,6 @@ services:
 
 # 既存のネットワークbrownie-atelier-netを利用する。
 networks:
-  default:
-    external:
-      name: brownie-atelier-net
+    default:
+        external: true
+        name: brownie-atelier-net
