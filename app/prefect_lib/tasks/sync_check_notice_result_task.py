@@ -1,5 +1,6 @@
 from urllib.parse import urlparse
-from BrownieAtelierNotice.mail_send import mail_send
+from BrownieAtelierNotice.slack.slack_notice import slack_notice
+from BrownieAtelierNotice import settings
 from prefect import get_run_logger, task
 from prefect_lib.flows import START_TIME
 
@@ -54,4 +55,12 @@ def sync_check_notice_result_task(
 
     # エラーがあった場合エラー通知を行う。
     if not message == "":
-        mail_send(title, message, logger)
+        message: str = "\n".join([
+            f"{title}\n", message,
+        ])
+
+        slack_notice(
+            logger=logger,
+            channel_id=settings.BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__ERROR,
+            message=message,
+        )
