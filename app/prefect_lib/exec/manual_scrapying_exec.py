@@ -5,9 +5,9 @@ from shared.settings import TIMEZONE
 
 manual_scrapying_flow(
     # domain='sankei_com_sitemap',
-    domain="nikkei.com",
-    target_start_time_from=datetime(2024, 1, 2, 15, 0, 0, 0).astimezone(TIMEZONE),
-    target_start_time_to=datetime(2024, 1, 2, 15, 45, 0, 0).astimezone(TIMEZONE),
+    # domain="nikkei.com",
+    target_start_time_from=datetime(2024, 10, 12, 0, 0, 0, 0).astimezone(TIMEZONE),
+    target_start_time_to=datetime(2024, 10, 12, 23, 45, 0, 0).astimezone(TIMEZONE),
     urls=None,
     following_processing_execution=True,
     # following_processing_execution=False,

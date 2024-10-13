@@ -18,5 +18,5 @@ stats_analysis_report_flow(
     # totalling_term=StatsAnalysisReportConst.TOTALLING_TERM__WEEKLY,
     # totalling_term=StatsAnalysisReportConst.TOTALLING_TERM__MONTHLY,
     # totalling_term=StatsAnalysisReportConst.TOTALLING_TERM__YEARLY,
-    base_date=date(2023, 8, 1),  # 左記基準日の１日前、１週間前、１ヶ月前、１年前のデータが対象となる。
+    base_date=date(2024, 10, 13),  # 左記基準日の１日前、１週間前、１ヶ月前、１年前のデータが対象となる。
 )

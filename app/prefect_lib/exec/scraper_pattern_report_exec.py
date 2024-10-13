@@ -19,5 +19,5 @@ scraper_pattern_report_flow(
     # report_term=ScraperPatternReportConst.REPORT_TERM__WEEKLY,
     report_term=ScraperPatternReportConst.REPORT_TERM__MONTHLY,
     # report_term=ScraperPatternReportConst.REPORT_TERM__YEARLY,
-    base_date=datetime(2024, 10, 9).astimezone(TIMEZONE),  # 左記基準日の前日分のデータが対象となる。
+    base_date=datetime(2024, 10, 13).astimezone(TIMEZONE),  # 左記基準日の前日分のデータが対象となる。
 )

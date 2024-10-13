@@ -15,5 +15,5 @@ cd $PWD/app
 if [ -z $PREFECT__WORK_POOL ]; then
     export PREFECT__WORK_POOL="default-agent-pool"
 fi
-# prefectエージェント起動
-prefect agent start --pool $PREFECT__WORK_POOL
+# prefectワーカー起動
+prefect worker start --pool $PREFECT__WORK_POOL

@@ -7,8 +7,8 @@ from shared.settings import TIMEZONE
 manual_news_clip_master_save_flow(
     # domain='sankei_com_sitemap',
     domain=None,
-    target_start_time_from=datetime(2023, 5, 31, 20, 0, 0, 0).astimezone(TIMEZONE),
-    target_start_time_to=datetime(2023, 5, 31, 23, 59, 0, 0).astimezone(TIMEZONE),
+    target_start_time_from=datetime(2024, 10, 12, 0, 0, 0, 0).astimezone(TIMEZONE),
+    target_start_time_to=datetime(2024, 10, 12, 23, 59, 0, 0).astimezone(TIMEZONE),
 )
 
 

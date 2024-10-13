@@ -173,14 +173,17 @@ jobs:
       - name: brownie_atelier_app起動用にdockerネットワークを作成
         run: docker network create brownie-atelier-net
   
-      #################################################
+      ##########################################################################################################
       # prefect flowをprefectクラウドへデプロイ
-      #################################################
+      # ※コンテナーの中でPrefectへのデプロイを実施しないとPrefect側に登録される
+      #   Entrypoint(cwdから見たFlowの相対パス)やPath(ユーザー名などを含むcwdまでの絶対パス)が同期がとれない状態となる。
+      #   そのため実際に動作するコンテナー内のユーザー・パスに合わせた状態でデプロイを実施している。
+      ##########################################################################################################
 
       - name: "Prefect FlowをPrefectクラウドへデプロイ"
         env:
           TZ: ${{ vars.TZ}}
         # 各種フローテスト
         run: |
-          export PREFECT_RUN_SCRIPT="prefect_lib/deployments/all.py"
+          export PREFECT_RUN_SCRIPT="prefect_lib/deployments/flows_register.py"
           docker compose -f docker-compose__app-container.yml up

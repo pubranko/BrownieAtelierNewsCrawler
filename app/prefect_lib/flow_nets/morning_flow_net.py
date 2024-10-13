@@ -1,6 +1,5 @@
 from datetime import datetime
 from prefect import flow, get_run_logger
-from prefect.task_runners import SequentialTaskRunner
 
 from shared.settings import TIMEZONE
 from prefect_lib.flows.crawl_sync_check_flow import crawl_sync_check_flow
@@ -32,7 +31,7 @@ from BrownieAtelierMongo.collection_models.stats_info_collect_model import \
     StatsInfoCollectModel
 
 
-@flow(name="Morning Flow Net", task_runner=SequentialTaskRunner())
+@flow(name="Morning Flow Net")
 def morning_flow_net():
     # 日次：同期チェックを実施（全量）
     crawl_sync_check_flow()

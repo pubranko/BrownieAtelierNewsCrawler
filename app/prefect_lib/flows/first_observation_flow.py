@@ -4,8 +4,6 @@ from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from news_crawl.news_crawl_input import NewsCrawlInput
 from prefect import flow, get_run_logger
 from prefect.futures import PrefectFuture
-from prefect.states import State
-from prefect.task_runners import SequentialTaskRunner
 from prefect_lib.flows import START_TIME
 from prefect_lib.flows.init_flow import init_flow
 from prefect_lib.tasks.crawling_input_create_task import \
@@ -20,19 +18,20 @@ from prefect_lib.tasks.news_clip_master_save_task import \
 from prefect_lib.tasks.scrapying_task import scrapying_task
 
 
-@flow(name="First observation flow", task_runner=SequentialTaskRunner())
+@flow(name="First observation flow")
 def first_observation_flow():
     init_flow()
 
     # ロガー取得
     logger = get_run_logger()  # PrefectLogAdapter
     # 初期処理
-    init_task_result: PrefectFuture = init_task.submit()
+    init_task_instance: PrefectFuture = init_task.submit()
+    # 実行結果が返ってくるまで待機し、戻り値を保存。 
+    #   ※タスクのステータスをresultを受け取る前に判定してもPendingとなる。インスタンスのステータスはリアルタイムで更新されているので注意。
+    init_task_result = init_task_instance.result()
 
-    any: Any = init_task_result.get_state()
-    state: State = any
-    if state.is_completed():
-        mongo: MongoModel = init_task_result.result()
+    if init_task_instance.state.is_completed():
+        mongo: MongoModel = init_task_result
 
         try:
             # クローラー用引数を生成、クロール対象スパイダーを生成し、クローリングを実行する。

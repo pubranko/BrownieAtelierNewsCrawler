@@ -16,14 +16,14 @@ from prefect_lib.flows.mongo_import_selector_flow import \
     mongo_import_selector_flow
 
 mongo_import_selector_flow(
-    folder_name="api_2023-07_2023-07_20230731",
+    folder_name="temp_2024-10_2024-10",
     collections_name=[
         CrawlerResponseModel.COLLECTION_NAME,
-        # ScrapedFromResponseModel.COLLECTION_NAME, # 通常運用では不要なバックアップとなるがテスト用に実装している。
-        # NewsClipMasterModel.COLLECTION_NAME,
-        # CrawlerLogsModel.COLLECTION_NAME,
-        # AsynchronousReportModel.COLLECTION_NAME,
-        # ControllerModel.COLLECTION_NAME,
-        # StatsInfoCollectModel.COLLECTION_NAME,
+        ScrapedFromResponseModel.COLLECTION_NAME, # 通常運用では不要なバックアップとなるがテスト用に実装している。
+        NewsClipMasterModel.COLLECTION_NAME,
+        CrawlerLogsModel.COLLECTION_NAME,
+        AsynchronousReportModel.COLLECTION_NAME,
+        ControllerModel.COLLECTION_NAME,
+        StatsInfoCollectModel.COLLECTION_NAME,
     ],
 )
