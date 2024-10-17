@@ -63,7 +63,7 @@ jobs:
         # dummy
         HOST_OS_IP_ADDRESS: 192.0.0.1
         # dummy
-        PREFECT_HOME: /home/root_user/BrownieAtelier # コンテナー内のディレクトリ構成
+        PREFECT_HOME: /home/common_user/BrownieAtelier # コンテナー内のディレクトリ構成
         PREFECT_API_URL:
         PREFECT__API_KEY:
         PREFECT__WORK_SPACE:

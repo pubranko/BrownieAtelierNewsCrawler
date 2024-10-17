@@ -61,6 +61,6 @@ def sync_check_notice_result_task(
 
         slack_notice(
             logger=logger,
-            channel_id=settings.BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__ERROR,
+            channel_id=settings.BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__NOMAL,
             message=message,
         )

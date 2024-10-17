@@ -5,8 +5,6 @@ from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from dateutil.relativedelta import relativedelta
 from prefect import flow, get_run_logger
 from prefect.futures import PrefectFuture
-from prefect.states import State
-from prefect.task_runners import SequentialTaskRunner
 from prefect_lib.data_models.stats_info_collect_data import \
     StatsInfoCollectData
 from prefect_lib.data_models.stats_info_collect_input import \
@@ -23,7 +21,6 @@ from prefect_lib.tasks.stats_info_collect_task import stats_info_collect_task
 
 @flow(
     name="Stats info collect flow",
-    task_runner=SequentialTaskRunner(),
     validate_parameters=False,
 )  # 入力チェックは別途行うのでFalse
 def stats_info_collect_flow(base_date: Optional[date] = None):
@@ -32,12 +29,13 @@ def stats_info_collect_flow(base_date: Optional[date] = None):
     # ロガー取得
     logger = get_run_logger()  # PrefectLogAdapter
     # 初期処理
-    init_task_result: PrefectFuture = init_task.submit()
+    init_task_instance: PrefectFuture = init_task.submit()
+    # 実行結果が返ってくるまで待機し、戻り値を保存。 
+    #   ※タスクのステータスをresultを受け取る前に判定してもPendingとなる。インスタンスのステータスはリアルタイムで更新されているので注意。
+    init_task_result = init_task_instance.result()
 
-    any: Any = init_task_result.get_state()
-    state: State = any
-    if state.is_completed():
-        mongo: MongoModel = init_task_result.result()
+    if init_task_instance.state.is_completed():
+        mongo: MongoModel = init_task_result
 
         try:
             # 引数チェックしインプットのデータクラス生成
