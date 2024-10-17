@@ -39,3 +39,6 @@ def test_exec():
         #     読売：通常稼働。
         from prefect_lib.flows.regular_observation_flow import regular_observation_flow
         regular_observation_flow()
+
+if __name__ == "__main__":
+    test_exec()
