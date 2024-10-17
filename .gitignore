@@ -149,3 +149,6 @@ memo_store.toml
 # mongo-dbコンテナ用
 mongodb/data/mongo-db/*
 mongodb/log/mongodb/mongod.log
+
+# prefectのローカルテスト時に作成される不要ファイル
+server.pid
