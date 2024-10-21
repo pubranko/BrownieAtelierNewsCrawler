@@ -84,7 +84,7 @@ if not (prefect_api_url):
 path = current_dir
 print(f"=== {path =}")
 
-work_pool_name = str(config("PREFECT__WORK_POOL", default="default-agent-pool"))
+work_pool_name = str(config("PREFECT__WORK_POOL"))
 print(f"=== {work_pool_name =}")
 
 ###################
