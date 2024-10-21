@@ -36,7 +36,7 @@ deployment = Deployment.build_from_flow(
     # schedule= cron_schedule,
     is_schedule_active=False,  # デプロイ直後から有効にする場合True。デプロイ直後は無効とする場合False
     # work_pool_name='register',
-    work_pool_name="default-agent-pool",
+    work_pool_name="default-pool",
     # entrypoint='prefect_lib/flows/scraper_info_uploader_flow.py:scraper_info_by_domain_flow',
 )
 print(deployment.__dict__)

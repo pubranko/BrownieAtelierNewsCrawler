@@ -13,7 +13,7 @@ prefect config set PREFECT_API_URL=$PREFECT_API_URL
 cd $PWD/app
 # prefectのワークプールの環境変数に指定がなければデフォルト値を設定
 if [ -z $PREFECT__WORK_POOL ]; then
-    export PREFECT__WORK_POOL="default-agent-pool"
+    export PREFECT__WORK_POOL="default-pool"
 fi
 # prefectワーカー起動
 prefect worker start --pool $PREFECT__WORK_POOL
