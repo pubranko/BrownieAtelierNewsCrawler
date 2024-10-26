@@ -238,7 +238,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }} # 参照権限
+          password: ${{ secrets.GHCR_TOKEN }} # 書き込み・参照権限
 
       - name: appイメージをプル
         run: |
