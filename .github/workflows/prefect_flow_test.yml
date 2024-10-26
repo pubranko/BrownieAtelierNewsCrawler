@@ -40,6 +40,9 @@ jobs:
         # dummy
         HOST_OS_IP_ADDRESS: 192.0.0.1
 
+        # Docker イメージの tar アーカイブ出力先のパス
+        PATH_CACHE: /tmp/docker-img-arch
+
         # タイムゾーン
         TZ: "Asia/Tokyo"
     steps:
@@ -116,6 +119,7 @@ jobs:
   # テスト本体
   ########################################
   Prefect-Flow-Test:
+    needs: [Prefect-Flow-Test-Preparation]
     runs-on: ubuntu-22.04
     environment:
       name: TEST
