@@ -106,12 +106,12 @@ jobs:
           docker compose -f docker-compose__app-image-build.yml build
           docker images
 
-      - name: appイメージをコンテナーレジストリーにプッシュ
+      - name: appイメージをコンテナーレジストリーにログイン
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: appイメージをコンテナーレジストリーにプッシュ
         run: docker push ghcr.io/${{ github.repository }}/brownie_atelier_app:latest
@@ -226,6 +226,13 @@ jobs:
       ########################################################################
       # appイメージをプル
       ########################################################################
+      - name: appイメージをコンテナーレジストリーにログイン
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: appイメージをプル
         run: docker pull ghcr.io/${{ github.repository }}/brownie_atelier_app:latest
 
