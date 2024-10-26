@@ -107,7 +107,7 @@ jobs:
           docker images
 
       - name: appイメージに別名のタグを付与
-        run: docker tag brownie_atelier_app:latest  ghcr.io/${{ github.repository }}/brownieatelierapp:latest
+        run: docker tag brownie_atelier_app:latest  ghcr.io/${{ github.repository }}/brownieatelierapp
 
       - name: appイメージをコンテナーレジストリーにログイン
         uses: docker/login-action@v3
@@ -117,7 +117,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: appイメージをコンテナーレジストリーにプッシュ
-        run: docker push ghcr.io/${{ github.repository }}/brownieatelierapp:latest
+        run: docker push ghcr.io/${{ github.repository }}/brownieatelierapp
 
   ########################################
   # テスト本体
@@ -237,10 +237,10 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: appイメージをプル
-        run: docker pull ghcr.io/${{ github.repository }}/brownieatelierapp:latest
+        run: docker pull ghcr.io/${{ github.repository }}/brownieatelierapp
 
       - name: appイメージに別名のタグを付与
-        run: docker tag ghcr.io/${{ github.repository }}/brownieatelierapp:latest  brownie_atelier_app:latest
+        run: docker tag ghcr.io/${{ github.repository }}/brownieatelierapp  brownie_atelier_app:latest
 
       #################################################
       # appイメージコンテナーを起動して各種フロー実行
