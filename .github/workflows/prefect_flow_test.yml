@@ -189,15 +189,15 @@ jobs:
     steps:
       - run: echo "🎉 起動イベントの種類 (${{ github.event_name }})"
       - run: echo "🐧 github上のOSの種類 (${{ runner.os }})"
-      # - name: リポジトリ(${{ github.repository }})・ブランチ(${{github.ref_name}})にチェックアウト
-      #   # 上記のリポジトリ・ブランチにチェックアウト
-      #   uses: actions/checkout@v4
+      - name: リポジトリ(${{ github.repository }})・ブランチ(${{github.ref_name}})にチェックアウト
+        # 上記のリポジトリ・ブランチにチェックアウト
+        uses: actions/checkout@v4
 
-      # - name: ワークスペースチェック
-      #   # テスト前チェックを確認
-      #   # クローン後はここにソースが格納される /home/runner/work/BrownieAtelier/BrownieAtelier
-      #   run: |
-      #     ls -a ${{ github.workspace }}
+      - name: ワークスペースチェック
+        # テスト前チェックを確認
+        # クローン後はここにソースが格納される /home/runner/work/BrownieAtelier/BrownieAtelier
+        run: |
+          ls -a ${{ github.workspace }}
 
       ########################################################################
       # テスト用にdockerネットワークが必要であるため作成
@@ -249,6 +249,7 @@ jobs:
         run: |
           REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           docker tag ghcr.io/${REPO_NAME}/brownie_atelier_app:latest  brownie_atelier_app:latest
+          docker images
 
       #################################################
       # appイメージコンテナーを起動して各種フロー実行
