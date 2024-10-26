@@ -3,11 +3,17 @@
 # local環境でprefect serverを使ったtest用
 ###############################################
 # python仮想環境を有効化
-cd $PWD
+# cd $PWD
 . .venv/bin/activate
+which python
+echo $PWD
+echo $PREFECT_HOME
+echo $PREFECT_API_URL
+echo $PREFECT__WORK_POOL
+
 
 # prefect APIの接続先を設定
-prefect config set PREFECT_API_URL=$PREFECT_API_URL
+# prefect config set PREFECT_API_URL=$PREFECT_API_URL
 
 # prefectエージェント起動前にappディレクトリへ移動
 cd $PWD/app

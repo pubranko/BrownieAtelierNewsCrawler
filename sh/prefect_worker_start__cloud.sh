@@ -3,8 +3,13 @@
 # prefect cloud
 ##############################
 # python仮想環境を有効化
-cd $HOME/BrownieAtelier/
+# cd $HOME/BrownieAtelier/
 . .venv/bin/activate
+which python
+echo $PWD
+echo $PREFECT_HOME
+echo $PREFECT_API_URL
+echo $PREFECT__WORK_POOL
 
 # prefect APIの向き先を指定生成
 # prefect config set PREFECT_API_URL=$PREFECT_API_URL
