@@ -74,12 +74,12 @@ from prefect_lib.flow_nets.morning_flow_net import morning_flow_net
 _ = get_current_settings()
 prefect_home = _.home
 print(f"=== {prefect_home = }")
-prefect_api_url = _.api_url
+prefect_api_url = _.ui_api_url
 print(f"=== {prefect_api_url = }")
 
 if not (prefect_api_url):
     raise ValueError(
-        "prefect_api_urlが参照できませんでしたので、処理を停止します。環境変数にPREFECT_HOMEが存在しない、またはPREFECT_API_URLが設定されていない可能性が高いです。"
+        "PREFECT_API_URLが参照できませんでしたので、処理を停止します。環境変数にPREFECT_HOMEが存在しない、またはPREFECT_API_URLが設定されていない可能性が高いです。"
     )
 path = current_dir
 print(f"=== {path =}")

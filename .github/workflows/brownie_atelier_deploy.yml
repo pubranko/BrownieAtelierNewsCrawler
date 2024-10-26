@@ -187,3 +187,5 @@ jobs:
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/deployments/flows_register.py"
           docker compose -f docker-compose__app-container.yml up
+          exit_code=$?
+          exit $exit_code
