@@ -121,7 +121,7 @@ jobs:
       - name: appイメージをコンテナーレジストリーにプッシュ
         run: |
           REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          docker push ghcr.io/${{ github.repository }}/brownie_atelier_app:latest
+          docker push ghcr.io/${REPO_NAME}/brownie_atelier_app:latest
 
   ########################################
   # テスト本体
@@ -241,10 +241,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: appイメージをプル
-        run: docker pull ghcr.io/${{ github.repository }}/brownie_atelier_app:latest
+        run: |
+          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          docker pull ghcr.io/${REPO_NAME}/brownie_atelier_app:latest
 
       - name: appイメージに別名のタグを付与
-        run: docker tag ghcr.io/${{ github.repository }}/brownie_atelier_app:latest  brownie_atelier_app:latest
+        run: |
+          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          docker tag ghcr.io/${REPO_NAME}/brownie_atelier_app:latest  brownie_atelier_app:latest
 
       #################################################
       # appイメージコンテナーを起動して各種フロー実行
