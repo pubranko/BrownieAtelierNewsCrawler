@@ -1,5 +1,6 @@
 import os
 import re
+import io
 from logging import Logger, LoggerAdapter
 from typing import Any, Union
 
@@ -56,14 +57,16 @@ def end_task(mongo: MongoModel):
         #     title = f'【{self.name}:ワーニング発生】{self.START_TIME.isoformat()}'
 
         if title:
-            message: str = "\n".join([
-                f"{title}\n", "【ログ】", log_record,
-            ])
+            # message: str = "\n".join([
+            #     f"{title}\n", "【ログ】", log_record,
+            # ])
 
             slack_notice(
                 logger=logger,
                 channel_id=settings.BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__ERROR,
-                message=message,
+                message=f"{title}\n",
+                file=log_record.encode("utf-8"),
+                file_name=f"エラーログ({START_TIME.isoformat()}).txt",
             )
 
 
