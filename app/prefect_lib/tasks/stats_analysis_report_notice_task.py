@@ -1,7 +1,7 @@
 import os
-
-from BrownieAtelierNotice.mail_attach_send import mail_attach_send
 from prefect import get_run_logger, task
+from BrownieAtelierNotice.slack.slack_notice import slack_notice
+from BrownieAtelierNotice import settings
 from prefect_lib.data_models.stats_analysis_report_excel import \
     StatsAnalysisReportExcel
 from prefect_lib.data_models.stats_analysis_report_input import \
@@ -46,19 +46,24 @@ def stats_analysis_report_notice_task(
     if StatsAnalysisReportExcel.downloder_warning_flg:
         warning_messege = f"{warning_messege}<p>downloder response statusでワーニング発生</p>"
 
-    messege = f"""
-    <html>
-        <body>
-            <p>各種実行結果を解析したレポート</p>
-            <p>=== 実行条件 ============================================================</p>
-            <p>start_time = {START_TIME.isoformat()}</p>
-            <p>base_date_from = {base_date_from.isoformat()}</p>
-            <p>base_date_to = {base_date_to.isoformat()}</p>
-            <p>report_term = {stats_analysis_report_input.report_term}</p>
-            <p>totalling_term = {stats_analysis_report_input.totalling_term}</p>
-            <p>=========================================================================</p>
-            {warning_messege}
-        </body>
-    </html>"""
-    # メール送信
-    mail_attach_send(title=title, msg=messege, filepath=file_path)
+    message = f"""
+    【stats_analysis_report】
+    
+    各種実行結果を解析したレポート
+    === 実行条件 ============================================================
+    start_time = {START_TIME.isoformat()}
+    base_date_from = {base_date_from.isoformat()}
+    base_date_to = {base_date_to.isoformat()}
+    report_term = {stats_analysis_report_input.report_term}
+    totalling_term = {stats_analysis_report_input.totalling_term}
+    =========================================================================
+    {warning_messege}
+    """
+
+    slack_notice(
+        logger=logger,
+        channel_id=settings.BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__NOMAL,
+        message=message,
+        file=file_path,
+        file_name=file_name,
+    )

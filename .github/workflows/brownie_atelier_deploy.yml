@@ -70,12 +70,10 @@ jobs:
         BROWNIE_ATELIER_MONGO__MONGO_TLS: false
         BROWNIE_ATELIER_MONGO__MONGO_TLS_CA_FILE:
         BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE:
-        # Email接続情報
-        BROWNIE_ATELIER_NOTICE__SMTP_HOST: ${{ secrets.BROWNIE_ATELIER_NOTICE__SMTP_HOST }}
-        BROWNIE_ATELIER_NOTICE__SMTP_PORT: ${{ secrets.BROWNIE_ATELIER_NOTICE__SMTP_PORT }}
-        BROWNIE_ATELIER_NOTICE__FROM_EMAIL: ${{ secrets.BROWNIE_ATELIER_NOTICE__FROM_EMAIL }}
-        BROWNIE_ATELIER_NOTICE__TO_EMAIL: ${{ secrets.BROWNIE_ATELIER_NOTICE__TO_EMAIL }}
-        BROWNIE_ATELIER_NOTICE__PASSWORD: ${{ secrets.BROWNIE_ATELIER_NOTICE__PASSWORD }}
+        # Brownie atelier noticeの設定 (slack)
+        BROWNIE_ATELIER_NOTICE__SLACK_TOKEN: ${{ secrets.BROWNIE_ATELIER_NOTICE__SLACK_TOKEN}}
+        BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__ERROR: ${{ secrets.BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__ERROR}}
+        BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__NOMAL: ${{ secrets.BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__NOMAL}}
         # 
         HOST_OS_IP_ADDRESS: 192.0.0.1
         # Prefect
@@ -175,14 +173,19 @@ jobs:
       - name: brownie_atelier_app起動用にdockerネットワークを作成
         run: docker network create brownie-atelier-net
   
-      #################################################
+      ##########################################################################################################
       # prefect flowをprefectクラウドへデプロイ
-      #################################################
+      # ※コンテナーの中でPrefectへのデプロイを実施しないとPrefect側に登録される
+      #   Entrypoint(cwdから見たFlowの相対パス)やPath(ユーザー名などを含むcwdまでの絶対パス)が同期がとれない状態となる。
+      #   そのため実際に動作するコンテナー内のユーザー・パスに合わせた状態でデプロイを実施している。
+      ##########################################################################################################
 
       - name: "Prefect FlowをPrefectクラウドへデプロイ"
         env:
           TZ: ${{ vars.TZ}}
         # 各種フローテスト
         run: |
-          export PREFECT_RUN_SCRIPT="prefect_lib/deployments/all.py"
+          export PREFECT_RUN_SCRIPT="prefect_lib/deployments/flows_register.py"
           docker compose -f docker-compose__app-container.yml up
+          exit_code=$?
+          exit $exit_code

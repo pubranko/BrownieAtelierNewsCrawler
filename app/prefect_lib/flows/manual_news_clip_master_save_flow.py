@@ -4,8 +4,6 @@ from typing import Any, Optional
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from prefect import flow, get_run_logger
 from prefect.futures import PrefectFuture
-from prefect.states import State
-from prefect.task_runners import SequentialTaskRunner
 from prefect_lib.flows.init_flow import init_flow
 from prefect_lib.tasks.end_task import end_task
 from prefect_lib.tasks.init_task import init_task
@@ -13,7 +11,7 @@ from prefect_lib.tasks.news_clip_master_save_task import \
     news_clip_master_save_task
 
 
-@flow(name="Manual news clip master save flow", task_runner=SequentialTaskRunner())
+@flow(name="Manual news clip master save flow")
 def manual_news_clip_master_save_flow(
     domain: Optional[str] = None,
     target_start_time_from: Optional[datetime] = None,
@@ -24,12 +22,13 @@ def manual_news_clip_master_save_flow(
     # ロガー取得
     logger = get_run_logger()  # PrefectLogAdapter
     # 初期処理
-    init_task_result: PrefectFuture = init_task.submit()
+    init_task_instance: PrefectFuture = init_task.submit()
+    # 実行結果が返ってくるまで待機し、戻り値を保存。 
+    #   ※タスクのステータスをresultを受け取る前に判定してもPendingとなる。インスタンスのステータスはリアルタイムで更新されているので注意。
+    init_task_result = init_task_instance.result()
 
-    any: Any = init_task_result.get_state()
-    state: State = any
-    if state.is_completed():
-        mongo: MongoModel = init_task_result.result()
+    if init_task_instance.state.is_completed():
+        mongo: MongoModel = init_task_result
 
         try:
             # 引数で指定されたクロール結果のスクレイピングを実施

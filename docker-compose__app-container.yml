@@ -1,8 +1,7 @@
-version: '3.1'
 services:
 
     brownie_atelier:
-        image: mikuras/brownie_atelier_app:${APP_TAG}
+        image: brownie_atelier_app:${APP_TAG}
         container_name: brownie_atelier_app
         # restart: always
         networks:
@@ -24,12 +23,10 @@ services:
             BROWNIE_ATELIER_MONGO__MONGO_TLS: ${BROWNIE_ATELIER_MONGO__MONGO_TLS}
             BROWNIE_ATELIER_MONGO__MONGO_TLS_CA_FILE: ${BROWNIE_ATELIER_MONGO__MONGO_TLS_CA_FILE}
             BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE: ${BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE}
-            # Brownie atelier noticeの設定 (email)
-            BROWNIE_ATELIER_NOTICE__SMTP_HOST: ${BROWNIE_ATELIER_NOTICE__SMTP_HOST}
-            BROWNIE_ATELIER_NOTICE__SMTP_PORT: ${BROWNIE_ATELIER_NOTICE__SMTP_PORT}
-            BROWNIE_ATELIER_NOTICE__FROM_EMAIL: ${BROWNIE_ATELIER_NOTICE__FROM_EMAIL}
-            BROWNIE_ATELIER_NOTICE__TO_EMAIL: ${BROWNIE_ATELIER_NOTICE__TO_EMAIL}
-            BROWNIE_ATELIER_NOTICE__PASSWORD: ${BROWNIE_ATELIER_NOTICE__PASSWORD}
+            # Brownie atelier noticeの設定 (slack)
+            BROWNIE_ATELIER_NOTICE__SLACK_TOKEN: ${BROWNIE_ATELIER_NOTICE__SLACK_TOKEN}         
+            BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__ERROR: ${BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__ERROR}         
+            BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__NOMAL: ${BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__NOMAL}
             # prefectの環境設定
             PREFECT_API_URL: ${PREFECT_API_URL}
             PREFECT__API_KEY: ${PREFECT__API_KEY}
@@ -47,6 +44,6 @@ services:
 
 # 既存のネットワークbrownie-atelier-netを利用する。
 networks:
-  default:
-    external:
-      name: brownie-atelier-net
+    default:
+        external: true
+        name: brownie-atelier-net

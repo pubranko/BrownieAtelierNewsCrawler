@@ -1,12 +1,14 @@
 import os
 import re
+import io
 from logging import Logger, LoggerAdapter
 from typing import Any, Union
 
 from BrownieAtelierMongo.collection_models.crawler_logs_model import \
     CrawlerLogsModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierNotice.mail_send import mail_send
+from BrownieAtelierNotice.slack.slack_notice import slack_notice
+from BrownieAtelierNotice import settings
 from prefect import get_run_logger, task
 from prefect.context import FlowRunContext
 from prefect_lib.flows import LOG_FILE_PATH, START_TIME
@@ -55,13 +57,18 @@ def end_task(mongo: MongoModel):
         #     title = f'【{self.name}:ワーニング発生】{self.START_TIME.isoformat()}'
 
         if title:
-            msg: str = "\n".join(
-                [
-                    "【ログ】",
-                    log_record,
-                ]
+            # message: str = "\n".join([
+            #     f"{title}\n", "【ログ】", log_record,
+            # ])
+
+            slack_notice(
+                logger=logger,
+                channel_id=settings.BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__ERROR,
+                message=f"{title}\n",
+                file=log_record.encode("utf-8"),
+                file_name=f"エラーログ({START_TIME.isoformat()}).txt",
             )
-            mail_send(title, msg, logger)
+
 
     def log_save(log_record: str):
         """処理が終わったらログを保存"""
