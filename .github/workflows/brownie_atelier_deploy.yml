@@ -59,7 +59,7 @@ jobs:
         LOCAL_MONGO_KEY_DIR: /tmp
 
         # docker-compose command選択
-        CONTAINER_START_COMMAND: /home/common_user/BrownieAtelier/sh/prefect_cloud_deploy.sh
+        CONTAINER_START_COMMAND: /bin/sh -c "/home/common_user/BrownieAtelier/sh/prefect_cloud_deploy.sh"
 
         # mongoDBコンテナー一般ユーザー情報、mongoDB接続情報
         BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo-server
@@ -183,9 +183,11 @@ jobs:
       - name: "Prefect FlowをPrefectクラウドへデプロイ"
         env:
           TZ: ${{ vars.TZ}}
-        # 各種フローテスト
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/deployments/flows_register.py"
-          docker compose -f docker-compose__app-container.yml up
+          docker compose -f docker-compose__app-container.yml up --abort-on-container-exit
           exit_code=$?
           exit $exit_code
+
+      # "🍏 This job's status is success."
+      - run: echo "🍏 Job実行後のステータス： ${{ job.status }}."
