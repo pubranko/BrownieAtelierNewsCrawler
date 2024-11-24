@@ -84,17 +84,17 @@ def dockerhub_tag_info_get(docker_hub_username: str) -> list:
 
     images_info: list[dict] = docker_repository_info["results"]
     tags_product: list = []
-    tags_test: list = []
     pattern = r"^\d*\.\d*\.\d*$"  # nn.nn.nn の形式
 
     for image_info in images_info:
         if str(image_info["name"]).startswith("test-"):
             # TEST環境用のイメージの場合
-            tags_test.append(image_info["name"])
+            pass
 
         elif re.match(pattern, str(image_info["name"])):
             # 本番環境用のイメージの場合
-            tags_product.append(image_info["name"])
+            if str(image_info["name"]).startswith(f"{base_tag}"):
+                tags_product.append(image_info["name"])
 
     return tags_product
 
