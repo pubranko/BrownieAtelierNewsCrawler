@@ -1,3 +1,4 @@
+from typing import Optional
 from datetime import datetime, timedelta
 from prefect import flow, get_run_logger
 
@@ -32,11 +33,21 @@ from BrownieAtelierMongo.collection_models.stats_info_collect_model import \
 
 
 @flow(name="Morning Flow Net")
-def morning_flow_net():
+def morning_flow_net(
+    base_datetime: Optional[datetime] = None,   # 基準日
+):
+    logger = get_run_logger()  # PrefectLogAdapter
+
     # 日次：同期チェックを実施（全量）
+    logger.info(f"基準日: {base_datetime}")
     
-    today = datetime.now().astimezone(TIMEZONE).replace(minute=0, second=0, microsecond=0)  # 当日の現在時・０分・０秒
-    yestaday = (today - timedelta(days=1))  # 前日の現在時・０分・０秒
+    if base_datetime:
+        today = base_datetime.replace(minute=0, second=0, microsecond=0)  # 基準日時の０分・０秒
+        yestaday = (today - timedelta(days=1))  # 基準日時前日の０分・０秒
+    else:
+        today = datetime.now().astimezone(TIMEZONE).replace(minute=0, second=0, microsecond=0)  # 当日の現在時・０分・０秒
+        yestaday = (today - timedelta(days=1))  # 前日の現在時・０分・０秒
+    
     crawl_sync_check_flow(
         # domain=None,
         start_time_from=yestaday,
@@ -54,9 +65,14 @@ def morning_flow_net():
     stats_info_collect_flow()
 
     # 週次・月次：フロー用に曜日を確認
-    now = datetime.now().astimezone(TIMEZONE)
-    today = now.date()
-    weekday = today.weekday()   # 0:月曜日～6:日曜日
+    if base_datetime:
+        now = base_datetime
+        today = now.date()
+        weekday = today.weekday()   # 0:月曜日～6:日曜日
+    else:
+        now = datetime.now().astimezone(TIMEZONE)
+        today = now.date()
+        weekday = today.weekday()   # 0:月曜日～6:日曜日
     
     # 週次：日曜日ならば以下のフローを実行
     if weekday == 6:
