@@ -1,6 +1,6 @@
 import urllib.parse
 from time import sleep
-from typing import Any
+from typing import Any, Final
 
 import scrapy
 from news_crawl.items import NewsCrawlItem
@@ -61,6 +61,8 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
     # seleniumモード
     # selenium_mode: bool = True
 
+    ITEMS_ON_PAGE_COUNT: Final[int] = 30
+
     def __init__(self, *args, **kwargs):
         """(拡張メソッド)
         親クラスの__init__処理後に追加で初期処理を行う。
@@ -86,27 +88,7 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
             # 例）https://www.epochtimes.jp/latest
             #     -> https://www.epochtimes.jp/latest/1, https://www.epochtimes.jp/latest/2
             page_range = range(self.page_from, self.page_to + 1)
-            self.start_urls = [f"{self.start_urls[0]}/{p}" for p in page_range]
-
-    def start_requests(self):
-        """ """
-        if self.selenium_mode:
-            for url in self.start_urls:
-                yield SeleniumRequest(
-                    url=url, callback=self.parse_start_response_selenium
-                )
-        else:
-            for url in self.start_urls:
-                if self.url_continued.continued:
-                    # 前回の続きからクロールする場合
-                    yield scrapy.Request(
-                        url=url, callback=self.parse_start_response_continued_crawl_mode
-                    )
-                else:
-                    # 指定ページの範囲でクロール
-                    yield scrapy.Request(
-                        url=url, callback=self.parse_start_response_page_crawl_mode
-                    )
+            self.start_urls = [f"{base_start_url}/{p}" for p in page_range]
 
     def parse_start_response_continued_crawl_mode(self, response: TextResponse):
         """(拡張メソッド)
@@ -205,7 +187,7 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
         ).getall()
         self.logger.info(f"=== ページ内の記事件数 = {len(links)}")
         # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
-        if not len(links) == 30:
+        if not len(links) == self.ITEMS_ON_PAGE_COUNT:
             self.logger.warning(
                 f"=== parse_start_response 1ページ内で取得できた件数が想定の30件と異なる。確認要。 ( {len(links)} 件)"
             )
@@ -237,13 +219,9 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
         start_request_debug_file_generate(
             self.name,
             response.url,
-            self.all_urls_list[-30:],
+            self.all_urls_list[-self.ITEMS_ON_PAGE_COUNT:],
             self.news_crawl_input.debug,
         )
-
-        # # クロール対象のURLのリクエストを開始
-        # for _ in self.crawl_urls_list:
-        #     yield scrapy.Request(response.urljoin(_[self.CRAWL_POINT__LOC]), callback=self.parse_news,)
 
         # 次回向けに今回の1ページ目(self.page_from)の10件をcontrollerへ保存する
         self._crawl_point[base_start_url] = {
@@ -254,7 +232,7 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
         }
 
     def parse_start_response_selenium(self, response: TextResponse):
-        """(拡張メソッド)
+        """(拡張メソッド) 現在未使用
         取得したレスポンスよりDBへ書き込み(selenium版)
         """
         r: Any = response.request
