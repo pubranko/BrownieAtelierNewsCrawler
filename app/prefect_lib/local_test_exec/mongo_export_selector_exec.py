@@ -48,11 +48,11 @@ if __name__ == "__main__":
     "crawler_logs",
     "asynchronous_report",
     "controller",
-    "stats_info_collect",
+    "stats_info_collect"
   ],
-  "prefix": "test",
+  "prefix": "check",
   "suffix": "20240128",
-  "period_month_from": 1,
+  "period_month_from": 0,
   "period_month_to": 0,
   "crawler_response__registered": false
 }
