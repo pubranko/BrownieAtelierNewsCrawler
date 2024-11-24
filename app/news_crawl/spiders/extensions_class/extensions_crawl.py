@@ -1,6 +1,6 @@
 import pickle
 from datetime import datetime
-from typing import Any, Final
+from typing import Any, Final, Callable
 from urllib.parse import unquote
 
 import scrapy
@@ -26,6 +26,7 @@ from news_crawl.spiders.common.urls_continued_skip_check import \
 from scrapy.http import TextResponse
 from scrapy.spiders import CrawlSpider
 from scrapy_splash import SplashRequest
+from scrapy_selenium import SeleniumRequest
 
 
 class ExtensionsCrawlSpider(CrawlSpider):
@@ -58,7 +59,10 @@ class ExtensionsCrawlSpider(CrawlSpider):
     """オーバーライド必須 この説明がvscodeで見えているということは、オーバーライドが漏れています。"""
 
     # seleniumモード
-    selenium_mode: bool = False
+    selenium_mode: bool = False 
+    """記事本体のページへのリクエストにseleniumを使用する場合True。それ以外False"""
+    selenium_mode__start_request: bool = False
+    """開始ページ（一覧ページ）へのリクエストにseleniumを使用する場合True。それ以外False"""
     # splashモード
     splash_mode: bool = False
 
@@ -119,11 +123,49 @@ class ExtensionsCrawlSpider(CrawlSpider):
         self.pagination_check = PaginationCheck()
 
     def start_requests(self):
-        for url in self.start_urls:
-            yield scrapy.Request(
-                url,
-                callback=self._parse,  # dont_filter=True
-            )
+        """
+        一覧ページのリクエストを作成する。
+        ただしダイレクトクロールの指定がある場合は一覧ページではなく実際の記事へのリクエストを直接作成する。
+        """
+        # クロールの種類に応じて開始させるurls、レスポンスを処理させるCall Back関数、seleniumのモードを設定
+        if self.news_crawl_input.direct_crawl_urls:
+            # ダイレクトクロール指定がある場合、一覧ページなどはクロールせず、引数で受け取ったURLリストのみクロールさせる。
+            start_urls:list = self.news_crawl_input.direct_crawl_urls
+            callback: Callable = self.parse_news
+            selenium_mode = self.selenium_mode
+        elif self.url_continued.continued:
+            # 前回の続きからクロールの場合、start_urlsから順に処理させる。レスポンスは続き用の関数に処理される。
+            start_urls:list = self.start_urls
+            callback: Callable = self.parse_start_response_continued_crawl_mode
+            selenium_mode = self.selenium_mode__start_request
+        else:
+            # ページ指定によるクロールの場合、start_urlsから順に処理させる。レスポンスはページ指定用の関数に処理される。
+            start_urls:list = self.start_urls
+            callback: Callable = self.parse_start_response_page_crawl_mode
+            selenium_mode = self.selenium_mode__start_request
+        
+        for url in start_urls:
+            if selenium_mode:
+                yield SeleniumRequest(url=url, callback=callback)
+            else:
+                yield scrapy.Request(url=url,callback=callback)
+
+
+    def parse_start_response_continued_crawl_mode(self):
+        """(拡張メソッド)
+        継承先でオーバーライドして使用する。
+        前回の続きからクロールする場合の処理を記載してください。
+        """
+        pass
+
+
+    def parse_start_response_page_crawl_mode(self):
+        """(拡張メソッド)
+        継承先でオーバーライドして使用する。
+        ページにより範囲指定でクロールする場合の処理を記載してください。
+        """
+        pass
+
 
     def parse_news(self, response: TextResponse):
         """(拡張メソッド)
