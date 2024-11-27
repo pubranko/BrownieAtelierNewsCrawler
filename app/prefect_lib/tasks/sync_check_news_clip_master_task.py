@@ -10,7 +10,6 @@ from BrownieAtelierMongo.collection_models.news_clip_master_model import \
     NewsClipMasterModel
 from prefect import get_run_logger, task
 from prefect_lib.flows import START_TIME
-from pymongo.cursor import Cursor
 
 
 @task
@@ -36,6 +35,12 @@ def sync_check_news_clip_master_task(
     master_async_domain_aggregate: dict = {}
     master_filter: Any = ""
 
+
+    logger.info(
+        f"=== 同期チェック(response_sync_list)件数 : {len(response_sync_list)})"
+    )
+    processed_count:int = 0
+
     # crawler_responseで同期しているリストを順に読み込み、news_clip_masterに登録されているか確認する。
     for response_sync in response_sync_list:
         mastar_conditions = []
@@ -50,17 +55,9 @@ def sync_check_news_clip_master_task(
             }
         )
         master_filter = {"$and": mastar_conditions}
-        master_records: Cursor = news_clip_master.find(
-            filter=master_filter,
-            projection={
-                NewsClipMasterModel.URL: 1,
-                NewsClipMasterModel.RESPONSE_TIME: 1,
-                NewsClipMasterModel.DOMAIN: 1,
-            },
-        )
 
         # news_clip_master側に存在しないcrawler_responseがある場合
-        if news_clip_master.count(filter=master_filter) == 0:
+        if news_clip_master.count_documents(filter=master_filter) == 0:
             if not CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER in response_sync:
                 master_async_list.append(response_sync[CrawlerResponseModel.URL])
 
@@ -85,7 +82,15 @@ def sync_check_news_clip_master_task(
 
         # crawler_responseとnews_clip_masterで同期している場合、同期リストへ保存
         # ※通常1件しかないはずだが、障害によりリカバリした場合などは複数件存在する可能性がある。
-        for master_record in master_records:
+        # for master_record in master_records:
+        for master_record in news_clip_master.limited_find(
+            filter=master_filter,
+            projection={
+                NewsClipMasterModel.URL: 1,
+                NewsClipMasterModel.RESPONSE_TIME: 1,
+                NewsClipMasterModel.DOMAIN: 1,
+            },
+        ):
             # レスポンスにあるのにマスターへの登録処理が行われていない。
             _ = {
                 NewsClipMasterModel.URL: master_record[NewsClipMasterModel.URL],
@@ -95,6 +100,12 @@ def sync_check_news_clip_master_task(
                 NewsClipMasterModel.DOMAIN: master_record[NewsClipMasterModel.DOMAIN],
             }
             master_sync_list.append(_)
+
+        # 処理済みの件数を５００件ごとにログへ出力
+        processed_count += 1
+        if processed_count % 500 == 0:
+            logger.info(f"=== 同期チェック(response_sync_list)処理済み件数 : {processed_count}/{len(response_sync_list)}")
+
 
     # スクレイピングミス分のurlがあれば、非同期レポートへ保存
     if len(master_async_list) > 0:
