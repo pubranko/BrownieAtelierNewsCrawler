@@ -66,7 +66,7 @@ def sync_check_crawler_response_task(
     response_async_domain_aggregate: dict = {}
     # for log_record in log_records:
     
-    crawler_logs_count:int = crawler_logs.count_documents(filter=log_filter)
+    crawler_logs_count:int = crawler_logs.count(filter=log_filter)
     logger.info(
         f"=== 同期チェック(crawler_logs)件数 : {crawler_logs_count})"
     )
@@ -97,7 +97,7 @@ def sync_check_crawler_response_task(
             master_filter: Any = {"$and": conditions}
 
             # crawler_response側に存在しないクロール対象urlがある場合
-            if crawler_response.count_documents(filter=master_filter) == 0:
+            if crawler_response.count(filter=master_filter) == 0:
                 response_async_list.append(crawl_url)
                 # 非同期ドメイン集計カウントアップ
                 response_async_domain_aggregate[
