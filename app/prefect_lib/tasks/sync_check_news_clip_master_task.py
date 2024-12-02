@@ -57,7 +57,7 @@ def sync_check_news_clip_master_task(
         master_filter = {"$and": mastar_conditions}
 
         # news_clip_master側に存在しないcrawler_responseがある場合
-        if news_clip_master.count_documents(filter=master_filter) == 0:
+        if news_clip_master.count(filter=master_filter) == 0:
             if not CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER in response_sync:
                 master_async_list.append(response_sync[CrawlerResponseModel.URL])
 
