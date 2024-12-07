@@ -10,7 +10,6 @@ from BrownieAtelierMongo.collection_models.crawler_response_model import \
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from prefect import get_run_logger, task
 from prefect_lib.flows import START_TIME
-from pymongo.cursor import Cursor
 from shared.timezone_recovery import timezone_recovery
 
 
@@ -46,14 +45,10 @@ def sync_check_crawler_response_task(
     else:
         log_filter = None
 
-    log_records: Cursor = crawler_logs.find(
-        filter=log_filter,
-        projection={CrawlerLogsModel.CRAWL_URLS_LIST: 1, CrawlerLogsModel.DOMAIN: 1},
-    )
 
-    ##############################
-    # レスポンスの有無をチェック #
-    ##############################
+    #####################################
+    # クローラーレスポンスの有無をチェック #
+    #####################################
     conditions: list = []
     if domain:
         conditions.append({CrawlerResponseModel.DOMAIN: domain})
@@ -69,7 +64,19 @@ def sync_check_crawler_response_task(
     response_sync_list: list = []  # crawler_logsとcrawler_responseで同期
     response_async_list: list = []  # crawler_logsとcrawler_responseで非同期
     response_async_domain_aggregate: dict = {}
-    for log_record in log_records:
+    # for log_record in log_records:
+    
+    crawler_logs_count:int = crawler_logs.count(filter=log_filter)
+    logger.info(
+        f"=== 同期チェック(crawler_logs)件数 : {crawler_logs_count})"
+    )
+
+    processed_count:int = 0
+
+    for log_record in crawler_logs.limited_find(
+        filter=log_filter,
+        projection={CrawlerLogsModel.CRAWL_URLS_LIST: 1, CrawlerLogsModel.DOMAIN: 1},
+    ):
         # domain別の集計エリアを初期設定
         if not log_record[CrawlerLogsModel.DOMAIN] in response_async_domain_aggregate:
             response_async_domain_aggregate[log_record[CrawlerLogsModel.DOMAIN]] = 0
@@ -88,14 +95,6 @@ def sync_check_crawler_response_task(
         for crawl_url in loc_crawl_urls:
             conditions.append({CrawlerResponseModel.URL: crawl_url})
             master_filter: Any = {"$and": conditions}
-            response_records: Cursor = crawler_response.find(
-                filter=master_filter,
-                projection={
-                    CrawlerResponseModel.URL: 1,
-                    CrawlerResponseModel.RESPONSE_TIME: 1,
-                    CrawlerResponseModel.DOMAIN: 1,
-                },
-            )
 
             # crawler_response側に存在しないクロール対象urlがある場合
             if crawler_response.count(filter=master_filter) == 0:
@@ -108,7 +107,15 @@ def sync_check_crawler_response_task(
             # クロール対象とcrawler_responseで同期している場合、同期リストへ保存
             # ※定期観測では1件しか存在しないないはずだが、start_time_from〜toで一定の範囲の
             # 同期チェックを行った場合、複数件発生する可能性がある。
-            for response_record in response_records:
+            # for response_record in response_records:
+            for response_record in crawler_response.limited_find(
+                filter=master_filter,
+                projection={
+                    CrawlerResponseModel.URL: 1,
+                    CrawlerResponseModel.RESPONSE_TIME: 1,
+                    CrawlerResponseModel.DOMAIN: 1,
+                },
+            ):
                 _ = {
                     CrawlerResponseModel.URL: response_record[CrawlerResponseModel.URL],
                     CrawlerResponseModel.RESPONSE_TIME: timezone_recovery(
@@ -126,6 +133,11 @@ def sync_check_crawler_response_task(
 
             # 参照渡しなので最後に消さないと上述のresponse_recordsを参照した段階でエラーとなる
             conditions.pop(-1)
+
+        # 処理済みの件数を５００件ごとにログへ出力
+        processed_count += 1
+        if processed_count % 500 == 0:
+            logger.info(f"=== 同期チェック(crawler_logs)処理済み件数 : {processed_count}/{crawler_logs_count}")
 
     # クロールミス分のurlがあれば、非同期レポートへ保存
     if len(response_async_list) > 0:
