@@ -59,8 +59,10 @@ manual_crawling_flow(
 # 各ニュースサイト別に、定期観測クローリングのON/OFF、スクレイピングのON/OFF指定を登録する。
 #   stop_controller_update_flow.py
 #   a:産経:クローリングをOFF、b:朝日:スクレイピングをOFF、c:読売:何もしない。
+from prefect_lib.flows.stop_controller_update_const import (
+    StopControllerUpdateConst)
 from prefect_lib.flows.stop_controller_update_flow import (
-    StopControllerUpdateConst, stop_controller_update_flow)
+    stop_controller_update_flow)
 stop_controller_update_flow(
     domain="sankei.com",
     command=StopControllerUpdateConst.COMMAND_ADD,
