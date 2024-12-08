@@ -1,5 +1,5 @@
 from typing import Any
-
+from datetime import date
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from prefect import flow, get_run_logger
 from prefect.futures import PrefectFuture
@@ -13,8 +13,8 @@ from prefect_lib.tasks.mongo_delete_task import mongo_delete_task
 @flow(name="Mongo delete selector flow")
 def mongo_delete_selector_flow(
     collections_name: list[str],
-    period_month_from: int,  # 月次エクスポートを行うデータの基準年月  ex)0 -> 当月, 1 => 前月
-    period_month_to: int,  # 月次エクスポートを行うデータの基準年月
+    period_date_from: date,  # 月次エクスポートを行うデータの基準年月日
+    period_date_to: date,  # 月次エクスポートを行うデータの基準年月日
     crawler_response__registered: bool = True,  # crawler_responseの場合、登録済みになったレコードのみ削除する場合True、登録済み以外のレコードも含めて削除する場合False
 ):
     init_flow()
@@ -33,7 +33,7 @@ def mongo_delete_selector_flow(
         try:
             # mongo操作Flowの共通処理
             dir_path, period_from, period_to = mongo_common_task(
-                "", "", period_month_from, period_month_to
+                "", "", period_date_from, period_date_to
             )
 
             mongo_delete_task(

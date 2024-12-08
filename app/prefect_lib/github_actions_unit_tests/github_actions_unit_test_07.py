@@ -49,8 +49,8 @@ def test_exec():
             ],
             prefix="",  # export先のフォルダyyyy-mmの先頭に拡張した名前を付与する。
             suffix="",
-            period_month_from=1,  # 月次エクスポートを行うデータの基準年月
-            period_month_to=0,  # 月次エクスポートを行うデータの基準年月
+            period_date_from=(datetime.now().astimezone(TIMEZONE) - relativedelta(months=1)).date(),
+            period_date_to=datetime.now().astimezone(TIMEZONE).date(),
             crawler_response__registered=True,  # crawler_responseの場合、登録済みになったレコードのみエクスポートする場合True、登録済み以外のレコードも含めてエクスポートする場合False
         )
 
@@ -84,8 +84,8 @@ def test_exec():
                 ControllerModel.COLLECTION_NAME,
                 StatsInfoCollectModel.COLLECTION_NAME,
             ],
-            period_month_from=1,  # 月次エクスポートを行うデータの基準年月
-            period_month_to=0,  # 月次エクスポートを行うデータの基準年月
+            period_date_from=(datetime.now().astimezone(TIMEZONE) - relativedelta(months=1)).date(),
+            period_date_to=datetime.now().astimezone(TIMEZONE).date(),
             # crawler_response__registered=False,
         )
 

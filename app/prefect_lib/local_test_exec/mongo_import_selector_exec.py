@@ -20,7 +20,7 @@ def test_exec():
     with prefect_test_harness():
 
         mongo_import_selector_flow(
-            folder_name="temp_2024-10_2024-10",
+            folder_name="test20241208_2024-12-01_2024-12-08_test1",
             collections_name=[
                 CrawlerResponseModel.COLLECTION_NAME,
                 ScrapedFromResponseModel.COLLECTION_NAME, # 通常運用では不要なバックアップとなるがテスト用に実装している。

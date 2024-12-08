@@ -11,8 +11,8 @@ from shared.settings import DATA__BACKUP_BASE_DIR, TIMEZONE
 def mongo_common_task(
     prefix: str,  # export先のフォルダ名先頭に拡張した名前を付与する。
     suffix: str,  # export先のフォルダ名の末尾に拡張した名前を付与する。
-    period_month_from: int,  # 月次エクスポートを行うデータの基準年月
-    period_month_to: int,  # 月次エクスポートを行うデータの基準年月
+    period_date_from: date,  # 月次エクスポートを行うデータの基準年月
+    period_date_to: date,  # 月次エクスポートを行うデータの基準年月
 ) -> tuple[str, datetime, datetime]:
     """
     mongoDBのコレクションよりimport/exportを行うための前処理を実行する。
@@ -21,16 +21,15 @@ def mongo_common_task(
     """
     logger = get_run_logger()  # PrefectLogAdapter
     logger.info(
-        f"=== 引数 : prefix={prefix} suffix={suffix} period_month_from~to= {period_month_from} ~ {period_month_to}"
+        f"=== 引数 : prefix={prefix} suffix={suffix} period_date_from~to= {period_date_from} ~ {period_date_to}"
     )
 
-    today = START_TIME.date()
-    period_from: datetime = datetime.combine(
-        today - relativedelta(months=period_month_from), time.min, TIMEZONE
-    ) + relativedelta(day=1)
-    period_to: datetime = datetime.combine(
-        today - relativedelta(months=period_month_to), time.max, TIMEZONE
-    ) + relativedelta(day=99)
+    period_datetime_from: datetime = datetime.combine(
+        period_date_from, time.min, TIMEZONE
+    )
+    period_datetime_to: datetime = datetime.combine(
+        period_date_to, time.max, TIMEZONE
+    )
 
     pre: str = ""
     if prefix:
@@ -39,15 +38,15 @@ def mongo_common_task(
     if suffix:
         suf = "_" + suffix
 
-    start_period_yyyy_mm: str = period_from.strftime("%Y-%m")
-    end_period_yyyy_mm: str = period_to.strftime("%Y-%m")
+    start_period_ymd: str = period_datetime_from.strftime("%Y-%m-%d")
+    end_period_ymd: str = period_datetime_to.strftime("%Y-%m-%d")
 
-    folder_name: str = f"{pre}{start_period_yyyy_mm}_{end_period_yyyy_mm}{suf}"
+    folder_name: str = f"{pre}{start_period_ymd}_{end_period_ymd}{suf}"
     dir_path = os.path.join(DATA__BACKUP_BASE_DIR, folder_name)
 
-    logger.info(f"=== 結果 : {dir_path} {period_from} {period_to}")
+    logger.info(f"=== 結果 : {dir_path} {period_datetime_from} {period_datetime_to}")
 
-    return dir_path, period_from, period_to
+    return dir_path, period_datetime_from, period_datetime_to
 
 
 """
