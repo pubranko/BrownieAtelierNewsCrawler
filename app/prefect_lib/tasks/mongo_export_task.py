@@ -122,11 +122,25 @@ def mongo_export_task(
             # エクスポート対象件数を確認
             record_count = collection.count(filter)
             logger.info(f"=== {collection_name} バックアップ対象件数 : {str(record_count)}")
-
+            
+            documents: list = []
+            write_count: int = 0
+            
             # BSON形式でデータを保存 
             with open(file_path, 'wb') as bson_file:
                 for document in collection.limited_find(filter=filter, sort=sort_parameter):
-                    bson_file.write(bson.BSON.encode(document))
+                    documents.append(bson.BSON.encode(document))
+                    if (len(documents) >= 100): # 1000件ごとにmongoDBへ書き込み
+                        write_count += 100
+                        bson_file.writelines(documents)
+                        logger.info(f"=== コレクション({collection_name}) : {write_count}件書き込み完了")
+                        del documents
+                        documents = []
+
+                if documents:
+                    bson_file.writelines(documents)
+                    del documents
+
 
         # 誤更新防止のため、ファイルの権限を参照に限定
         os.chmod(file_path, 0o444)
