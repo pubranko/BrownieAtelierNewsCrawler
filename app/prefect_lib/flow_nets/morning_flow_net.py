@@ -1,5 +1,6 @@
 from typing import Optional
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 from prefect import flow, get_run_logger
 
 from shared.settings import TIMEZONE
@@ -57,22 +58,26 @@ def morning_flow_net(
     # 日次：不要データ削除
     mongo_delete_selector_flow(
         collections_name=[ScrapedFromResponseModel.COLLECTION_NAME,],
-        period_month_from=1,  # 月次エクスポートを行うデータの基準年月
-        period_month_to=0,  # 月次エクスポートを行うデータの基準年月
+        period_date_from=(datetime.now().astimezone(TIMEZONE) - relativedelta(months=1)).date(), # 消し忘れ防止用に直近１か月間のデータを削除
+        period_date_to=datetime.now().astimezone(TIMEZONE).date()
     )
 
     # Scrapyの統計情報を収集する。 引数なし->前日(0:00:00) ～ 当日(0:00:00)を対象とする。
     stats_info_collect_flow()
 
-    # 週次・月次：フロー用に曜日を確認
+    # 週次・月次：フロー用に曜日、日付を定義
     if base_datetime:
         now = base_datetime
-        today = now.date()
-        weekday = today.weekday()   # 0:月曜日～6:日曜日
     else:
         now = datetime.now().astimezone(TIMEZONE)
-        today = now.date()
-        weekday = today.weekday()   # 0:月曜日～6:日曜日
+    today = now.date()
+    weekday = today.weekday()   # 0:月曜日～6:日曜日
+    # 前月・月初、前月・月末
+    one_month_ago__gessyo = (now - relativedelta(months=1)).replace(day=1)
+    one_month_ago__getumatu = (one_month_ago__gessyo + relativedelta(months=1) - timedelta(days=1)) # 
+    # 前々月・月初、前々月・月末
+    two_month_ago__gessyo = (now - relativedelta(months=2)).replace(day=1)
+    two_month_ago__getumatu = (one_month_ago__gessyo + relativedelta(months=2) - timedelta(days=1))
     
     # 週次：日曜日ならば以下のフローを実行
     if weekday == 6:
@@ -93,37 +98,37 @@ def morning_flow_net(
     # 一時的に月初処理を停止。エクスポートでメモリー不足となるため。
     # ==========================================================
     # 月次：月初ならば以下のフローを実行
-    # if today.day == 1:
-    #     mongo_export_selector_flow(
-    #         collections_name=[
-    #             ScrapedFromResponseModel.COLLECTION_NAME,  # 通常運用では不要なバックアップとなるがテスト用に実装している。
-    #             CrawlerResponseModel.COLLECTION_NAME,
-    #             NewsClipMasterModel.COLLECTION_NAME,
-    #             CrawlerLogsModel.COLLECTION_NAME,
-    #             AsynchronousReportModel.COLLECTION_NAME,
-    #             ControllerModel.COLLECTION_NAME,
-    #             StatsInfoCollectModel.COLLECTION_NAME,
-    #         ],
-    #         # 次の形式でbackup_filesフォルダにデータを保存んする。 例)2024-03_2024-06
-    #         prefix="",
-    #         suffix="",
-    #         period_month_from=3,  # 月次エクスポートを行うデータの基準年月from
-    #         period_month_to=0,  # 月次エクスポートを行うデータの基準年月to
-    #         crawler_response__registered=True,  # crawler_responseの場合、登録済みになったレコードのみエクスポートする場合True、登録済み以外のレコードも含めてエクスポートする場合False
-    #     )
+    if today.day == 1:
+        mongo_export_selector_flow(
+            collections_name=[
+                ScrapedFromResponseModel.COLLECTION_NAME,  # 通常運用では不要なバックアップとなるがテスト用に実装している。
+                CrawlerResponseModel.COLLECTION_NAME,
+                NewsClipMasterModel.COLLECTION_NAME,
+                CrawlerLogsModel.COLLECTION_NAME,
+                AsynchronousReportModel.COLLECTION_NAME,
+                ControllerModel.COLLECTION_NAME,
+                StatsInfoCollectModel.COLLECTION_NAME,
+            ],
+            # 次の形式でbackup_filesフォルダにデータを保存んする。 例)2024-03_2024-06
+            prefix = "",
+            suffix = "",
+            period_date_from = one_month_ago__gessyo.date(),  # 前月・月初
+            period_date_to = one_month_ago__getumatu.date(),  # 前月・月末
+            crawler_response__registered = True,  # crawler_responseの場合、登録済みになったレコードのみエクスポートする場合True、登録済み以外のレコードも含めてエクスポートする場合False
+        )
 
-    #     # 保存期間を経過した不要データ削除。(当月-3)か月前のデータを削除する。
-    #     mongo_delete_selector_flow(
-    #         collections_name=[
-    #             CrawlerResponseModel.COLLECTION_NAME,
-    #             NewsClipMasterModel.COLLECTION_NAME,
-    #             CrawlerLogsModel.COLLECTION_NAME,
-    #             AsynchronousReportModel.COLLECTION_NAME,
-    #             StatsInfoCollectModel.COLLECTION_NAME,
-    #         ],
-    #         period_month_from=3,  # 月次エクスポートを行うデータの基準年月from  0->当月、1->前月
-    #         period_month_to=3,  # 月次エクスポートを行うデータの基準年月to  0->当月、1->前月
-    #     )
+    #     # 保存期間を経過した不要データ削除。(当月-2)か月前のデータを削除する。
+        mongo_delete_selector_flow(
+            collections_name=[
+                CrawlerResponseModel.COLLECTION_NAME,
+                NewsClipMasterModel.COLLECTION_NAME,
+                CrawlerLogsModel.COLLECTION_NAME,
+                AsynchronousReportModel.COLLECTION_NAME,
+                StatsInfoCollectModel.COLLECTION_NAME,
+            ],
+            period_date_from = two_month_ago__gessyo,  # 前々月・月初
+            period_date_to = two_month_ago__getumatu,  # 前々月・月末
+        )
 
     # # 定期観測終了後コンテナーを停止させる。
     container_end_task()
