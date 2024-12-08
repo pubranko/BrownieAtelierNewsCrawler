@@ -130,3 +130,7 @@ def mongo_export_task(
 
         # 誤更新防止のため、ファイルの権限を参照に限定
         os.chmod(file_path, 0o444)
+
+    for file in os.listdir(dir_path):
+        logger.info(f"=== 保存結果確認 : {file}")
+        
