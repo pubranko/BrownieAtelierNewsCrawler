@@ -1,4 +1,5 @@
 from typing import Any
+from datetime import date
 
 from BrownieAtelierMongo.collection_models.asynchronous_report_model import \
     AsynchronousReportModel
@@ -29,8 +30,8 @@ def mongo_export_selector_flow(
     collections_name: list[str],
     prefix: str,  # export先のフォルダyyyy-mmの先頭に拡張した名前を付与する。
     suffix: str,  # export先のフォルダyyyy-mmの末尾に拡張した名前を付与する。
-    period_month_from: int,  # 月次エクスポートを行うデータの基準年月  ex)0 -> 当月, 1 => 前月
-    period_month_to: int,  # 月次エクスポートを行うデータの基準年月
+    period_date_from: date,  # 月次エクスポートを行うデータの基準年月日
+    period_date_to: date,  # 月次エクスポートを行うデータの基準年月日
     crawler_response__registered: bool = False,  # crawler_responseの場合、登録済みになったレコードのみエクスポートする場合True、登録済み以外のレコードも含めてエクスポートする場合False
 ):
     init_flow()
@@ -48,15 +49,15 @@ def mongo_export_selector_flow(
 
         try:
             # mongo操作Flowの共通処理
-            dir_path, period_from, period_to = mongo_common_task(
-                prefix, suffix, period_month_from, period_month_to
+            dir_path, period_datetime_from, period_datetime_to = mongo_common_task(
+                prefix, suffix, period_date_from, period_date_to
             )
 
             mongo_export_task(
                 mongo,
                 dir_path,
-                period_from,
-                period_to,
+                period_datetime_from,
+                period_datetime_to,
                 collections_name,
                 crawler_response__registered,
             )

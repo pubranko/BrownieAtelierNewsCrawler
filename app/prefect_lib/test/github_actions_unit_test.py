@@ -189,6 +189,10 @@ from prefect_lib.flows.mongo_export_selector_flow import \
     
 from dateutil.relativedelta import relativedelta
 
+
+period_date_from = (datetime.now().astimezone(TIMEZONE) - relativedelta(months=1)).date()
+period_date_to = datetime.now().astimezone(TIMEZONE).date()
+
 mongo_export_selector_flow(
     collections_name=[
         CrawlerResponseModel.COLLECTION_NAME,
@@ -198,11 +202,11 @@ mongo_export_selector_flow(
         AsynchronousReportModel.COLLECTION_NAME,
         ControllerModel.COLLECTION_NAME,
     ],
-    prefix="",  # export先のフォルダyyyy-mmの先頭に拡張した名前を付与する。
-    suffix="",
-    period_month_from=1,  # 月次エクスポートを行うデータの基準年月
-    period_month_to=0,  # 月次エクスポートを行うデータの基準年月
-    crawler_response__registered=True,  # crawler_responseの場合、登録済みになったレコードのみエクスポートする場合True、登録済み以外のレコードも含めてエクスポートする場合False
+    prefix = "",  # export先のフォルダyyyy-mmの先頭に拡張した名前を付与する。
+    suffix = "",
+    period_date_from = period_date_from,
+    period_date_to = period_date_to,
+    crawler_response__registered = True,  # crawler_responseの場合、登録済みになったレコードのみエクスポートする場合True、登録済み以外のレコードも含めてエクスポートする場合False
 )
 
 # mongoDB削除
@@ -231,8 +235,8 @@ mongo_delete_selector_flow(
         AsynchronousReportModel.COLLECTION_NAME,
         ControllerModel.COLLECTION_NAME,
     ],
-    period_month_from=1,  # 月次エクスポートを行うデータの基準年月
-    period_month_to=0,  # 月次エクスポートを行うデータの基準年月
+    period_date_from = period_date_from,
+    period_date_to = period_date_to,
     # crawler_response__registered=False,
 )
 
@@ -253,13 +257,8 @@ from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
 from prefect_lib.flows.mongo_import_selector_flow import \
     mongo_import_selector_flow
 
-_ = datetime.now().astimezone(TIMEZONE) - relativedelta(months=1)
-yyyy_mm_from = _.strftime("%Y-%m")
-_ = datetime.now().astimezone(TIMEZONE) - relativedelta(months=1)
-yyyy_mm_to = _.strftime("%Y-%m")
-
 mongo_import_selector_flow(
-    folder_name=f"{yyyy_mm_from}_{yyyy_mm_to}",
+    folder_name=f"{period_date_from}_{period_date_to}",
     collections_name=[
         CrawlerResponseModel.COLLECTION_NAME,
         ScrapedFromResponseModel.COLLECTION_NAME,

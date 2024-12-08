@@ -1,3 +1,4 @@
+from datetime import date
 from prefect.testing.utilities import prefect_test_harness
 from BrownieAtelierMongo.collection_models.asynchronous_report_model import \
     AsynchronousReportModel
@@ -29,8 +30,8 @@ def test_exec():
                 ControllerModel.COLLECTION_NAME,
                 StatsInfoCollectModel.COLLECTION_NAME,
             ],
-            period_month_from=0,  # 月次エクスポートを行うデータの基準年月
-            period_month_to=0,  # 月次エクスポートを行うデータの基準年月
+            period_date_from=date(2024,12,1),  # 月次エクスポートを行うデータの基準年月
+            period_date_to=date(2024,12,8),  # 月次エクスポートを行うデータの基準年月
             # crawler_response__registered=False,
         )
 
