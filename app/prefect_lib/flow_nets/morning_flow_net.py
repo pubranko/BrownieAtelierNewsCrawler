@@ -65,6 +65,25 @@ def morning_flow_net(
     # Scrapyの統計情報を収集する。 引数なし->前日(0:00:00) ～ 当日(0:00:00)を対象とする。
     stats_info_collect_flow()
 
+    # 前日分のバックアップを作成する。
+    mongo_export_selector_flow(
+        collections_name=[
+            ControllerModel.COLLECTION_NAME,
+            CrawlerLogsModel.COLLECTION_NAME,
+            NewsClipMasterModel.COLLECTION_NAME,
+            AsynchronousReportModel.COLLECTION_NAME,
+            StatsInfoCollectModel.COLLECTION_NAME,
+            CrawlerResponseModel.COLLECTION_NAME,   # 一番重いデータを最後に設定
+        ],
+        # 次の形式でbackup_filesフォルダにデータを保存んする。 例)2024-03_2024-06
+        prefix = "",
+        suffix = "",
+        period_date_from = yestaday.date(),  # 1日前
+        period_date_to = yestaday.date(),  # １日前
+        crawler_response__registered = True,  # crawler_responseの場合、登録済みになったレコードのみエクスポートする場合True、登録済み以外のレコードも含めてエクスポートする場合False
+    )
+
+
     # 週次・月次：フロー用に曜日、日付を定義
     if base_datetime:
         now = base_datetime
@@ -73,8 +92,8 @@ def morning_flow_net(
     today = now.date()
     weekday = today.weekday()   # 0:月曜日～6:日曜日
     # 7日前～1日前
-    seven_day_ago = (now - relativedelta(days=7))
-    one_day_ago = (now - relativedelta(days=1)) # 
+    # seven_day_ago = (now - relativedelta(days=7))
+    # one_day_ago = (now - relativedelta(days=1)) # 
     # 前々月・月初、前々月・月末
     two_month_ago__gessyo = (now - relativedelta(months=2)).replace(day=1)
     two_month_ago__getumatu = (two_month_ago__gessyo + relativedelta(months=1) - timedelta(days=1))
@@ -94,24 +113,24 @@ def morning_flow_net(
             base_date=now,  # 左記基準日の前日分のデータが対象となる。
         )
 
-        # 直近の１週間分のバックアップを作成する。
-        mongo_export_selector_flow(
-            collections_name=[
-                ScrapedFromResponseModel.COLLECTION_NAME,  # 通常運用では不要なバックアップとなるがテスト用に実装している。
-                CrawlerResponseModel.COLLECTION_NAME,
-                NewsClipMasterModel.COLLECTION_NAME,
-                CrawlerLogsModel.COLLECTION_NAME,
-                AsynchronousReportModel.COLLECTION_NAME,
-                ControllerModel.COLLECTION_NAME,
-                StatsInfoCollectModel.COLLECTION_NAME,
-            ],
-            # 次の形式でbackup_filesフォルダにデータを保存んする。 例)2024-03_2024-06
-            prefix = "",
-            suffix = "",
-            period_date_from = seven_day_ago.date(),  # 7日前
-            period_date_to = one_day_ago.date(),  # １日前
-            crawler_response__registered = True,  # crawler_responseの場合、登録済みになったレコードのみエクスポートする場合True、登録済み以外のレコードも含めてエクスポートする場合False
-        )
+        # # 直近の１週間分のバックアップを作成する。
+        # mongo_export_selector_flow(
+        #     collections_name=[
+        #         ScrapedFromResponseModel.COLLECTION_NAME,  # 通常運用では不要なバックアップとなるがテスト用に実装している。
+        #         CrawlerResponseModel.COLLECTION_NAME,
+        #         NewsClipMasterModel.COLLECTION_NAME,
+        #         CrawlerLogsModel.COLLECTION_NAME,
+        #         AsynchronousReportModel.COLLECTION_NAME,
+        #         ControllerModel.COLLECTION_NAME,
+        #         StatsInfoCollectModel.COLLECTION_NAME,
+        #     ],
+        #     # 次の形式でbackup_filesフォルダにデータを保存んする。 例)2024-03_2024-06
+        #     prefix = "",
+        #     suffix = "",
+        #     period_date_from = seven_day_ago.date(),  # 7日前
+        #     period_date_to = one_day_ago.date(),  # １日前
+        #     crawler_response__registered = True,  # crawler_responseの場合、登録済みになったレコードのみエクスポートする場合True、登録済み以外のレコードも含めてエクスポートする場合False
+        # )
 
 
     # 月次：月初ならば以下のフローを実行
