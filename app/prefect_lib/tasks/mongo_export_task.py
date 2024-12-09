@@ -145,5 +145,10 @@ def mongo_export_task(
         # 誤更新防止のため、ファイルの権限を参照に限定
         os.chmod(file_path, 0o444)
 
-    logger.info(f"=== 保存結果確認 : {os.listdir(dir_path)}")
-        
+    # ディレクトリ内のファイルを列挙し、名前とサイズをログへ出力
+    for filename in os.listdir(dir_path):
+        filepath = os.path.join(dir_path, filename)
+        if os.path.isfile(filepath):
+            filesize = os.path.getsize(filepath)
+            # print(f"ファイル名: {filename}, サイズ: {filesize} バイト")
+            logger.info(f"=== 保存結果確認 : ファイル名({filename}), サイズ({filesize})バイト")
