@@ -98,7 +98,7 @@
 | 1   | BrownieAtelier<br>ブラウニーアトリエ                        | 〇     |      | ブラウニー工房の主要ブランチ。<br>各種処理の実行には、フレームワーク：Prefect2のFlowを使用。<br>クローリングには、フレームワーク：Scrapyを使用。<br>スクレイピングには、上記フレームワークを使用せずbeautiful soupライブラリーを使用。 | https://github.com/pubranko/BrownieAtelier.git|
 | 2   | BrownieAtelierController<br>ブラウニーアトリエコントローラー | 〇     |      | AzureFunctionにより、ブラウニー工房を格納しているコンテナ、MongoDBコンテナの起動・停止を行う。| https://github.com/pubranko/BrownieAtelierController.git |
 | 3   | BrownieAtelierMongo<br>ブラウニーアトリエMongoDB            |        | 〇   | Gitサブモジュール。MongoDBコンテナへの接続、参照、更新を行う専用モジュール。 | https://github.com/pubranko/BrownieAtelierMongo.git      |
-| 4   | BrownieAtelierNotice<br>ブラウニーアトリエ通知              |        | 〇   | Gitサブモジュール。メールによる送信機能。エラー発生時の通知用モジュール。| https://github.com/pubranko/BrownieAtelierNotice.git     |
+| 4   | BrownieAtelierNotice<br>ブラウニーアトリエ通知              |        | 〇   | Gitサブモジュール。Slackまたはメールによる送信機能。エラー発生時の通知用モジュール。| https://github.com/pubranko/BrownieAtelierNotice.git     |
 | 5   | BrownieAtelierStorage<br>ブラウニーアトリエストレージ        |        | 〇   | Gitサブモジュール。AzureStoregeへの接続、参照、更新を行う専用モジュール。 | https://github.com/pubranko/BrownieAtelierStorage.git    |
 
 [目次へ戻る](#目次)
@@ -153,6 +153,10 @@
 | :--------- | :-------------------------------------------- | :------|
 | Check-1    | crawl_sync_check_flow.py                      | クロール対象となったURLとクローラーレスポンス（crawler_response）の同期が取れているかチェック。<br>クローラーレスポンス（crawler_response）とニュースクリップマスター（news_clip_master）の同期が取れているかチェック。 |
 
+### 定期実行系
+| No.        | Flow一覧                                 | 処理概要|
+| :--------- | :--------------------------------------- | :------|
+| 1          | morning_flow_net.py                      | 毎朝実行用のフローを繋げたフローネットを実行。|
 
 [目次へ戻る](#目次)
 
@@ -188,12 +192,12 @@
 | №   | コレクション（※RDBのテーブルに相当）                         | データ<br>保存期間 | データメンテナンス運用  |
 | :-- | :-------------------------------------------------------   | :-------------: | :----------------------- |
 | 1   | クローラーログ<br>crawler_logs                              | 1日            | 毎朝初回起動時に一括削除。<br>レスポンスからニュースクリップマスターへの保存する際の中間ワークであるため保存不要。 |
-| 2   | クローラーレスポンス<br>crawler_response                     | 3ヵ月          | 3ヵ月経過したデータをMongoエクスポート（mongo_export_selector_flow.py）にて抽出しAzure File Storageに保存する。<br>その後Mongo削除フロー（mongo_delete_selector_flow.py）にて削除する。 |
-| 3   | レスポンスからのスクレイピング結果<br>scraped_from_response   | 3ヵ月          | 同上  |
-| 4   | ニュースクリップマスター<br>scraped_from_response            | 3ヵ月          | 同上  |
-| 5   | ドメイン別スクレイパー<br>scraper_by_domain                  | 3ヵ月          | 同上  |
-| 6   | 非同期レポート<br>asynchronous_report                       | 3ヵ月          | 同上 |
-| 7   | 統計情報の収集<br>stats_info_collect                        | 3ヵ月          | 同上  |
+| 2   | クローラーレスポンス<br>crawler_response                     | 1ヵ月          | 1ヵ月経過したデータをMongoエクスポート（mongo_export_selector_flow.py）にて抽出しAzure File Storageに保存する。<br>その後Mongo削除フロー（mongo_delete_selector_flow.py）にて削除する。 |
+| 3   | レスポンスからのスクレイピング結果<br>scraped_from_response   | 1ヵ月          | 同上  |
+| 4   | ニュースクリップマスター<br>scraped_from_response            | 1ヵ月          | 同上  |
+| 5   | ドメイン別スクレイパー<br>scraper_by_domain                  | 1ヵ月          | 同上  |
+| 6   | 非同期レポート<br>asynchronous_report                       | 1ヵ月          | 同上 |
+| 7   | 統計情報の収集<br>stats_info_collect                        | 1ヵ月          | 同上  |
 | 8   | コントローラー<br>controller                                | 永続           | 削除は行わない。<br>ただし毎朝初回起動時にMongoエクスポート（mongo_export_selector_flow.py）にてバックアップを行う。 |
 
 </div></details>
