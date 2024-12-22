@@ -39,9 +39,9 @@ jobs:
         ## dockerfile_baseで参照するubuntuイメージのタグ
         UBUNTU_TAG: 22.04
         ## # dockerfile_appで参照するbaseイメージのタグ
-        BASE_TAG: test-0.15
+        # BASE_TAG: test-0.15
         # docker-composeで参照するappイメージのタグ
-        APP_TAG: test-0.15
+        # APP_TAG: test-0.15
         # コンテナー内rootユーザーパスワード
         CONTAINER_ROOT_USER: root_user
         CONTAINER_ROOT_PASS: password
@@ -51,7 +51,7 @@ jobs:
         # ブラウニー工房のgitリモートリポジトリー
         GIT_REMOTE_REPOSITORY: https://github.com/pubranko/BrownieAtelier.git
         # 上記リポジトリーのgitブランチ
-        GIT_BRANCH: github-actions-test
+        GIT_BRANCH: ${{github.ref_name}}
         # Firefox の gecko driver
         GECKO_DRIVER: https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz
 
@@ -59,7 +59,7 @@ jobs:
         LOCAL_MONGO_KEY_DIR: /tmp
 
         # docker-compose command選択
-        CONTAINER_START_COMMAND: /home/common_user/BrownieAtelier/sh/prefect_cloud_deploy.sh
+        CONTAINER_START_COMMAND: /bin/sh -c "/home/common_user/BrownieAtelier/sh/prefect_cloud_deploy.sh"
 
         # mongoDBコンテナー一般ユーザー情報、mongoDB接続情報
         BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo-server
@@ -70,12 +70,10 @@ jobs:
         BROWNIE_ATELIER_MONGO__MONGO_TLS: false
         BROWNIE_ATELIER_MONGO__MONGO_TLS_CA_FILE:
         BROWNIE_ATELIER_MONGO__MONGO_TLS_CERTTIFICATE_KEY_FILE:
-        # Email接続情報
-        BROWNIE_ATELIER_NOTICE__SMTP_HOST: ${{ secrets.BROWNIE_ATELIER_NOTICE__SMTP_HOST }}
-        BROWNIE_ATELIER_NOTICE__SMTP_PORT: ${{ secrets.BROWNIE_ATELIER_NOTICE__SMTP_PORT }}
-        BROWNIE_ATELIER_NOTICE__FROM_EMAIL: ${{ secrets.BROWNIE_ATELIER_NOTICE__FROM_EMAIL }}
-        BROWNIE_ATELIER_NOTICE__TO_EMAIL: ${{ secrets.BROWNIE_ATELIER_NOTICE__TO_EMAIL }}
-        BROWNIE_ATELIER_NOTICE__PASSWORD: ${{ secrets.BROWNIE_ATELIER_NOTICE__PASSWORD }}
+        # Brownie atelier noticeの設定 (slack)
+        BROWNIE_ATELIER_NOTICE__SLACK_TOKEN: ${{ secrets.BROWNIE_ATELIER_NOTICE__SLACK_TOKEN}}
+        BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__ERROR: ${{ secrets.BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__ERROR}}
+        BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__NOMAL: ${{ secrets.BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__NOMAL}}
         # 
         HOST_OS_IP_ADDRESS: 192.0.0.1
         # Prefect
@@ -112,34 +110,44 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.PATH_CACHE }}
-          key: ${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}
+          key: ${{ runner.os }}-brownie_atelier_base-${{ vars.BASE_TAG }}
 
       # キャッシュがある場合は tar をdockerにロードしてイメージに追加
       - name: base用キャッシュがある場合は tar をロードしてイメージ一覧に追加
         if: steps.base_image_cache.outputs.cache-hit == 'true'
         run: |
           ls -l ${{ env.PATH_CACHE }}
-          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}.tar
+          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ vars.BASE_TAG }}.tar
           docker images
 
       - name: baseイメージがキャッシュにない場合にbuildとsave(キャッシュ)を実行
         if: steps.base_image_cache.outputs.cache-hit != 'true'
+        # git branchにはdevelopを固定で割り当てとする。 appイメージ作成側で修正中のブランチやmaster等を適用する運用とする。 
         run: |
           mkdir ${{ env.PATH_CACHE }}
-          docker-compose -f docker-compose__base-image-build.yml build
-          docker save brownie_atelier_base:$BASE_TAG -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}.tar
+          export GIT_BRANCH=develop
+          export BASE_TAG=${{ vars.BASE_TAG }}
+          docker compose -f docker-compose__base-image-build.yml build
+          docker save brownie_atelier_base:${{ vars.BASE_TAG }} -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ vars.BASE_TAG }}.tar
           ls -l ${{ env.PATH_CACHE }}
           docker images
-
 
       #################################################
       # appイメージコンテナー
       #################################################
+      - name: appイメージタグ採番
+        run: |
+          export BASE_TAG=${{ vars.BASE_TAG }}
+          export DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
+          echo "APP_TAG=$(python app/scripts/tag_create.py --mode ${{ needs.Branch-Controll.outputs.env_name }})" >> $GITHUB_ENV
 
       - name: appイメージbuild
         # appイメージ作成
         run: |
-          docker-compose -f docker-compose__app-image-build.yml build
+          export BASE_TAG=${{ vars.BASE_TAG }}
+          export APP_TAG=${{ env.APP_TAG }}
+          export DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
+          docker compose -f docker-compose__app-image-build.yml build
           docker tag brownie_atelier_app:${{ env.APP_TAG }} ${{ secrets.DOCKER_HUB_USERNAME }}/brownie_atelier_app:${{ env.APP_TAG }}
           docker images
 
@@ -165,14 +173,21 @@ jobs:
       - name: brownie_atelier_app起動用にdockerネットワークを作成
         run: docker network create brownie-atelier-net
   
-      #################################################
+      ##########################################################################################################
       # prefect flowをprefectクラウドへデプロイ
-      #################################################
+      # ※コンテナーの中でPrefectへのデプロイを実施しないとPrefect側に登録される
+      #   Entrypoint(cwdから見たFlowの相対パス)やPath(ユーザー名などを含むcwdまでの絶対パス)が同期がとれない状態となる。
+      #   そのため実際に動作するコンテナー内のユーザー・パスに合わせた状態でデプロイを実施している。
+      ##########################################################################################################
 
       - name: "Prefect FlowをPrefectクラウドへデプロイ"
         env:
           TZ: ${{ vars.TZ}}
-        # 各種フローテスト
         run: |
-          export PREFECT_RUN_SCRIPT="prefect_lib/deployments/all.py"
-          docker-compose -f docker-compose__app-container.yml up
+          export PREFECT_RUN_SCRIPT="prefect_lib/deployments/flows_register.py"
+          docker compose -f docker-compose__app-container.yml up --abort-on-container-exit
+          exit_code=$?
+          exit $exit_code
+
+      # "🍏 This job's status is success."
+      - run: echo "🍏 Job実行後のステータス： ${{ job.status }}."

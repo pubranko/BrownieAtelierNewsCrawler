@@ -2,6 +2,7 @@ import os
 import pickle
 from datetime import datetime
 from typing import Any
+import bson
 
 from BrownieAtelierMongo.collection_models.asynchronous_report_model import \
     AsynchronousReportModel
@@ -121,16 +122,33 @@ def mongo_export_task(
             # エクスポート対象件数を確認
             record_count = collection.count(filter)
             logger.info(f"=== {collection_name} バックアップ対象件数 : {str(record_count)}")
+            
+            documents: list = []
+            write_count: int = 0
+            
+            # BSON形式でデータを保存 
+            with open(file_path, 'wb') as bson_file:
+                for document in collection.limited_find(filter=filter, sort=sort_parameter):
+                    documents.append(bson.BSON.encode(document))
+                    if (len(documents) >= 100): # 1000件ごとにmongoDBへ書き込み
+                        write_count += 100
+                        bson_file.writelines(documents)
+                        logger.info(f"=== コレクション({collection_name}) : {write_count}件書き込み完了")
+                        del documents
+                        documents = []
 
-            # ファイルにリストオブジェクトを追記していく
-            with open(file_path, "ab") as file:
-                pass  # 空ファイル作成
+                if documents:
+                    bson_file.writelines(documents)
+                    del documents
 
-            records: Cursor = collection.find(filter=filter, sort=sort_parameter)
-            record_list: list = [record for record in records]
-
-            with open(file_path, "ab") as file:
-                file.write(pickle.dumps(record_list))
 
         # 誤更新防止のため、ファイルの権限を参照に限定
         os.chmod(file_path, 0o444)
+
+    # ディレクトリ内のファイルを列挙し、名前とサイズをログへ出力
+    for filename in os.listdir(dir_path):
+        filepath = os.path.join(dir_path, filename)
+        if os.path.isfile(filepath):
+            filesize = os.path.getsize(filepath)
+            # print(f"ファイル名: {filename}, サイズ: {filesize} バイト")
+            logger.info(f"=== 保存結果確認 : ファイル名({filename}), サイズ({filesize})バイト")

@@ -17,6 +17,12 @@
         ],
         "article_scraper": [
             {
+                "pattern": 3,
+                "css_selecter": "main[id=main-content]  div[class^=article-body__content] > div[class*=text__text__]",
+                "priority": 3,
+                "register_date":"2024-10-30T15:00:00+09:00"
+            },
+            {
                 "pattern": 2,
                 "css_selecter": "main[id=main-content]  div[class^=article-body__content] > div[class*=article-body__paragraph]",
                 "priority": 2,

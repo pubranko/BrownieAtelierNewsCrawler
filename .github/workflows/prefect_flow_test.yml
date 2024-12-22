@@ -9,21 +9,21 @@ on:
     workflow_dispatch:
 
 jobs:
-  Prefect-Flow-Test:
+  ##########################################
+  # テスト準備
+  ##########################################
+  Prefect-Flow-Test-Preparation:
     runs-on: ubuntu-22.04
     environment:
       name: TEST
     env:
-        ## mongoDB用コンテナーで参照するイメージのタグ
-        MONGO_TAG: 7.0.1-jammy
         ## dockerfile_baseで参照するubuntuイメージのタグ
         UBUNTU_TAG: 22.04
         ## # dockerfile_appで参照するbaseイメージのタグ
-        BASE_TAG: test-0.15
-        # docker-composeで参照するappイメージのタグ
-        APP_TAG: test-0.15
+        # BASE_TAG: test-0.15
+        # docker-composeで参照するappイメージのタグ。このワークフロー内ではlatest固定とする。
+        APP_TAG: latest
         # コンテナー内rootユーザーパスワード
-        CONTAINER_ROOT_USER: root_user
         CONTAINER_ROOT_PASS: password
         # コンテナ内の一般ユーザー、パスワード
         CONTAINER_USER: common_user
@@ -37,11 +37,121 @@ jobs:
         # Firefox の gecko driver
         GECKO_DRIVER: https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz
 
+        # dummy
+        HOST_OS_IP_ADDRESS: 192.0.0.1
+
+        # Docker イメージの tar アーカイブ出力先のパス
+        PATH_CACHE: /tmp/docker-img-arch
+
+        # タイムゾーン
+        TZ: "Asia/Tokyo"
+    steps:
+      - run: echo "🎉 起動イベントの種類 (${{ github.event_name }})"
+      - run: echo "🐧 github上のOSの種類 (${{ runner.os }})"
+      - name: リポジトリ(${{ github.repository }})・ブランチ(${{github.ref_name}})にチェックアウト
+        # 上記のリポジトリ・ブランチにチェックアウト
+        uses: actions/checkout@v4
+
+      - name: ワークスペースチェック
+        # テスト前チェックを確認
+        # クローン後はここにソースが格納される /home/runner/work/BrownieAtelier/BrownieAtelier
+        run: |
+          ls -a ${{ github.workspace }}
+
+      # インストールされているものの一覧を調べてみた。
+      #- run: sudo apt list --installed
+      #- run: sudo dpkg-query -l
+
+      #################################################
+      # baseイメージコンテナー
+      #################################################
+
+      - name: baseイメージ用キャッシュの定義 & 復元
+        # キャッシュID の定義
+        id: base_image_cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PATH_CACHE }}
+          key: ${{ runner.os }}-brownie_atelier_base-${{ vars.BASE_TAG }}
+
+      # キャッシュがある場合は tar をdockerにロードしてイメージに追加
+      - name: base用キャッシュがある場合は tar をロードしてイメージ一覧に追加
+        if: steps.base_image_cache.outputs.cache-hit == 'true'
+        run: |
+          ls -l ${{ env.PATH_CACHE }}
+          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ vars.BASE_TAG }}.tar
+          docker images
+
+      - name: baseイメージがキャッシュにない場合にbuildとsave(キャッシュ)を実行
+        if: steps.base_image_cache.outputs.cache-hit != 'true'
+        # git branchにはdevelopを固定で割り当てとする。 appイメージ作成側で修正中のブランチやmaster等を適用する運用とする。 
+        run: |
+          mkdir ${{ env.PATH_CACHE }}
+          export GIT_BRANCH=develop
+          export BASE_TAG=${{ vars.BASE_TAG }}
+          docker compose -f docker-compose__base-image-build.yml build
+          docker save brownie_atelier_base:${{ vars.BASE_TAG }} -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ vars.BASE_TAG }}.tar
+          ls -l ${{ env.PATH_CACHE }}
+          docker images
+
+
+      #################################################
+      # appイメージコンテナー
+      #################################################
+      - name: appイメージbuild
+        # appイメージ作成
+        run: |
+          export BASE_TAG=${{ vars.BASE_TAG }}
+          docker compose -f docker-compose__app-image-build.yml build
+          docker images
+
+      - name: appイメージに別名のタグを付与 ※リポジトリ名を小文字に変換
+        run: |
+          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          docker tag brownie_atelier_app:${{ env.APP_TAG }}  ghcr.io/${REPO_NAME}/brownie_atelier_app:${{ env.APP_TAG }}
+
+      - name: appイメージをコンテナーレジストリーにログイン
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }} # 書き込み・参照権限
+
+      - name: appイメージをコンテナーレジストリーにプッシュ
+        run: |
+          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          docker push ghcr.io/${REPO_NAME}/brownie_atelier_app:${{ env.APP_TAG }}
+
+  ########################################
+  # テスト本体
+  ########################################
+  Prefect-Flow-Test:
+    needs: [Prefect-Flow-Test-Preparation]
+    runs-on: ubuntu-22.04
+    environment:
+      name: TEST
+    env:
+        ## mongoDB用コンテナーで参照するイメージのタグ
+        MONGO_TAG: 7.0.1-jammy
+        ## dockerfile_baseで参照するubuntuイメージのタグ
+        UBUNTU_TAG: 22.04
+        ## # dockerfile_appで参照するbaseイメージのタグ
+        # BASE_TAG: test-0.15
+        # docker-composeで参照するappイメージのタグ。このワークフロー内ではlatest固定とする。
+        APP_TAG: latest
+        # コンテナ内の一般ユーザー、パスワード
+        CONTAINER_USER: common_user
+        CONTAINER_USER_PASS: password
+        # 上記リポジトリーのgitブランチ
+        # GIT_BRANCH: ${{ github.ref }}
+        # GIT_BRANCH: ${{github.head_ref}}
+        GIT_BRANCH: ${{github.ref_name}}
+
         # ホスト（ローカル）側のmongoDB接続用のcrtやpemファイルの保管ディレクトリ
         LOCAL_MONGO_KEY_DIR: /tmp
 
-        # docker-compose command選択
-        CONTAINER_START_COMMAND: /home/common_user/BrownieAtelier/sh/github_actions_unit_test.sh
+        # docker compose command選択
+        CONTAINER_START_COMMAND: /bin/sh -c "/home/common_user/BrownieAtelier/sh/github_actions_unit_test.sh"
 
         # mongoDBコンテナー一般ユーザー情報、mongoDB接続情報
         BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo-server
@@ -55,17 +165,15 @@ jobs:
         # mongoDBコンテナーroot情報
         BROWNIE_ATELIER_MONGO__MONGO_INITDB_ROOT_USERNAME: root_user
         BROWNIE_ATELIER_MONGO__MONGO_INITDB_ROOT_PASSWORD: password
-        # Email接続情報
-        BROWNIE_ATELIER_NOTICE__SMTP_HOST: ${{ secrets.BROWNIE_ATELIER_NOTICE__SMTP_HOST }}
-        BROWNIE_ATELIER_NOTICE__SMTP_PORT: ${{ secrets.BROWNIE_ATELIER_NOTICE__SMTP_PORT }}
-        BROWNIE_ATELIER_NOTICE__FROM_EMAIL: ${{ secrets.BROWNIE_ATELIER_NOTICE__FROM_EMAIL }}
-        BROWNIE_ATELIER_NOTICE__TO_EMAIL: ${{ secrets.BROWNIE_ATELIER_NOTICE__TO_EMAIL }}
-        BROWNIE_ATELIER_NOTICE__PASSWORD: ${{ secrets.BROWNIE_ATELIER_NOTICE__PASSWORD }}
+        # Brownie atelier noticeの設定 (slack)
+        BROWNIE_ATELIER_NOTICE__SLACK_TOKEN: ${{ secrets.BROWNIE_ATELIER_NOTICE__SLACK_TOKEN}}
+        BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__ERROR: ${{ secrets.BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__ERROR}}
+        BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__NOMAL: ${{ secrets.BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__NOMAL}}
 
         # dummy
         HOST_OS_IP_ADDRESS: 192.0.0.1
         # dummy
-        PREFECT_HOME: /home/root_user/BrownieAtelier # コンテナー内のディレクトリ構成
+        PREFECT_HOME: /home/common_user/BrownieAtelier # コンテナー内のディレクトリ構成
         PREFECT_API_URL:
         PREFECT__API_KEY:
         PREFECT__WORK_SPACE:
@@ -90,17 +198,12 @@ jobs:
         run: |
           ls -a ${{ github.workspace }}
 
-      # インストールされているものの一覧を調べてみた。
-      #- run: sudo apt list --installed
-      #- run: sudo dpkg-query -l
-
       ########################################################################
       # テスト用にdockerネットワークが必要であるため作成
       ########################################################################
       - name: dockerネットワークをテスト用に作成
         # dockerネットワークを作成
         run: docker network create brownie-atelier-net
-
 
       #################################################
       # mongoDBコンテナー
@@ -126,100 +229,102 @@ jobs:
           docker images
           docker ps -a
 
-      #################################################
-      # baseイメージコンテナー
-      #################################################
-
-      - name: baseイメージ用キャッシュの定義 & 復元
-        # キャッシュID の定義
-        id: base_image_cache
-        uses: actions/cache@v4
+      ########################################################################
+      # appイメージをプル
+      ########################################################################
+      - name: appイメージをコンテナーレジストリーにログイン
+        uses: docker/login-action@v3
         with:
-          path: ${{ env.PATH_CACHE }}
-          key: ${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }} # 書き込み・参照権限
 
-      # キャッシュがある場合は tar をdockerにロードしてイメージに追加
-      - name: base用キャッシュがある場合は tar をロードしてイメージ一覧に追加
-        if: steps.base_image_cache.outputs.cache-hit == 'true'
+      - name: appイメージをプル
         run: |
-          ls -l ${{ env.PATH_CACHE }}
-          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}.tar
-          docker images
+          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          docker pull ghcr.io/${REPO_NAME}/brownie_atelier_app:${{ env.APP_TAG }}
 
-      - name: baseイメージがキャッシュにない場合にbuildとsave(キャッシュ)を実行
-        if: steps.base_image_cache.outputs.cache-hit != 'true'
+      - name: appイメージに別名のタグを付与
         run: |
-          mkdir ${{ env.PATH_CACHE }}
-          docker-compose -f docker-compose__base-image-build.yml build
-          docker save brownie_atelier_base:$BASE_TAG -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}.tar
-          ls -l ${{ env.PATH_CACHE }}
+          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          docker tag ghcr.io/${REPO_NAME}/brownie_atelier_app:${{ env.APP_TAG }}  brownie_atelier_app:${{ env.APP_TAG }}
           docker images
-
-
-      #################################################
-      # appイメージコンテナー
-      #################################################
-
-      - name: appイメージbuild
-        # appイメージ作成
-        run: |
-          docker-compose -f docker-compose__app-image-build.yml build
-          docker images
-
 
       #################################################
       # appイメージコンテナーを起動して各種フロー実行
       #################################################
-
       - name: "<1>各ニュースサイト別スクレイピングの情報登録  <2>定期観測用のスパイダー登録  <3>初回定期観測"
         env:
           TZ: ${{ vars.TZ}}
         # 各種フローテスト
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_01.py"
-          docker-compose -f docker-compose__app-container.yml up
+          docker compose -f docker-compose__app-container.yml up --abort-on-container-exit
+          exit_code=$?
+          exit $exit_code
 
       - name: "<4>手動クローリング"
         env:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_02.py"
-          docker-compose -f docker-compose__app-container.yml up
+          docker compose -f docker-compose__app-container.yml up --abort-on-container-exit
+          exit_code=$?
+          exit $exit_code
 
       - name: "<5>定期観測のON/OFF  <6>定期観測"
         env:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_03.py"
-          docker-compose -f docker-compose__app-container.yml up
+          docker compose -f docker-compose__app-container.yml up --abort-on-container-exit
+          exit_code=$?
+          exit $exit_code
 
       - name: "<7>手動スクレイピング  <8>手動ニュースクリップマスター保存"
         env:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_04.py"
-          docker-compose -f docker-compose__app-container.yml up
+          docker compose -f docker-compose__app-container.yml up --abort-on-container-exit
+          exit_code=$?
+          exit $exit_code
 
       - name: "<9>Scrapy統計情報集計  <10>Scrapy統計情報レポート"
         env:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_05.py"
-          docker-compose -f docker-compose__app-container.yml up
+          docker compose -f docker-compose__app-container.yml up --abort-on-container-exit
+          exit_code=$?
+          exit $exit_code
 
       - name: "<11>スクレイピング使用パターンレポート  <12>同期チェック"
         env:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_06.py"
-          docker-compose -f docker-compose__app-container.yml up
+          docker compose -f docker-compose__app-container.yml up --abort-on-container-exit
+          exit_code=$?
+          exit $exit_code
 
       - name: "<13>mongoDBエクスポート  <14>mongoDB削除  <15>mongoDBインポート"
         env:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_07.py"
-          docker-compose -f docker-compose__app-container.yml up
+          docker compose -f docker-compose__app-container.yml up --abort-on-container-exit
+          exit_code=$?
+          exit $exit_code
+
+      - name: "<16>日次朝処理"
+        env:
+          TZ: ${{ vars.TZ}}
+        run: |
+          export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_08.py"
+          docker compose -f docker-compose__app-container.yml up --abort-on-container-exit
+          exit_code=$?
+          exit $exit_code
 
       # "🍏 This job's status is success."
       - run: echo "🍏 Job実行後のステータス： ${{ job.status }}."

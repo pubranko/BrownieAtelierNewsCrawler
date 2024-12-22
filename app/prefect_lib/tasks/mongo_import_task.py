@@ -1,10 +1,6 @@
-import copy
-import glob
 import os
-import pickle
-from typing import Union
-
-# from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
+import bson
+from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 from BrownieAtelierMongo.collection_models.asynchronous_report_model import \
     AsynchronousReportModel
 from BrownieAtelierMongo.collection_models.crawler_logs_model import \
@@ -36,7 +32,6 @@ def mongo_import_task(
 
     # インポート元ファイルの一覧を作成
     import_files_info: dict[str, str] = {}
-    import_file_name_list: list[str] = []
 
     folder_path: str = os.path.join(DATA__BACKUP_BASE_DIR, folder_name)
     if os.path.exists(folder_path):
@@ -46,8 +41,9 @@ def mongo_import_task(
             file_path: str = os.path.join(
                 DATA__BACKUP_BASE_DIR, folder_name, collection_name
             )
-            if os.path.exists(file_path):
-                import_file_name_list.append(collection_name)
+            if not os.path.getsize(file_path):
+                logger.warning(f"=== 対象のコレクションファイルが空であるため処理をスキップしました。 ({collection_name})")
+            elif os.path.exists(file_path):
                 import_files_info[
                     collection_name
                 ] = file_path  # ファイル名(コレクション名)をkey、インポートファイルフルパスをvalueとする。
@@ -56,56 +52,58 @@ def mongo_import_task(
     else:
         logger.error(f"=== 指定されたフォルダーは存在しませんでした。({folder_path})")
 
-    logger.info(f"=== インポート対象ファイル : {str(import_file_name_list)}")
+    logger.info(f"=== インポート対象ファイル : {str(import_files_info.keys())}")
 
     # ファイルからオブジェクトを復元しインポートを実施する。
-    # その際、空ファイルを除き、"_id"を除去してインポートする。
     for collection_name, file_path in import_files_info.items():
+
+        if collection_name == CrawlerResponseModel.COLLECTION_NAME:
+            collection = CrawlerResponseModel(mongo)
+        elif collection_name == ScrapedFromResponseModel.COLLECTION_NAME:
+            collection = ScrapedFromResponseModel(mongo)
+        elif collection_name == NewsClipMasterModel.COLLECTION_NAME:
+            collection = NewsClipMasterModel(mongo)
+        elif collection_name == CrawlerLogsModel.COLLECTION_NAME:
+            collection = CrawlerLogsModel(mongo)
+        elif collection_name == AsynchronousReportModel.COLLECTION_NAME:
+            collection = AsynchronousReportModel(mongo)
+        elif collection_name == StatsInfoCollectModel.COLLECTION_NAME:
+            collection = StatsInfoCollectModel(mongo)
+
+        elif collection_name == ControllerModel.COLLECTION_NAME:
+            collection = ControllerModel(mongo)
+            # コントローラー内のドキュメント全削除（コントローラーはデータを追加するにではなく差し替える）
+            collection.delete_many(filter={})
+
+        before_count: int = collection.count()
+
         # ファイルからオブジェクトへ復元
         collection_records: list = []
-        if os.path.getsize(file_path):
-            with open(file_path, "rb") as file:
-                documents: list = pickle.loads(file.read())
 
-                logger.info(
-                    f"=== コレクション({collection_name}) : インポート対象レコード件数 : {str(len(documents))}"
-                )
+        with open(file_path, 'rb') as bson_file:
+            
+            documents: list = []
+            write_count: int = 0
+            for document in bson.decode_file_iter(bson_file):
+                
+                del document["_id"]  # idは継承しない。インポート時に新しいIDを割り当てる。
+                documents.append(document)
+                if (len(documents) >= 1000): # 1000件ごとにmongoDBへ書き込み
+                    write_count += 1000
+                    collection.insert(documents)
+                    logger.info(f"=== コレクション({collection_name}) : {write_count}件書き込み完了")
+                    del documents
+                    documents = []
 
-                for document in documents:
-                    del document["_id"]  # idは継承しない。インポート時に新しいIDを割り当てる。
-                    collection_records.append(document)
+            if documents:
+                collection.insert(documents)
+                del documents
 
-        # 空ファイル以外はコレクションごとにインポートを実施
-        if len(collection_records):
-            collection = None
-            if collection_name == CrawlerResponseModel.COLLECTION_NAME:
-                collection = CrawlerResponseModel(mongo)
-            elif collection_name == ScrapedFromResponseModel.COLLECTION_NAME:
-                collection = ScrapedFromResponseModel(mongo)
-            elif collection_name == NewsClipMasterModel.COLLECTION_NAME:
-                collection = NewsClipMasterModel(mongo)
-            elif collection_name == CrawlerLogsModel.COLLECTION_NAME:
-                collection = CrawlerLogsModel(mongo)
-            elif collection_name == AsynchronousReportModel.COLLECTION_NAME:
-                collection = AsynchronousReportModel(mongo)
-            elif collection_name == StatsInfoCollectModel.COLLECTION_NAME:
-                collection = StatsInfoCollectModel(mongo)
-            # elif file_name == ControllerModel.COLLECTION_NAME:
-            #     collection = ControllerModel(mongo)
-
-            if collection:
-                # インポート
-                before_count: int = collection.count()
-                collection.insert(collection_records)
-                after_count: int = collection.count()
-
-                logger.info(
-                    f"=== コレクション({collection_name})  追加前の総件数: {str(before_count)} -> 追加件数: {str(len(collection_records))} -> 追加後の総件数: {str(after_count)}"
-                )
-
-            # 処理の終わったファイルオブジェクトを削除
-            del collection_records
-
+        after_count: int = collection.count()
+        logger.info(
+            f"=== コレクション({collection_name})  追加前の総件数: {str(before_count)} -> 追加件数: {str(len(collection_records))} -> 追加後の総件数: {str(after_count)}"
+        )
+                
 
 """
 保存するフォルダ内の形式

@@ -4,8 +4,6 @@ from typing import Any, Optional
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from prefect import flow, get_run_logger
 from prefect.futures import PrefectFuture
-from prefect.states import State
-from prefect.task_runners import SequentialTaskRunner
 from prefect_lib.flows.init_flow import init_flow
 from prefect_lib.tasks.end_task import end_task
 from prefect_lib.tasks.init_task import init_task
@@ -16,8 +14,7 @@ from prefect_lib.tasks.sync_check_news_clip_master_task import \
 from prefect_lib.tasks.sync_check_notice_result_task import \
     sync_check_notice_result_task
 
-
-@flow(name="Crawl sync check flow", task_runner=SequentialTaskRunner())
+@flow(name="Crawl sync check flow")
 def crawl_sync_check_flow(
     domain: Optional[str] = None,
     start_time_from: Optional[datetime] = None,
@@ -27,13 +24,16 @@ def crawl_sync_check_flow(
 
     # ロガー取得
     logger = get_run_logger()  # PrefectLogAdapter
-    # 初期処理
-    init_task_result: PrefectFuture = init_task.submit()
+    # 初期処理を実行
+    # init_task_instance: PrefectFuture = init_task.submit()
+    init_task_instance: PrefectFuture = init_task.submit()
+    # 実行結果が返ってくるまで待機し、戻り値を保存。 
+    #   ※タスクのステータスをresultを受け取る前に判定してもPendingとなる。インスタンスのステータスはリアルタイムで更新されているので注意。
+    init_task_result = init_task_instance.result()
 
-    any: Any = init_task_result.get_state()
-    state: State = any
-    if state.is_completed():
-        mongo: MongoModel = init_task_result.result()
+    # 実行結果がCompletedであれば後続処理を実行
+    if init_task_instance.state.is_completed():
+        mongo: MongoModel = init_task_result
 
         try:
             # crawl結果とcrawler_responseが同期しているかチェックする。

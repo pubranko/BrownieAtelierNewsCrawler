@@ -1,13 +1,12 @@
 import os
-
-from BrownieAtelierNotice.mail_attach_send import mail_attach_send
 from openpyxl import Workbook
 from prefect import get_run_logger, task
+from BrownieAtelierNotice import settings
+from BrownieAtelierNotice.slack.slack_notice import slack_notice
 from prefect_lib.data_models.scraper_pattern_report_input import \
     ScraperPatternReportInput
 from prefect_lib.flows import START_TIME
 from shared.settings import DATA
-
 
 @task
 def scraper_pattern_report_notice_task(
@@ -28,19 +27,22 @@ def scraper_pattern_report_notice_task(
     """メールにレポートファイルを添付して送信"""
     base_date_from, base_date_to = scraper_pattern_report_input.base_date_get()
 
-    title = "scraper_pattern_analysis_report"
+    message = f"""
+    【scraper_pattern_analysis_report】
+    
+    各種実行結果を解析したレポート
+    === 実行条件 ============================================================
+    start_time = {START_TIME.isoformat()}
+    base_date_from = {base_date_from.isoformat()}
+    base_date_to = {base_date_to.isoformat()}
+    report_term = {scraper_pattern_report_input.report_term}
+    =========================================================================
+    """
 
-    messege = f"""
-    <html>
-        <body>
-            <p>各種実行結果を解析したレポート</p>
-            <p>=== 実行条件 ============================================================</p>
-            <p>start_time = {START_TIME.isoformat()}</p>
-            <p>base_date_from = {base_date_from.isoformat()}</p>
-            <p>base_date_to = {base_date_to.isoformat()}</p>
-            <p>report_term = {scraper_pattern_report_input.report_term}</p>
-            <p>=========================================================================</p>
-        </body>
-    </html>"""
-    # メール送信
-    mail_attach_send(title=title, msg=messege, filepath=file_path, param_logger=logger)
+    slack_notice(
+        logger=logger,
+        channel_id=settings.BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__NOMAL,
+        message=message,
+        file=file_path,
+        file_name=file_name,
+    )

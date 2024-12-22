@@ -27,11 +27,13 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
 
+base_start_url: str = "https://mainichi.jp/flash/"  # ピックアップ、新着
+
 class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
     name: str = "mainichi_jp_crawl"
     allowed_domains: list = ["mainichi.jp"]
     start_urls: list = [
-        "https://mainichi.jp/flash/",  # ピックアップ、新着
+        base_start_url,
     ]
     _domain_name: str = "mainichi_jp"  # 各種処理で使用するドメイン名の一元管理
     _spider_version: float = 1.0
@@ -52,7 +54,7 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
     #         allow=(r'/article/')), callback='parse_news'),
     # )
     # seleniumモード
-    selenium_mode: bool = True
+    selenium_mode__start_request: bool = True
     # splashモード
     # splash_mode: bool = True
 
@@ -66,31 +68,12 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
         self.page_from, self.page_to = self.pages_setting(1, 3)
         self.page: int = self.page_from
         self.all_urls_list: list = []
-        self.session_id: str = self.name + datetime.now().isoformat()
-
-        # keyにドット(.)があるとエラーMongoDBがエラーとなるためアンダースコアに置き換え
-        self.base_url = str(self.start_urls[0]).replace(".", "_")
 
         self.url_continued = UrlsContinuedSkipCheck(
-            self._crawl_point, self.base_url, self.news_crawl_input.continued
+            self._crawl_point, base_start_url, self.news_crawl_input.continued
         )
 
-    def start_requests(self):
-        """ """
-        if self.selenium_mode:
-            for url in self.start_urls:
-                if self.url_continued.continued:
-                    yield SeleniumRequest(
-                        url=url,
-                        callback=self.parse_start_response_continued_crawl_mode_selenium,
-                    )
-                else:
-                    yield SeleniumRequest(
-                        url=url,
-                        callback=self.parse_start_response_page_crawl_mode_selenium,
-                    )
-
-    def parse_start_response_continued_crawl_mode_selenium(
+    def parse_start_response_continued_crawl_mode(
         self, response: TextResponse
     ):
         """(拡張メソッド)
@@ -202,7 +185,7 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
             )
 
         # 次回向けに1ページ目の5件をcontrollerへ保存する
-        self._crawl_point[self.base_url] = {
+        self._crawl_point[base_start_url] = {
             self.CRAWL_POINT__URLS: self.all_urls_list[
                 0 : self.url_continued.check_count
             ],
@@ -216,7 +199,7 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
             self.news_crawl_input.debug,
         )
 
-    def parse_start_response_page_crawl_mode_selenium(self, response: TextResponse):
+    def parse_start_response_page_crawl_mode(self, response: TextResponse):
         """(拡張メソッド)
         取得したレスポンスよりDBへ書き込み(selenium版)
         """
@@ -344,7 +327,7 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
             )
 
         # 次回向けに1ページ目の5件をcontrollerへ保存する
-        self._crawl_point[self.base_url] = {
+        self._crawl_point[base_start_url] = {
             self.CRAWL_POINT__URLS: self.all_urls_list[
                 0 : self.url_continued.check_count
             ],

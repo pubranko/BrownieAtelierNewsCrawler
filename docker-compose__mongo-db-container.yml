@@ -1,4 +1,3 @@
-version: '3.1'
 ##############################################
 # 本番環境用(tls指定あり)
 ##############################################
@@ -14,7 +13,7 @@ services:
         networks:
             - default
         volumes:
-            - ${BROWNIE_ATELIER_MONGO__MONGO_STORAGE_DIR}/data:/data/mongo-db       # mongoDBのデータ保管場所(ローカル側の権限を777へ変更要)
+            - ${BROWNIE_ATELIER_MONGO__MONGO_STORAGE_DIR}/data:/data/db       # mongoDBのデータ保管場所(ローカル側の権限を777へ変更要)
             - ${BROWNIE_ATELIER_MONGO__MONGO_STORAGE_DIR}/log:/var/log/mongodb      # ログの保管場所(ローカル側の権限を777へ変更要)
             - ${BROWNIE_ATELIER_MONGO__MONGO_KEY_DIR}:/etc/mongo-key                # ca/tls keyファイルの保管場所
             - $PWD/mongodb/mongo-conf/${BROWNIE_ATELIER_MONGO__MONGO_CONF}:/etc/mongo-conf/${BROWNIE_ATELIER_MONGO__MONGO_CONF}  # コンフィグファイルの保管場所
@@ -32,6 +31,6 @@ services:
 
 # 既存のネットワークbrownie-atelier-netを利用する。
 networks:
-  default:
-    external:
-      name: brownie-atelier-net
+    default:
+        external: true
+        name: brownie-atelier-net
