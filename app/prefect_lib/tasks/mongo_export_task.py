@@ -1,5 +1,6 @@
 import os
-import pickle
+import gzip
+import shutil
 from datetime import datetime
 from typing import Any
 import bson
@@ -54,7 +55,7 @@ def mongo_export_task(
 
     for collection_name in collections_name:
         # ファイル名 ＝ コレクション名
-        file_path: str = os.path.join(dir_path, f"{collection_name}")
+        file_path: str = os.path.join(dir_path, f"{collection_name}.gz")
 
         sort_parameter: list = []
         collection = None
@@ -127,10 +128,10 @@ def mongo_export_task(
             write_count: int = 0
             
             # BSON形式でデータを保存 
-            with open(file_path, 'wb') as bson_file:
+            with gzip.open(file_path, 'wb') as bson_file:
                 for document in collection.limited_find(filter=filter, sort=sort_parameter):
                     documents.append(bson.BSON.encode(document))
-                    if (len(documents) >= 100): # 1000件ごとにmongoDBへ書き込み
+                    if (len(documents) >= 100): # 100件ごとにmongoDBへ書き込み
                         write_count += 100
                         bson_file.writelines(documents)
                         logger.info(f"=== コレクション({collection_name}) : {write_count}件書き込み完了")
@@ -143,12 +144,12 @@ def mongo_export_task(
 
 
         # 誤更新防止のため、ファイルの権限を参照に限定
-        os.chmod(file_path, 0o444)
+        #   -> Azure Storage Exploreで削除できなくなることがわかったため廃止。
+        # os.chmod(file_path, 0o444)
 
     # ディレクトリ内のファイルを列挙し、名前とサイズをログへ出力
     for filename in os.listdir(dir_path):
         filepath = os.path.join(dir_path, filename)
         if os.path.isfile(filepath):
             filesize = os.path.getsize(filepath)
-            # print(f"ファイル名: {filename}, サイズ: {filesize} バイト")
             logger.info(f"=== 保存結果確認 : ファイル名({filename}), サイズ({filesize})バイト")

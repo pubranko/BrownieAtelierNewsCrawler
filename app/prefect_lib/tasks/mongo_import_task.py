@@ -1,5 +1,7 @@
 import os
 import bson
+import gzip
+from typing import Any
 from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 from BrownieAtelierMongo.collection_models.asynchronous_report_model import \
     AsynchronousReportModel
@@ -39,11 +41,9 @@ def mongo_import_task(
 
         for collection_name in collections_name:
             file_path: str = os.path.join(
-                DATA__BACKUP_BASE_DIR, folder_name, collection_name
+                DATA__BACKUP_BASE_DIR, folder_name, f"{collection_name}.gz"
             )
-            if not os.path.getsize(file_path):
-                logger.warning(f"=== 対象のコレクションファイルが空であるため処理をスキップしました。 ({collection_name})")
-            elif os.path.exists(file_path):
+            if os.path.exists(file_path):
                 import_files_info[
                     collection_name
                 ] = file_path  # ファイル名(コレクション名)をkey、インポートファイルフルパスをvalueとする。
@@ -52,7 +52,7 @@ def mongo_import_task(
     else:
         logger.error(f"=== 指定されたフォルダーは存在しませんでした。({folder_path})")
 
-    logger.info(f"=== インポート対象ファイル : {str(import_files_info.keys())}")
+    logger.info(f"=== インポート対象ファイル : {str(import_files_info.values())}")
 
     # ファイルからオブジェクトを復元しインポートを実施する。
     for collection_name, file_path in import_files_info.items():
@@ -80,7 +80,8 @@ def mongo_import_task(
         # ファイルからオブジェクトへ復元
         collection_records: list = []
 
-        with open(file_path, 'rb') as bson_file:
+        with gzip.open(file_path, 'rb') as bson_file:
+            bson_file:Any   # データの型=<class 'gzip.GzipFile'>となる。 後続のbson.decode_file_iterでエラーとなるため型をAnyとしている。
             
             documents: list = []
             write_count: int = 0
