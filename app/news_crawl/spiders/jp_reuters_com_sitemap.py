@@ -16,6 +16,7 @@ class JpReutersComSitemapSpider(ExtensionsSitemapSpider):
         "https://jp.reuters.com/arc/outboundfeeds/news-sitemap/?outputType=xml",
         "https://jp.reuters.com/arc/outboundfeeds/news-sitemap/?outputType=xml&from=100",
         "https://jp.reuters.com/arc/outboundfeeds/news-sitemap/?outputType=xml&from=200",
+        "https://jp.reuters.com/arc/outboundfeeds/news-sitemap/?outputType=xml&from=300",
     ]
     _domain_name: str = "jp_reuters_com"  # 各種処理で使用するドメイン名の一元管理
     _spider_version: float = 1.0
