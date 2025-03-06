@@ -19,3 +19,8 @@ class JpReutersComSitemapSpider(ExtensionsSitemapSpider):
     ]
     _domain_name: str = "jp_reuters_com"  # 各種処理で使用するドメイン名の一元管理
     _spider_version: float = 1.0
+
+    custom_settings: dict = {
+        # ディレイ間隔を0.5倍～1.5倍の遅延が発生するようになる。
+        "RANDOMIZE_DOWNLOAD_DELAY": True,
+    }
