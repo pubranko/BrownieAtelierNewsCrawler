@@ -68,6 +68,8 @@ class SeleniumMiddleware:
             options=driver_options,
             service=service,
         )
+        # ヘッドレスモード時のウィンドウサイズを強制する
+        self.driver.set_window_size(1920, 1080)  # コンテナ環境用のサイズ指定
 
     @classmethod
     def from_crawler(cls, crawler):
