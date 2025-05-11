@@ -104,8 +104,9 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
             )
 
             target_next_page_element = f"div.main-contents span.link-more"
+            # 要素がDOM上に存在し、表示されていて、有効（クリック可能）な状態まで最大60秒待機します。
             WebDriverWait(driver, 60).until(
-                EC.presence_of_element_located(
+                EC.element_to_be_clickable(
                     (By.CSS_SELECTOR, target_next_page_element)
                 )
             )
@@ -226,8 +227,9 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
             )
 
             target_next_page_element = f"div.main-contents span.link-more"
+            # 要素がDOM上に存在し、表示されていて、有効（クリック可能）な状態まで最大60秒待機します。
             WebDriverWait(driver, 60).until(
-                EC.presence_of_element_located(
+                EC.element_to_be_clickable(
                     (By.CSS_SELECTOR, target_next_page_element)
                 )
             )
