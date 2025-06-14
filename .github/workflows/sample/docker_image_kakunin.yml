@@ -28,7 +28,7 @@ jobs:
         CONTAINER_USER: common_user
         CONTAINER_USER_PASS: password
         # ブラウニー工房のgitリモートリポジトリー
-        GIT_REMOTE_REPOSITORY: https://github.com/pubranko/BrownieAtelier.git
+        GIT_REMOTE_REPOSITORY: https://github.com/pubranko/BrownieAtelierNewsCrawler.git
         # 上記リポジトリーのgitブランチ
         GIT_BRANCH: github-actions-test
         # Firefox の gecko driver
@@ -38,7 +38,7 @@ jobs:
         LOCAL_MONGO_KEY_DIR: /tmp
 
         # docker-compose command選択
-        CONTAINER_START_COMMAND: /home/common_user/BrownieAtelier/sh/github_actions_unit_test.sh
+        CONTAINER_START_COMMAND: /home/common_user/BrownieAtelierNewsCrawler/sh/github_actions_unit_test.sh
 
         # mongoDBコンテナー一般ユーザー情報、mongoDB接続情報
         BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo-server
@@ -62,7 +62,7 @@ jobs:
         # dummy
         HOST_OS_IP_ADDRESS: 192.0.0.1
         # dummy
-        PREFECT_HOME: /home/root_user/BrownieAtelier
+        PREFECT_HOME: /home/root_user/BrownieAtelierNewsCrawler
         PREFECT_API_URL: 
         PREFECT__API_KEY: 
         PREFECT__WORK_SPACE: 
@@ -80,7 +80,7 @@ jobs:
 
       - name: ワークスペースチェック
         # テスト前チェックを確認
-        # クローン後はここにソースが格納される /home/runner/work/BrownieAtelier/BrownieAtelier
+        # クローン後はここにソースが格納される /home/runner/work/BrownieAtelierNewsCrawler/BrownieAtelierNewsCrawler
         run: |
           ls -a ${{ github.workspace }}
 

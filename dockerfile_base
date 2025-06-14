@@ -13,7 +13,7 @@ ARG GIT_BRANCH
 ARG GECKO_DRIVER
 
 #LABELでメタ情報を入れることができる
-LABEL maintainer="BrownieAtelier-base-test"
+LABEL maintainer="BrownieAtelierNewsCrawlerBase"
 
 ###################
 # pipenv用の環境変数
@@ -75,9 +75,9 @@ RUN echo ${CONTAINER_USER}':'${CONTAINER_USER_PASS} | chpasswd
 RUN echo 'Defaults visiblepw' >> /etc/sudoers
 RUN echo ${CONTAINER_USER}' ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-#############################
-# BrownieAtelierインストール
-#############################
+##########################################
+# BrownieAtelierNewsCrawlerインストール
+##########################################
 # アプリ用ディレクトリ作成
 WORKDIR /home/${CONTAINER_USER}
 
@@ -94,10 +94,10 @@ RUN git config --global user.name "kari Name"
 # git clone (サブモジュールごとクローンする)
 RUN git clone --recursive ${GIT_REMOTE_REPOSITORY} -b "${GIT_BRANCH}"
 # リポジトリの所有権でエラーが出ないように例外をコンフィグに登録
-RUN git config --global --add safe.directory /home/${CONTAINER_USER}/BrownieAtelier
+RUN git config --global --add safe.directory /home/${CONTAINER_USER}/BrownieAtelierNewsCrawler
 
 # 仮想環境作成ディレクトリ
-WORKDIR /home/${CONTAINER_USER}/BrownieAtelier
+WORKDIR /home/${CONTAINER_USER}/BrownieAtelierNewsCrawler
 # 仮想環境を作成
 RUN python3 -m pipenv --python 3.10
 # 仮想環境を有効化
@@ -107,6 +107,8 @@ RUN python3 -m pipenv --python 3.10
 RUN python3 -m pipenv sync
 RUN .venv/bin/pip list
 
+# prefect用ディレクトリ作成
+RUN mkdir /home/${CONTAINER_USER}/BrownieAtelierNewsCrawler/data/prefect_data
 # mongoDB接続用ca/pemファイルの格納ディレクトリ作成
 RUN mkdir /home/${CONTAINER_USER}/mongo-key
 

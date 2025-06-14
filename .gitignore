@@ -141,6 +141,7 @@ data/direct_crawl_files/*
 data/login_info/*
 data/logs/*
 data/*report*
+data/prefect_data/*
 certificate
 test_aria/*
 #!/data/scraper_info_by_domain/

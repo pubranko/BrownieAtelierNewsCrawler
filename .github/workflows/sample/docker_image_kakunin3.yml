@@ -28,7 +28,7 @@ jobs:
         CONTAINER_USER: common_user
         CONTAINER_USER_PASS: password
         # ブラウニー工房のgitリモートリポジトリー
-        GIT_REMOTE_REPOSITORY: https://github.com/pubranko/BrownieAtelier.git
+        GIT_REMOTE_REPOSITORY: https://github.com/pubranko/BrownieAtelierNewsCrawler.git
         # 上記リポジトリーのgitブランチ
         GIT_BRANCH: github-actions-test
         # Firefox の gecko driver
@@ -38,7 +38,7 @@ jobs:
         LOCAL_MONGO_KEY_DIR: /tmp
 
         # docker-compose command選択
-        CONTAINER_START_COMMAND: /home/common_user/BrownieAtelier/sh/github_actions_unit_test.sh
+        CONTAINER_START_COMMAND: /home/common_user/BrownieAtelierNewsCrawler/sh/github_actions_unit_test.sh
 
         # mongoDBコンテナー一般ユーザー情報、mongoDB接続情報
         BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo-server
@@ -62,7 +62,7 @@ jobs:
         # dummy
         HOST_OS_IP_ADDRESS: 192.0.0.1
         # dummy
-        PREFECT_HOME: /home/root_user/BrownieAtelier
+        PREFECT_HOME: /home/root_user/BrownieAtelierNewsCrawler
         PREFECT_API_URL: 
         PREFECT__API_KEY: 
         PREFECT__WORK_SPACE: 
@@ -83,19 +83,19 @@ jobs:
 
       # - name: baseイメージをpull
       #   run: |
-      #     docker pull mikuras/brownie_atelier_base:$BASE_TAG
+      #     docker pull mikuras/brownie_atelier_news_crawler_base:$BASE_TAG
       #     docker images
 
       - name: baseイメージ存在チェック
         id: check-image
         # run: |
-        #   IMAGE_EXISTS=$(docker images -q mikuras/brownie_atelier_base:$BASE_TAG)
+        #   IMAGE_EXISTS=$(docker images -q mikuras/brownie_atelier_news_crawler_base:$BASE_TAG)
         #   echo "::set-output name=image_exists::$IMAGE_EXISTS"
         run: |
           echo $IMAGE_EXISTS
           docker images
-          docker images --quiet mikuras/brownie_atelier_base:test-0.15
-          BBB=$(docker images --quiet mikuras/brownie_atelier_base:test-0.15)
+          docker images --quiet mikuras/brownie_atelier_news_crawler_base:test-0.15
+          BBB=$(docker images --quiet mikuras/brownie_atelier_news_crawler_base:test-0.15)
           echo 'IMAGE_EXISTS=$BBB' >> $GITHUB_ENV
           echo $BBB
           echo ${{env.IMAGE_EXISTS}}
@@ -107,7 +107,7 @@ jobs:
         run: |
           echo IMAGE_EXISTS
           echo $IMAGE_EXISTS
-          docker pull mikuras/brownie_atelier_base:$BASE_TAG
+          docker pull mikuras/brownie_atelier_news_crawler_base:$BASE_TAG
           docker images
       
       - name: baseイメージがない場合、baseイメージ用キャッシュの定義 & 復元
@@ -118,12 +118,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.PATH_CACHE }}
-          key: ${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}
+          key: ${{ runner.os }}-brownie_atelier_news_crawler_base-${{ env.BASE_TAG }}
 
       # キャッシュがある場合は tar をロードしてイメージ一覧に追加
       - name: docker hubにbaseイメージがなくキャッシュがある場合は、キャッシュよりイメージをロード
         if: steps.base_image_cache.outputs.cache-hit == 'true'
         run: |
           ls -l ${{ env.PATH_CACHE }}
-          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ env.BASE_TAG }}.tar
+          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_news_crawler_base-${{ env.BASE_TAG }}.tar
           docker images

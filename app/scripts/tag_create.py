@@ -76,7 +76,7 @@ def init_check(
 def dockerhub_tag_info_get(docker_hub_username: str) -> list:
     """Docker Hubよりタグ情報を取得して返す。"""
     response = requests.get(
-        f"https://registry.hub.docker.com/v2/repositories/{docker_hub_username}/brownie_atelier_app/tags/"
+        f"https://registry.hub.docker.com/v2/repositories/{docker_hub_username}/brownie_atelier_news_crawler/tags/"
     )
 
     docker_repository_info_json: str = response.text
