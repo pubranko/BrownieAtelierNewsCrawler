@@ -1,6 +1,6 @@
 import copy
 import urllib.parse
-from typing import Final
+from typing import Final, cast, Callable
 
 import scrapy
 from news_crawl.spiders.common.start_request_debug_file_generate import \
@@ -130,7 +130,7 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
             for _ in self.crawl_urls_list:
                 yield scrapy.Request(
                     response.urljoin(_[self.CRAWL_POINT__LOC]),
-                    callback=self.parse_news,
+                    callback=cast(Callable,self.parse_news),
                 )
 
             # 次回向けに1ページ目の10件をcontrollerへ保存する
@@ -151,7 +151,7 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
             next_page_url = f"{self.start_urls[0]}?page={self.page}"
             yield scrapy.Request(
                 url=next_page_url,
-                callback=self.parse_start_response_continued_crawl_mode,
+                callback=cast(Callable, self.parse_start_response_continued_crawl_mode),
             )
 
     def parse_start_response_page_crawl_mode(self, response: TextResponse):
@@ -201,7 +201,7 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
                 # クロール対象のURLのリクエストを開始
                 yield scrapy.Request(
                     response.urljoin(url),
-                    callback=self.parse_news,
+                    callback=cast(Callable, self.parse_news),
                 )
 
         # 次回向けに今回の1ページ目(self.page_from)の10件をcontrollerへ保存する

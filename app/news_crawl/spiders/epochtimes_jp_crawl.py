@@ -1,6 +1,6 @@
 import urllib.parse
 from time import sleep
-from typing import Any, Final
+from typing import Any, Final, cast, Callable
 
 import scrapy
 from news_crawl.items import NewsCrawlItem
@@ -149,7 +149,7 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
             for _ in self.crawl_urls_list:
                 yield scrapy.Request(
                     response.urljoin(_[self.CRAWL_POINT__LOC]),
-                    callback=self.parse_news,
+                    callback=cast(Callable, self.parse_news),
                 )
 
             # 次回向けに1ページ目の10件をcontrollerへ保存する
@@ -164,7 +164,7 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
             next_page_url = f"{self.start_urls[0]}/{self.page + 1}"
             yield scrapy.Request(
                 url=next_page_url,
-                callback=self.parse_start_response_continued_crawl_mode,
+                callback=cast(Callable, self.parse_start_response_continued_crawl_mode),
             )
 
         # # 次のページを読み込む
@@ -212,7 +212,7 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
                 # クロール対象のURLのリクエストを開始
                 yield scrapy.Request(
                     response.urljoin(url),
-                    callback=self.parse_news,
+                    callback=cast(Callable, self.parse_news),
                 )
 
         # debug指定がある場合、現ページの３０件をデバック用ファイルに保存

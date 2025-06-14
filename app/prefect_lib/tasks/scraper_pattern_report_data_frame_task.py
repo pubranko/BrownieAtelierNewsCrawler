@@ -4,13 +4,14 @@ from BrownieAtelierMongo.collection_models.news_clip_master_model import \
 from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import \
     ScraperInfoByDomainModel
 from prefect import get_run_logger, task
+from prefect.cache_policies import NO_CACHE
 from prefect_lib.data_models.scraper_pattern_report_data import \
     ScraperPatternReportData
 from prefect_lib.data_models.scraper_pattern_report_input import \
     ScraperPatternReportInput
 
 
-@task
+@task(cache_policy=NO_CACHE)
 def scraper_pattern_report_data_frame_task(
     mongo: MongoModel, scraper_pattern_report_input: ScraperPatternReportInput
 ) -> ScraperPatternReportData:

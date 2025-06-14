@@ -9,11 +9,12 @@ from BrownieAtelierMongo.collection_models.crawler_response_model import \
     CrawlerResponseModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from prefect import get_run_logger, task
+from prefect.cache_policies import NO_CACHE
 from prefect_lib.flows import START_TIME
 from shared.timezone_recovery import timezone_recovery
 
 
-@task
+@task(cache_policy=NO_CACHE)
 def sync_check_crawler_response_task(
     mongo: MongoModel,
     domain: Optional[str],

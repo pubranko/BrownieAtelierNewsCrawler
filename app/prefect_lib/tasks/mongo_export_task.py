@@ -21,12 +21,13 @@ from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
 from BrownieAtelierMongo.collection_models.stats_info_collect_model import \
     StatsInfoCollectModel
 from prefect import get_run_logger, task
+from prefect.cache_policies import NO_CACHE
 from prefect_lib.flows import START_TIME
 from pymongo import ASCENDING
 from pymongo.cursor import Cursor
 
 
-@task
+@task(cache_policy=NO_CACHE)
 def mongo_export_task(
     mongo: MongoModel,
     dir_path: str,  # export先のフォルダ名

@@ -1,3 +1,11 @@
+# PrefectとScrapyのtwistedリアクターが種類が異なることで競合してしまった。
+# scrapy側をprefect側に合わせるように以下のように操作
+import sys
+if "twisted.internet.reactor" in sys.modules:
+    del sys.modules["twisted.internet.reactor"]
+from twisted.internet import asyncioreactor
+asyncioreactor.install()
+
 import logging
 from logging import FileHandler, StreamHandler
 from typing import Any

@@ -2,13 +2,14 @@ from BrownieAtelierMongo.collection_models.controller_model import \
     ControllerModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from prefect import get_run_logger, task
+from prefect.cache_policies import NO_CACHE
 from prefect_lib.data_models.stop_controller_update_input import \
     StopControllerUpdateInput
 from prefect_lib.flows.stop_controller_update_const import \
     StopControllerUpdateConst
 
 
-@task
+@task(cache_policy=NO_CACHE)
 def stop_controller_update_task(
     stop_controller_update_input: StopControllerUpdateInput, mongo: MongoModel
 ):

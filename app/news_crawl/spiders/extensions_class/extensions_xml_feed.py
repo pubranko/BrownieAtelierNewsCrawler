@@ -71,7 +71,8 @@ class ExtensionsXmlFeedSpider(XMLFeedSpider):
         # エラーが出ないようにとりあえずコメントアウト
         # spider_init(self, *args, **kwargs)
 
-    def start_requests(self):
+    # def start_requests(self):
+    async def start(self):
         for url in self.start_urls:
             yield scrapy.Request(
                 url,

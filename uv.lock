@@ -531,7 +531,7 @@ requires-dist = [
     { name = "fasteners", specifier = ">=0.0.0" },
     { name = "openpyxl", specifier = ">=3.0.0" },
     { name = "pandas", specifier = ">=2.0.0" },
-    { name = "prefect", specifier = ">=3.0.0" },
+    { name = "prefect", specifier = ">=3.4.0" },
     { name = "prefect-docker" },
     { name = "psutil" },
     { name = "pydantic", specifier = ">=2.0.0" },

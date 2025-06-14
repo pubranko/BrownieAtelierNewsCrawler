@@ -218,7 +218,15 @@ class StatsInfoCollectData:
                     ]
                 )
                 # self.robots_df = self.robots_df.append(_, ignore_index=True)
-                self.robots_df = pd.concat([self.robots_df, _], ignore_index=True)
+                # self.robots_df = pd.concat([self.robots_df, _], ignore_index=True)
+                # pandasの仕様変更。concatの挙動が将来変わるのでその対策。
+                #   「今まで通り」にしたい場合は、concat前に空や全NAのDataFrameを除外すること
+                dfs = [self.robots_df, _]
+                dfs = [df for df in dfs if not df.empty and not df.isna().all().all()]
+                if dfs:
+                    self.robots_df = pd.concat(dfs, ignore_index=True)
+                else:
+                    self.robots_df = pd.DataFrame()
             # if 'downloader/response_status_count/' in key:
             if self.DOWNLOADER_RESPONSE_STATUS_COUNT in key:
                 _ = pd.DataFrame(
@@ -235,9 +243,17 @@ class StatsInfoCollectData:
                         }
                     ]
                 )
-                self.downloader_df = pd.concat(
-                    [self.downloader_df, _], ignore_index=True
-                )
+                # self.downloader_df = pd.concat(
+                #     [self.downloader_df, _], ignore_index=True
+                # )
+                # pandasの仕様変更。concatの挙動が将来変わるのでその対策。
+                #   「今まで通り」にしたい場合は、concat前に空や全NAのDataFrameを除外すること
+                dfs = [self.downloader_df, _]
+                dfs = [df for df in dfs if not df.empty and not df.isna().all().all()]
+                if dfs:
+                    self.downloader_df = pd.concat(dfs, ignore_index=True)
+                else:
+                    self.downloader_df = pd.DataFrame()
 
         _ = pd.DataFrame(
             [
@@ -305,24 +321,53 @@ class StatsInfoCollectData:
                 }
             ]
         )
-        self.spider_df = pd.concat([self.spider_df, _], ignore_index=True)
+        # self.spider_df = pd.concat([self.spider_df, _], ignore_index=True)
+        # pandasの仕様変更。concatの挙動が将来変わるのでその対策。
+        #   「今まで通り」にしたい場合は、concat前に空や全NAのDataFrameを除外すること
+        dfs = [self.spider_df, _]
+        dfs = [df for df in dfs if not df.empty and not df.isna().all().all()]
+        if dfs:
+            self.spider_df = pd.concat(dfs, ignore_index=True)
+        else:
+            self.spider_df = pd.DataFrame()
 
     def dataframe_recovery(self, stats_info_collect_record: dict) -> None:
         """引数のレコードを基にpandasのデータフレームを復元する。"""
 
         record_df = pd.DataFrame([stats_info_collect_record])
 
-        if stats_info_collect_record[self.RECORD_TYPE] == self.ROBOTS_RESPONSE_STATUS:
-            self.robots_df = pd.concat([self.robots_df, record_df], ignore_index=True)
-        elif (
-            stats_info_collect_record[self.RECORD_TYPE]
-            == self.DOWNLOADER_RESPONSE_STATUS
-        ):
-            self.downloader_df = pd.concat(
-                [self.downloader_df, record_df], ignore_index=True
-            )
-        elif stats_info_collect_record[self.RECORD_TYPE] == self.SPIDER_STATS:
-            self.spider_df = pd.concat([self.spider_df, record_df], ignore_index=True)
+        # pandasの仕様変更。concatの挙動が将来変わるのでその対策。
+        #   「今まで通り」にしたい場合は、concat前に空や全NAのDataFrameを除外すること
+        #    空や全NaNのDataFrameは処理しない
+        if not record_df.empty and not record_df.isna().all().all():
+            if stats_info_collect_record[self.RECORD_TYPE] == self.ROBOTS_RESPONSE_STATUS:
+                clean_existing_df = self.robots_df.dropna(axis=1, how='all')
+                clean_record_df = record_df.dropna(axis=1, how='all')
+                self.robots_df = pd.concat([clean_existing_df, clean_record_df], ignore_index=True)
+
+            elif stats_info_collect_record[self.RECORD_TYPE] == self.DOWNLOADER_RESPONSE_STATUS:
+                clean_existing_df = self.downloader_df.dropna(axis=1, how='all')
+                clean_record_df = record_df.dropna(axis=1, how='all')
+                self.downloader_df = pd.concat([clean_existing_df, clean_record_df], ignore_index=True)
+
+            elif stats_info_collect_record[self.RECORD_TYPE] == self.SPIDER_STATS:
+                clean_existing_df = self.spider_df.dropna(axis=1, how='all')
+                clean_record_df = record_df.dropna(axis=1, how='all')
+                self.spider_df = pd.concat([clean_existing_df, clean_record_df], ignore_index=True)
+
+
+        # if stats_info_collect_record[self.RECORD_TYPE] == self.ROBOTS_RESPONSE_STATUS:
+        #     self.robots_df = pd.concat([self.robots_df, record_df], ignore_index=True)
+        # elif (
+        #     stats_info_collect_record[self.RECORD_TYPE]
+        #     == self.DOWNLOADER_RESPONSE_STATUS
+        # ):
+        #     self.downloader_df = pd.concat(
+        #         [self.downloader_df, record_df], ignore_index=True
+        #     )
+        # elif stats_info_collect_record[self.RECORD_TYPE] == self.SPIDER_STATS:
+        #     self.spider_df = pd.concat([self.spider_df, record_df], ignore_index=True)
+
         # if stats_info_collect_record['record_type'] == self.ROBOTS_RESPONSE_STATUS:
         #     self.robots_df = self.robots_df.append(
         #         stats_info_collect_record, ignore_index=True)
