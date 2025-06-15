@@ -132,7 +132,6 @@ dmypy.json
 .vscode/tasks.json
 .vscode/launch.json
 .vscode/jupyter_env.json
-prefect.db
 app/.flows/*
 data/exclusive_work/*
 data/backup_files/*
@@ -142,6 +141,7 @@ data/login_info/*
 data/logs/*
 data/*report*
 data/prefect_data/*
+!data/**/.gitkeep
 certificate
 test_aria/*
 #!/data/scraper_info_by_domain/
