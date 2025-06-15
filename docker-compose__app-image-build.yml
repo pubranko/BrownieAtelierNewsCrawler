@@ -1,5 +1,5 @@
 services:
-    brownie_atelier_app:
+    brownie_atelier_news_crawler:
         build:
             context: .
             dockerfile: dockerfile_app
@@ -10,4 +10,4 @@ services:
                 CONTAINER_USER: ${CONTAINER_USER}
                 # ブラウニー工房のgitリモートリポジトリーのブランチ
                 GIT_BRANCH: ${GIT_BRANCH}
-        image: brownie_atelier_app:${APP_TAG}
+        image: brownie_atelier_news_crawler:${APP_TAG}

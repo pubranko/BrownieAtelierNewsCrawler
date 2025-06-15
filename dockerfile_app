@@ -8,9 +8,7 @@ ARG CONTAINER_USER
 ARG GIT_BRANCH
 
 # リポジトリ一覧を更新、インストール済みのパッケージ更新
-RUN echo ${CONTAINER_USER} | sudo -S apt-get update
 RUN echo ${CONTAINER_USER} | sudo -S apt update
-RUN echo ${CONTAINER_USER} | sudo -S apt -y upgrade
 
 # アプリ用ディレクトリへ移動
 WORKDIR /home/${CONTAINER_USER}/BrownieAtelierNewsCrawler
@@ -27,9 +25,9 @@ WORKDIR /home/${CONTAINER_USER}/BrownieAtelierNewsCrawler/data
 RUN chmod 766 ./*
 RUN ls -la
 
-# Pipfile.lockからインストール（更新があった場合）
+# uv.lockからインストール（更新があった場合）
 WORKDIR /home/${CONTAINER_USER}/BrownieAtelierNewsCrawler
-RUN python3 -m pipenv sync
+RUN .venv/bin/uv sync --frozen
 RUN ls -la
 RUN .venv/bin/pip list
 
