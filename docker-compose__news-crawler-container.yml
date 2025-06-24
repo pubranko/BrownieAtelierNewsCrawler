@@ -1,8 +1,8 @@
 services:
 
     brownie_atelier:
-        image: brownie_atelier_app:${APP_TAG}
-        container_name: brownie_atelier_app
+        image: brownie_atelier_news_crawler:${NEWS_CRAWLER_TAG}
+        container_name: brownie_atelier_news_crawler
         # restart: always
         networks:
             - default
@@ -10,7 +10,7 @@ services:
             # - "host.docker.internal:host-gateway"         # windows上のサービスに接続する場合
             - "host.docker.internal:${HOST_OS_IP_ADDRESS}"  # wsl2上のサービスに接続する場合
         volumes:
-            - $PWD/data:$HOME/BrownieAtelier/data
+            - $PWD/data:$HOME/BrownieAtelierNewsCrawler/data
             - ${LOCAL_MONGO_KEY_DIR}:$HOME/mongo-key
         command: ${CONTAINER_START_COMMAND}
         environment:
@@ -29,13 +29,13 @@ services:
             BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__NOMAL: ${BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__NOMAL}
             # prefectの環境設定
             PREFECT_API_URL: ${PREFECT_API_URL}
-            PREFECT__API_KEY: ${PREFECT__API_KEY}
+            PREFECT__API_KEY: ${PREFECT__API_KEY}   # prefect cloudと接続する場合のみ必要。使わない場合環境変数に空白を設定。
             PREFECT__WORK_SPACE: ${PREFECT__WORK_SPACE}
             PREFECT__WORK_POOL: ${PREFECT__WORK_POOL}
             # PREFECT_LOGGING_LEVEL: "INFO"
             # PREFECT_LOGGING_SERVER_LEVEL: "INFO"
             # PREFECT_LOGGING_INTERNAL_LEVEL: "INFO"
-            PREFECT__DATA: "/home/${CONTAINER_USER}/BrownieAtelier/data"
+            PREFECT__DATA: "/home/${CONTAINER_USER}/BrownieAtelierNewsCrawler/data"
             # Scrapyの環境設定
             # SCRAPY_SETTINGS_MODULE: "news_crawl.settings"
             SCRAPY__LOG_LEVEL: ${SCRAPY__LOG_LEVEL}

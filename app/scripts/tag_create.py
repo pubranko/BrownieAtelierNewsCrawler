@@ -12,7 +12,7 @@ from typing import Union
 このNEXT_TAGを使用し、docker imageをビルドさせる。
 
 
-appイメージのtagのナンバリングについて
+new_crawlerイメージのtagのナンバリングについて
 例）1.2.3
 1.メジャーバージョン (Major Version):
     メジャーバージョンは、大規模な変更や互換性のない変更があった場合に上げられます。
@@ -32,7 +32,7 @@ appイメージのtagのナンバリングについて
 baseイメージのtagのナンバリングについて
 例）16.1
 1.メジャーバージョン (Major Version)、2.マイナーバージョン (Minor Version)のみとする。
-内容は上記appイメージと同様
+内容は上記new_crawlerイメージと同様
 """
 
 def init_check(

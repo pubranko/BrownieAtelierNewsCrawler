@@ -2,12 +2,12 @@ services:
     brownie_atelier_news_crawler:
         build:
             context: .
-            dockerfile: dockerfile_app
+            dockerfile: dockerfile
             args:
-                ## dockerfile_appで参照するbase側のイメージタグ
+                ## dockerfileで参照するbase側のイメージタグ
                 BASE_TAG: ${BASE_TAG}
                 # コンテナ内の一般ユーザー、パスワード
                 CONTAINER_USER: ${CONTAINER_USER}
                 # ブラウニー工房のgitリモートリポジトリーのブランチ
                 GIT_BRANCH: ${GIT_BRANCH}
-        image: brownie_atelier_news_crawler:${APP_TAG}
+        image: brownie_atelier_news_crawler:${NEWS_CRAWLER_TAG}
