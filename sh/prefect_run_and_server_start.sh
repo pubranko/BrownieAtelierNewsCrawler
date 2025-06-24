@@ -13,8 +13,8 @@ echo "Prefect home: $PREFECT_HOME"
 echo "API URL: $PREFECT_API_URL"
 echo "Work pool: $PREFECT__WORK_POOL"
 
-# Prefect Serverをデタッチモードで起動
-prefect server start --detach
+# Prefect Serverをバックグラウンドで起動
+prefect server start &
 
 # サーバー起動待機（5秒）
 sleep 5
