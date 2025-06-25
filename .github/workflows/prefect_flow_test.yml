@@ -102,7 +102,7 @@ jobs:
         # new_crawlerイメージ作成
         run: |
           export BASE_TAG=${{ vars.BASE_TAG }}
-          docker compose -f docker-compose__new-crawler-image-build.yml build
+          docker compose -f docker-compose__news-crawler-image-build.yml build
           docker images
 
       - name: new_crawlerイメージに別名のタグを付与 ※リポジトリ名を小文字に変換
@@ -259,7 +259,7 @@ jobs:
         # 各種フローテスト
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_01.py"
-          docker compose -f docker-compose__new-crawler-container.yml up --abort-on-container-exit
+          docker compose -f docker-compose__news-crawler-container.yml up --abort-on-container-exit
           exit_code=$?
           exit $exit_code
 
@@ -268,7 +268,7 @@ jobs:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_02.py"
-          docker compose -f docker-compose__new-crawler-container.yml up --abort-on-container-exit
+          docker compose -f docker-compose__news-crawler-container.yml up --abort-on-container-exit
           exit_code=$?
           exit $exit_code
 
@@ -277,7 +277,7 @@ jobs:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_03.py"
-          docker compose -f docker-compose__new-crawler-container.yml up --abort-on-container-exit
+          docker compose -f docker-compose__news-crawler-container.yml up --abort-on-container-exit
           exit_code=$?
           exit $exit_code
 
@@ -286,7 +286,7 @@ jobs:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_04.py"
-          docker compose -f docker-compose__new-crawler-container.yml up --abort-on-container-exit
+          docker compose -f docker-compose__news-crawler-container.yml up --abort-on-container-exit
           exit_code=$?
           exit $exit_code
 
@@ -295,7 +295,7 @@ jobs:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_05.py"
-          docker compose -f docker-compose__new-crawler-container.yml up --abort-on-container-exit
+          docker compose -f docker-compose__news-crawler-container.yml up --abort-on-container-exit
           exit_code=$?
           exit $exit_code
 
@@ -304,7 +304,7 @@ jobs:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_06.py"
-          docker compose -f docker-compose__new-crawler-container.yml up --abort-on-container-exit
+          docker compose -f docker-compose__news-crawler-container.yml up --abort-on-container-exit
           exit_code=$?
           exit $exit_code
 
@@ -313,7 +313,7 @@ jobs:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_07.py"
-          docker compose -f docker-compose__new-crawler-container.yml up --abort-on-container-exit
+          docker compose -f docker-compose__news-crawler-container.yml up --abort-on-container-exit
           exit_code=$?
           exit $exit_code
 
@@ -322,7 +322,7 @@ jobs:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_08.py"
-          docker compose -f docker-compose__new-crawler-container.yml up --abort-on-container-exit
+          docker compose -f docker-compose__news-crawler-container.yml up --abort-on-container-exit
           exit_code=$?
           exit $exit_code
 

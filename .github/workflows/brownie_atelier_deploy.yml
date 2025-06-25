@@ -147,7 +147,7 @@ jobs:
           export BASE_TAG=${{ vars.BASE_TAG }}
           export NEWS_CRAWLER_TAG=${{ env.NEWS_CRAWLER_TAG }}
           export DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
-          docker compose -f docker-compose__new-crawler-image-build.yml build
+          docker compose -f docker-compose__news-crawler-image-build.yml build
           docker tag brownie_atelier_news_crawler:${{ env.NEWS_CRAWLER_TAG }} ${{ secrets.DOCKER_HUB_USERNAME }}/brownie_atelier_news_crawler:${{ env.NEWS_CRAWLER_TAG }}
           docker images
 
@@ -186,7 +186,7 @@ jobs:
       #     TZ: ${{ vars.TZ}}
       #   run: |
       #     export PREFECT_RUN_SCRIPT="prefect_lib/deployments/flows_register.py"
-      #     docker compose -f docker-compose__new-crawler-container.yml up --abort-on-container-exit
+      #     docker compose -f docker-compose__news-crawler-container.yml up --abort-on-container-exit
       #     exit_code=$?
       #     exit $exit_code
 
