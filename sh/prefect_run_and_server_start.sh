@@ -22,4 +22,5 @@ sleep 5
 # フロー実行
 # prefect deployment run --name YOUR_DEPLOYMENT_NAME --project my-project
 cd app
+export PYTHONPATH=$PWD:$PYTHONPATH
 python prefect_lib/batch_exec/scraper_info_uploader_exec.py
