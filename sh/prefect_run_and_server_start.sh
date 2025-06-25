@@ -19,6 +19,6 @@ prefect server start &
 # サーバー起動待機（5秒）
 sleep 5
 
-# フロー実行（deployment名は適宜変更）
-prefect deployment run --name YOUR_DEPLOYMENT_NAME --project my-project
-あとで
+# フロー実行
+# prefect deployment run --name YOUR_DEPLOYMENT_NAME --project my-project
+python prefect_lib/batch_exec/scraper_info_uploader_exec.py
