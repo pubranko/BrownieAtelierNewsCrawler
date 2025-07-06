@@ -41,6 +41,8 @@ services:
             SCRAPY__LOG_LEVEL: ${SCRAPY__LOG_LEVEL}
             # github actions unit testのスクリプトで使用
             PREFECT_RUN_SCRIPT: ${PREFECT_RUN_SCRIPT}
+            # prefect server起動後のスリープタイム
+            SLEEP_TIME_AFTER_PREFECT_SERVER_STARTUP: 10
 
 # 既存のネットワークbrownie-atelier-netを利用する。
 networks:
