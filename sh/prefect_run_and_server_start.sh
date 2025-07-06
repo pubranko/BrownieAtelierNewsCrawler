@@ -17,7 +17,7 @@ echo "Work pool: $PREFECT__WORK_POOL"
 prefect server start &
 
 # サーバー起動待機（5秒）
-sleep 5
+sleep 10
 
 # フロー実行
 # prefect deployment run --name YOUR_DEPLOYMENT_NAME --project my-project
