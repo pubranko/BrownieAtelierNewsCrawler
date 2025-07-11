@@ -13,8 +13,10 @@ echo "Prefect home: $PREFECT_HOME"
 echo "API URL: $PREFECT_API_URL"
 echo "Work pool: $PREFECT__WORK_POOL"
 
-# Prefectのコンフィグ設定
-prefect config set PREFECT_API_URL=$PREFECT_API_URL
+export
+cd /home/common_user/mongo-key
+ls -la
+cd ~/BrownieAtelierNewsCrawler
 
 # Prefect Serverをバックグラウンドで起動
 prefect server start &
