@@ -5,7 +5,7 @@
 # python仮想環境を有効化
 cd $PWD
 . .venv/bin/activate
-export PREFECT_API_URL="http://127.0.0.1:4200/api"
+# export PREFECT_API_URL="http://127.0.0.1:4200/api"
 
 echo "Python path: $(which python)"
 echo "Current dir: $PWD"

@@ -1,6 +1,6 @@
 services:
 
-    brownie_atelier:
+    brownie_atelier_news_crawler:
         image: brownie_atelier_news_crawler:${NEWS_CRAWLER_TAG}
         container_name: brownie_atelier_news_crawler
         # restart: always
