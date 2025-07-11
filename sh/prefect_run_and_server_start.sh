@@ -13,14 +13,16 @@ echo "Prefect home: $PREFECT_HOME"
 echo "API URL: $PREFECT_API_URL"
 echo "Work pool: $PREFECT__WORK_POOL"
 
+# Prefectのコンフィグ設定
+prefect config set PREFECT_API_URL=$PREFECT_API_URL
+
 # Prefect Serverをバックグラウンドで起動
 prefect server start &
 
 # サーバー起動待機（5秒）
 sleep $SLEEP_TIME_AFTER_PREFECT_SERVER_STARTUP
 
-# フロー実行
-# prefect deployment run --name YOUR_DEPLOYMENT_NAME --project my-project
+echo "フロー実行"
 cd app
 export PYTHONPATH=$PWD:$PYTHONPATH
 python prefect_lib/batch_exec/scraper_info_uploader_exec.py
