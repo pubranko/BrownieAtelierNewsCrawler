@@ -72,14 +72,14 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.PATH_CACHE }}
-          key: ${{ runner.os }}-brownie_atelier_news_crawler_base-${{ vars.BASE_TAG }}
+          key: ${{ runner.os }}-brownie-atelier-news-crawler-base-${{ vars.BASE_TAG }}
 
       # キャッシュがある場合は tar をdockerにロードしてイメージに追加
       - name: base用キャッシュがある場合は tar をロードしてイメージ一覧に追加
         if: steps.base_image_cache.outputs.cache-hit == 'true'
         run: |
           ls -l ${{ env.PATH_CACHE }}
-          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_news_crawler_base-${{ vars.BASE_TAG }}.tar
+          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie-atelier-news-crawler-base-${{ vars.BASE_TAG }}.tar
           docker images
 
       - name: baseイメージがキャッシュにない場合にbuildとsave(キャッシュ)を実行
@@ -90,7 +90,7 @@ jobs:
           export GIT_BRANCH=develop
           export BASE_TAG=${{ vars.BASE_TAG }}
           docker compose -f docker-compose__base-image-build.yml build
-          docker save brownie_atelier_news_crawler_base:${{ vars.BASE_TAG }} -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_news_crawler_base-${{ vars.BASE_TAG }}.tar
+          docker save brownie-atelier-news-crawler-base:${{ vars.BASE_TAG }} -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie-atelier-news-crawler-base-${{ vars.BASE_TAG }}.tar
           ls -l ${{ env.PATH_CACHE }}
           docker images
 
@@ -108,7 +108,7 @@ jobs:
       - name: new_crawlerイメージに別名のタグを付与 ※リポジトリ名を小文字に変換
         run: |
           REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          docker tag brownie_atelier_news_crawler:${{ env.NEWS_CRAWLER_TAG }}  ghcr.io/${REPO_NAME}/brownie_atelier_news_crawler:${{ env.NEWS_CRAWLER_TAG }}
+          docker tag brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}  ghcr.io/${REPO_NAME}/brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}
 
       - name: new_crawlerイメージをコンテナーレジストリーにログイン
         uses: docker/login-action@v3
@@ -120,7 +120,7 @@ jobs:
       - name: new_crawlerイメージをコンテナーレジストリーにプッシュ
         run: |
           REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          docker push ghcr.io/${REPO_NAME}/brownie_atelier_news_crawler:${{ env.NEWS_CRAWLER_TAG }}
+          docker push ghcr.io/${REPO_NAME}/brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}
 
   ########################################
   # テスト本体
@@ -242,12 +242,12 @@ jobs:
       - name: new_crawlerイメージをプル
         run: |
           REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          docker pull ghcr.io/${REPO_NAME}/brownie_atelier_news_crawler:${{ env.NEWS_CRAWLER_TAG }}
+          docker pull ghcr.io/${REPO_NAME}/brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}
 
       - name: new_crawlerイメージに別名のタグを付与
         run: |
           REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          docker tag ghcr.io/${REPO_NAME}/brownie_atelier_news_crawler:${{ env.NEWS_CRAWLER_TAG }}  brownie_atelier_news_crawler:${{ env.NEWS_CRAWLER_TAG }}
+          docker tag ghcr.io/${REPO_NAME}/brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}  brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}
           docker images
 
       #################################################

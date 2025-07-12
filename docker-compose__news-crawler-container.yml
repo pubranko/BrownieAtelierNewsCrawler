@@ -1,8 +1,8 @@
 services:
 
-    brownie_atelier_news_crawler:
-        image: brownie_atelier_news_crawler:${NEWS_CRAWLER_TAG}
-        container_name: brownie_atelier_news_crawler
+    brownie-atelier-news-crawler:
+        image: brownie-atelier-news-crawler:${NEWS_CRAWLER_TAG}
+        container_name: brownie-atelier-news-crawler
         # restart: always
         networks:
             - default
@@ -11,7 +11,7 @@ services:
             - "host.docker.internal:${HOST_OS_IP_ADDRESS}"  # wsl2上のサービスに接続する場合
         volumes:
             - $PWD/data:$HOME/BrownieAtelierNewsCrawler/data
-            - ${LOCAL_MONGO_KEY_DIR}:$HOME/mongo-key
+            - ${LOCAL_MONGO_KEY_DIR}:/home/common_user/mongo-key
         command: ${CONTAINER_START_COMMAND}
         environment:
             # mongoDB接続情報

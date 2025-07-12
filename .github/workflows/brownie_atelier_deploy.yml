@@ -110,14 +110,14 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.PATH_CACHE }}
-          key: ${{ runner.os }}-brownie_atelier_news_crawler_base-${{ vars.BASE_TAG }}
+          key: ${{ runner.os }}-brownie-atelier-news-crawler-base-${{ vars.BASE_TAG }}
 
       # キャッシュがある場合は tar をdockerにロードしてイメージに追加
       - name: base用キャッシュがある場合は tar をロードしてイメージ一覧に追加
         if: steps.base_image_cache.outputs.cache-hit == 'true'
         run: |
           ls -l ${{ env.PATH_CACHE }}
-          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_news_crawler_base-${{ vars.BASE_TAG }}.tar
+          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie-atelier-news-crawler-base-${{ vars.BASE_TAG }}.tar
           docker images
 
       - name: baseイメージがキャッシュにない場合にbuildとsave(キャッシュ)を実行
@@ -128,7 +128,7 @@ jobs:
           export GIT_BRANCH=develop
           export BASE_TAG=${{ vars.BASE_TAG }}
           docker compose -f docker-compose__base-image-build.yml build
-          docker save brownie_atelier_news_crawler_base:${{ vars.BASE_TAG }} -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_news_crawler_base-${{ vars.BASE_TAG }}.tar
+          docker save brownie-atelier-news-crawler-base:${{ vars.BASE_TAG }} -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie-atelier-news-crawler-base-${{ vars.BASE_TAG }}.tar
           ls -l ${{ env.PATH_CACHE }}
           docker images
 
@@ -148,7 +148,7 @@ jobs:
           export NEWS_CRAWLER_TAG=${{ env.NEWS_CRAWLER_TAG }}
           export DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
           docker compose -f docker-compose__news-crawler-image-build.yml build
-          docker tag brownie_atelier_news_crawler:${{ env.NEWS_CRAWLER_TAG }} ${{ secrets.DOCKER_HUB_USERNAME }}/brownie_atelier_news_crawler:${{ env.NEWS_CRAWLER_TAG }}
+          docker tag brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }} ${{ secrets.DOCKER_HUB_USERNAME }}/brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}
           docker images
 
       #################################################
@@ -165,12 +165,12 @@ jobs:
       # dockerhubへpush
       - name: push - dockerhub
         run: |
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/brownie_atelier_news_crawler:${{ env.NEWS_CRAWLER_TAG}}
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG}}
 
       ########################################################################
-      # brownie_atelier_news_crawler起動時にdockerネットワークが必要であるため便宜上作成
+      # brownie-atelier-news-crawler起動時にdockerネットワークが必要であるため便宜上作成
       ########################################################################
-      - name: brownie_atelier_news_crawler起動用にdockerネットワークを作成
+      - name: brownie-atelier-news-crawler起動用にdockerネットワークを作成
         run: docker network create brownie-atelier-net
   
       ##########################################################################################################

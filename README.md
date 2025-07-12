@@ -108,7 +108,7 @@
 ## プロジェクトで作成/使用するdockerリポジトリ一覧
 | No. | イメージ名                        | コンテナー名         | イメージリポジトリリンク                      | イメージリポジト補足説明                                |
 | :-- | :------------------------------- | :------------------ | :------------------------------------------ | :---------------------------------------------------- |
-| 1   | mikuras/brownie_atelier_news_crawler:0.15 | Brownie-atelier-news-crawler | https://hub.docker.com/repositories/mikuras | ブラウニー工房のアプリをUbuntu22.04へ格納したイメージ    |
+| 1   | mikuras/brownie-atelier-news-crawler:0.15 | Brownie-atelier-news-crawler | https://hub.docker.com/repositories/mikuras | ブラウニー工房のアプリをUbuntu22.04へ格納したイメージ    |
 | 2   | mongo:7.0.4-jammy                | mongo-azure-db      | https://hub.docker.com/_/mongo              | MongoDB公式イメージ                                   |
 
 [目次へ戻る](#目次)

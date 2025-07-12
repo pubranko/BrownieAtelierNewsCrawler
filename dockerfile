@@ -1,5 +1,5 @@
 ARG BASE_TAG
-FROM brownie_atelier_news_crawler_base:${BASE_TAG}
+FROM brownie-atelier-news-crawler-base:${BASE_TAG}
 
 #LABELでメタ情報を入れることができる
 LABEL maintainer="BrownieAtelierNewsCrawler"
