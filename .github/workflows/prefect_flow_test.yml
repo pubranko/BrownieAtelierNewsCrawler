@@ -87,7 +87,7 @@ jobs:
         # git branchにはdevelopを固定で割り当てとする。 new_crawlerイメージ作成側で修正中のブランチやmaster等を適用する運用とする。 
         run: |
           mkdir ${{ env.PATH_CACHE }}
-          export GIT_BRANCH=develop
+          export GIT_BRANCH=${{ env.GIT_BRANCH }}
           export BASE_TAG=${{ vars.BASE_TAG }}
           docker compose -f docker-compose__base-image-build.yml build
           docker save brownie-atelier-news-crawler-base:${{ vars.BASE_TAG }} -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie-atelier-news-crawler-base-${{ vars.BASE_TAG }}.tar
