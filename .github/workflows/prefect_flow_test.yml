@@ -174,11 +174,8 @@ jobs:
         HOST_OS_IP_ADDRESS: 192.0.0.1
         # dummy
         PREFECT_HOME: /home/common_user/BrownieAtelierNewsCrawler/data/prefect_data # コンテナー内のディレクトリ構成
-        PREFECT_API_URL: ${{secrets.PREFECT_API_URL}}
-        PREFECT__API_KEY:
-        PREFECT__WORK_SPACE:
-        PREFECT__WORK_POOL:
-        SLEEP_TIME_AFTER_PREFECT_SERVER_STARTUP: 20
+        PREFECT_API_URL: http://127.0.0.1:4200/api
+        SLEEP_TIME_AFTER_PREFECT_SERVER_STARTUP: ${{ vars.SLEEP_TIME_AFTER_PREFECT_SERVER_STARTUP}}
         SCRAPY__LOG_LEVEL: INFO
 
         # Docker イメージの tar アーカイブ出力先のパス
