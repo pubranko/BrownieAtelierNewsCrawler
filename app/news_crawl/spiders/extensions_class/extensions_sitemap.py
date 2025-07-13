@@ -1,6 +1,6 @@
 import pickle
 from datetime import datetime, timedelta
-from typing import Any, Final, Optional
+from typing import Any, Final, Optional, cast, Callable
 from urllib.parse import unquote
 
 import scrapy
@@ -171,7 +171,8 @@ class ExtensionsSitemapSpider(SitemapSpider):
 
         self.pagination_check = PaginationCheck()
 
-    def start_requests(self):
+    # def start_requests(self):
+    async def start(self):
         """(オーバーライド)
         引数にdirect_crawl_urlsがある場合、sitemapを無視して渡されたurlsをクロールさせる機能を追加。
         また通常版とselenium版の切り替え機能を追加。
@@ -197,7 +198,7 @@ class ExtensionsSitemapSpider(SitemapSpider):
                         },
                     )
                 else:
-                    yield scrapy.Request(url=loc, callback=self.parse)
+                    yield scrapy.Request(url=loc, callback= cast(Callable, self.parse))
 
         else:
             for url in self.sitemap_urls:
@@ -420,7 +421,7 @@ class ExtensionsSitemapSpider(SitemapSpider):
                     SplashRequest(url=url, callback=self.parse, meta=meta, args=args)
                 )
             else:
-                req.append(scrapy.Request(url=url, callback=self.parse))
+                req.append(scrapy.Request(url=url, callback= cast(Callable,self.parse)))
         yield from req
 
         # クロール時のスパイダーのバージョン情報を記録 ( ex: 'sankei_com_sitemap:1.0 / extensions_sitemap:1.0' )
@@ -488,7 +489,7 @@ class ExtensionsSitemapSpider(SitemapSpider):
 
         for link in unknown_links:
             # 相対パスの場合絶対パスへ変換。また%エスケープされたものはUTF-8へ変換
-            link_url: str = unquote(response.urljoin(link))
+            link_url: str = unquote(response.urljoin(str(link)))
             # リンクのurlがsitemapで対象としたurlの別ページ、かつ、既知のページネーションで
             # 抽出されていなかった場合リクエストへ追加
             if self.pagination_check.check(

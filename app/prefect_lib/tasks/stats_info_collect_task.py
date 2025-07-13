@@ -5,6 +5,7 @@ from BrownieAtelierMongo.collection_models.crawler_logs_model import \
     CrawlerLogsModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from prefect import get_run_logger, task
+from prefect.cache_policies import NO_CACHE
 from prefect_lib.data_models.stats_info_collect_data import \
     StatsInfoCollectData
 from prefect_lib.data_models.stats_info_collect_input import \
@@ -14,7 +15,7 @@ from pymongo.cursor import Cursor
 from shared.timezone_recovery import timezone_recovery
 
 
-@task
+@task(cache_policy=NO_CACHE)
 def stats_info_collect_task(
     mongo: MongoModel, stats_info_collect_input: StatsInfoCollectInput
 ) -> StatsInfoCollectData:

@@ -9,6 +9,7 @@ from BrownieAtelierMongo.collection_models.news_clip_master_model import \
 from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
     ScrapedFromResponseModel
 from prefect import get_run_logger, task
+from prefect.cache_policies import NO_CACHE
 from prefect_lib.common_module.scraped_record_error_check import \
     scraped_record_error_check
 from prefect_lib.flows import START_TIME
@@ -16,7 +17,7 @@ from pymongo import ASCENDING
 from pymongo.cursor import Cursor
 
 
-@task
+@task(cache_policy=NO_CACHE)
 def news_clip_master_save_task(
     mongo: MongoModel,
     domain: Optional[str],

@@ -1,5 +1,5 @@
 from datetime import date
-from prefect.testing.utilities import prefect_test_harness
+# from prefect.testing.utilities import prefect_test_harness
 from BrownieAtelierMongo.collection_models.asynchronous_report_model import \
     AsynchronousReportModel
 from BrownieAtelierMongo.collection_models.controller_model import \
@@ -18,25 +18,26 @@ from prefect_lib.flows.mongo_export_selector_flow import \
     mongo_export_selector_flow
 
 
+# def test_exec():
 def test_exec():
-    with prefect_test_harness():
+    # with prefect_test_harness():
 
-        mongo_export_selector_flow(
-            collections_name=[
-                CrawlerResponseModel.COLLECTION_NAME,
-                ScrapedFromResponseModel.COLLECTION_NAME,  # 通常運用では不要なバックアップとなるがテスト用に実装している。
-                NewsClipMasterModel.COLLECTION_NAME,
-                CrawlerLogsModel.COLLECTION_NAME,
-                AsynchronousReportModel.COLLECTION_NAME,
-                ControllerModel.COLLECTION_NAME,
-                StatsInfoCollectModel.COLLECTION_NAME,
-            ],
-            prefix="test20241208",  # export先のフォルダyyyy-mmの先頭に拡張した名前を付与する。
-            suffix="test3",
-            period_date_from=date(2024,12,1),  # 月次エクスポートを行うデータの基準年月
-            period_date_to=date(2024,12,8),  # 月次エクスポートを行うデータの基準年月
-            crawler_response__registered=True,  # crawler_responseの場合、登録済みになったレコードのみエクスポートする場合True、登録済み以外のレコードも含めてエクスポートする場合False
-        )
+    mongo_export_selector_flow(
+        collections_name=[
+            # CrawlerResponseModel.COLLECTION_NAME,
+            # ScrapedFromResponseModel.COLLECTION_NAME,  # 通常運用では不要なバックアップとなるがテスト用に実装している。
+            NewsClipMasterModel.COLLECTION_NAME,
+            # CrawlerLogsModel.COLLECTION_NAME,
+            # AsynchronousReportModel.COLLECTION_NAME,
+            # ControllerModel.COLLECTION_NAME,
+            # StatsInfoCollectModel.COLLECTION_NAME,
+        ],
+        prefix="",  # export先のフォルダyyyy-mmの先頭に拡張した名前を付与する。
+        suffix="",
+        period_date_from=date(2025,6,14),  # 月次エクスポートを行うデータの基準年月日
+        period_date_to=date(2025,6,14),  # 月次エクスポートを行うデータの基準年月日
+        crawler_response__registered=True,  # crawler_responseの場合、登録済みになったレコードのみエクスポートする場合True、登録済み以外のレコードも含めてエクスポートする場合False
+    )
 
 if __name__ == "__main__":
     test_exec()

@@ -1,7 +1,7 @@
 import time
 import urllib.parse
 from datetime import datetime
-from typing import Any
+from typing import Any, cast, Callable
 
 import scrapy
 from dateutil import parser
@@ -182,7 +182,7 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
         for _ in self.crawl_urls_list:
             yield scrapy.Request(
                 response.urljoin(_[self.CRAWL_POINT__LOC]),
-                callback=self.parse_news,
+                callback=cast(Callable, self.parse_news),
             )
 
         # 次回向けに1ページ目の5件をcontrollerへ保存する
@@ -325,7 +325,7 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
         for _ in self.crawl_urls_list:
             yield scrapy.Request(
                 response.urljoin(_[self.CRAWL_POINT__LOC]),
-                callback=self.parse_news,
+                callback=cast(Callable, self.parse_news),
             )
 
         # 次回向けに1ページ目の5件をcontrollerへ保存する

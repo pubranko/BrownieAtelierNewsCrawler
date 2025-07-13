@@ -84,10 +84,10 @@ if not (prefect_api_url):
 #     path = os.getcwd()
 # elif prefect_api_url.startswith("http://0.0.0.0"):
 #     # ローカルコンテナー開発環境用の場合
-#     path = f'/home/{str(config("CONTAINER_USER"))}/BrownieAtelier/app'
+#     path = f'/home/{str(config("CONTAINER_USER"))}/BrownieAtelierNewsCrawler/app'
 # else:
 #     # コンテナー内で実行する際のカレントディレクトリ
-#     path = f'/home/{str(config("CONTAINER_USER"))}/BrownieAtelier/app'
+#     path = f'/home/{str(config("CONTAINER_USER"))}/BrownieAtelierNewsCrawler/app'
 path = current_dir
 print(f"=== {path = }")
 

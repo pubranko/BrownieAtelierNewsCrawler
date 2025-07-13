@@ -13,12 +13,7 @@ ARG GIT_BRANCH
 ARG GECKO_DRIVER
 
 #LABELでメタ情報を入れることができる
-LABEL maintainer="BrownieAtelier-base-test"
-
-###################
-# pipenv用の環境変数
-###################
-ENV PIPENV_VENV_IN_PROJECT 1
+LABEL maintainer="BrownieAtelierNewsCrawlerBase"
 
 ###################
 # タイムゾーン設定
@@ -31,7 +26,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 ############################################################
 # リポジトリ一覧を更新、インストール済みのパッケージ更新
 # 必要なアプリをインストール
-RUN apt update && apt update && apt -y upgrade
+RUN apt update
 RUN apt -y install build-essential libssl-dev wget sudo git software-properties-common
 
 # deb版firefoxをインストールするための設定
@@ -52,7 +47,7 @@ RUN apt -y install python3.10-venv
 RUN apt -y install python3-pip
 RUN apt -y install python3-selenium
 RUN pip install --upgrade pip
-RUN pip install pipenv
+# RUN pip install uv
 
 # 更新時に使われたが、その後不要となったものの一括削除
 # キャッシュされているがインストールされていないdebファイルを削除
@@ -75,9 +70,9 @@ RUN echo ${CONTAINER_USER}':'${CONTAINER_USER_PASS} | chpasswd
 RUN echo 'Defaults visiblepw' >> /etc/sudoers
 RUN echo ${CONTAINER_USER}' ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-#############################
-# BrownieAtelierインストール
-#############################
+##########################################
+# BrownieAtelierNewsCrawlerインストール
+##########################################
 # アプリ用ディレクトリ作成
 WORKDIR /home/${CONTAINER_USER}
 
@@ -94,17 +89,17 @@ RUN git config --global user.name "kari Name"
 # git clone (サブモジュールごとクローンする)
 RUN git clone --recursive ${GIT_REMOTE_REPOSITORY} -b "${GIT_BRANCH}"
 # リポジトリの所有権でエラーが出ないように例外をコンフィグに登録
-RUN git config --global --add safe.directory /home/${CONTAINER_USER}/BrownieAtelier
+RUN git config --global --add safe.directory /home/${CONTAINER_USER}/BrownieAtelierNewsCrawler
 
 # 仮想環境作成ディレクトリ
-WORKDIR /home/${CONTAINER_USER}/BrownieAtelier
+WORKDIR /home/${CONTAINER_USER}/BrownieAtelierNewsCrawler
 # 仮想環境を作成
-RUN python3 -m pipenv --python 3.10
-# 仮想環境を有効化
-# RUN python3 -m pipenv shell
-# RUN "." .venv/bin/activate
-# Pipfile.lockからインストール
-RUN python3 -m pipenv sync
+RUN python3.10 -m venv .venv
+# 仮想環境内にuvをインストール
+RUN .venv/bin/pip install uv
+
+# uv.lockから依存パッケージをインストール
+RUN .venv/bin/uv sync --frozen
 RUN .venv/bin/pip list
 
 # mongoDB接続用ca/pemファイルの格納ディレクトリ作成

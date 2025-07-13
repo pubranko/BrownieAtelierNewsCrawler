@@ -1,20 +1,20 @@
 from datetime import datetime
-from prefect.testing.utilities import prefect_test_harness
+# from prefect.testing.utilities import prefect_test_harness
 from prefect_lib.flows.manual_scrapying_flow import manual_scrapying_flow
 from shared.settings import TIMEZONE
 
 def test_exec():
-    with prefect_test_harness():
+#     with prefect_test_harness():
 
-        manual_scrapying_flow(
-            # domain='sankei_com_sitemap',
-            # domain="nikkei.com",
-            target_start_time_from=datetime(2024, 10, 12, 0, 0, 0, 0).astimezone(TIMEZONE),
-            target_start_time_to=datetime(2024, 10, 12, 23, 45, 0, 0).astimezone(TIMEZONE),
-            urls=None,
-            following_processing_execution=True,
-            # following_processing_execution=False,
-        )
+    manual_scrapying_flow(
+        # domain='sankei_com_sitemap',
+        # domain="nikkei.com",
+        target_start_time_from=datetime(2025, 6, 14, 0, 0, 0, 0).astimezone(TIMEZONE),
+        target_start_time_to=datetime(2025, 6, 14, 23, 0, 0, 0).astimezone(TIMEZONE),
+        urls=None,
+        # following_processing_execution=True,
+        following_processing_execution=False,
+    )
 
 if __name__ == "__main__":
     test_exec()

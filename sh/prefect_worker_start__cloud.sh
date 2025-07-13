@@ -3,7 +3,7 @@
 # prefect cloud
 ##############################
 # python仮想環境を有効化
-# cd $HOME/BrownieAtelier/
+# cd $HOME/BrownieAtelierNewsCrawler/
 . .venv/bin/activate
 which python
 echo $PWD
@@ -20,5 +20,5 @@ prefect cloud logout
 prefect cloud login --key $PREFECT__API_KEY --workspace $PREFECT__WORK_SPACE
 
 # prefectワーカー起動
-cd $HOME/BrownieAtelier/app
+cd $HOME/BrownieAtelierNewsCrawler/app
 prefect worker start --pool $PREFECT__WORK_POOL

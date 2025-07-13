@@ -8,10 +8,12 @@ from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import \
 from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import \
     ScraperInfoByDomainConst
 from prefect import get_run_logger, task
+from prefect.cache_policies import NO_CACHE
 from pydantic import ValidationError
 from shared.settings import DATA__SCRAPER_INFO_BY_DOMAIN_DIR
 
-@task
+
+@task(cache_policy=NO_CACHE)
 def scraper_info_by_domain_task(scraper_info_by_domain_files: list, mongo: MongoModel):
     logger = get_run_logger()  # PrefectLogAdapter
     logger.info(f"=== 引数: {scraper_info_by_domain_files}")
