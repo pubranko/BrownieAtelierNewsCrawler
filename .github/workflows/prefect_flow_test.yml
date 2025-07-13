@@ -2,9 +2,9 @@ name: Prefect Flow Test
 run-name: Prefect Flow Test!!!
 on:
     # 以下のブランチにプッシュされた際起動
-    # push:
-    #     branches:
-    #       - 'feature/**'
+    push:
+        branches:
+          - 'feature/**'
     # Githubより手動で起動
     workflow_dispatch:
 
@@ -151,7 +151,7 @@ jobs:
         LOCAL_MONGO_KEY_DIR: /tmp
 
         # docker compose command選択
-        CONTAINER_START_COMMAND: /bin/sh -c "/home/common_user/BrownieAtelierNewsCrawler/sh/github_actions_unit_test.sh"
+        CONTAINER_START_COMMAND: /bin/sh -c "/home/common_user/BrownieAtelierNewsCrawler/sh/prefect_run_and_server_start.sh"
 
         # mongoDBコンテナー一般ユーザー情報、mongoDB接続情報
         BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo-server
@@ -173,11 +173,12 @@ jobs:
         # dummy
         HOST_OS_IP_ADDRESS: 192.0.0.1
         # dummy
-        PREFECT_HOME: /home/common_user/BrownieAtelierNewsCrawler # コンテナー内のディレクトリ構成
+        PREFECT_HOME: /home/common_user/BrownieAtelierNewsCrawler/data/prefect_data # コンテナー内のディレクトリ構成
         PREFECT_API_URL:
         PREFECT__API_KEY:
         PREFECT__WORK_SPACE:
         PREFECT__WORK_POOL:
+        SLEEP_TIME_AFTER_PREFECT_SERVER_STARTUP: 20
         SCRAPY__LOG_LEVEL: INFO
 
         # Docker イメージの tar アーカイブ出力先のパス
