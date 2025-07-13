@@ -110,7 +110,7 @@ jobs:
           REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           docker tag brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}  ghcr.io/${REPO_NAME}/brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}
 
-      - name: new_crawlerイメージをコンテナーレジストリーにログイン
+      - name: コンテナーレジストリーにログイン
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -174,7 +174,7 @@ jobs:
         HOST_OS_IP_ADDRESS: 192.0.0.1
         # dummy
         PREFECT_HOME: /home/common_user/BrownieAtelierNewsCrawler/data/prefect_data # コンテナー内のディレクトリ構成
-        PREFECT_API_URL:
+        PREFECT_API_URL: ${{secrets.PREFECT_API_URL}}
         PREFECT__API_KEY:
         PREFECT__WORK_SPACE:
         PREFECT__WORK_POOL:
@@ -233,7 +233,7 @@ jobs:
       ########################################################################
       # new_crawlerイメージをプル
       ########################################################################
-      - name: new_crawlerイメージをコンテナーレジストリーにログイン
+      - name: コンテナーレジストリーにログイン
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
