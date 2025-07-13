@@ -82,9 +82,15 @@ def dockerhub_tag_info_get(docker_hub_username: str) -> list:
     docker_repository_info_json: str = response.text
     docker_repository_info: dict = json.loads(docker_repository_info_json)
 
-    images_info: list[dict] = docker_repository_info["results"]
+    # 'results'キーがない場合（新規リポジトリ）は空リストとする
+    images_info: list[dict] = docker_repository_info.get("results", [])
     tags_product: list = []
     pattern = r"^\d*\.\d*\.\d*$"  # nn.nn.nn の形式
+
+    # base_tagはグローバル変数ではないため、引数で渡す必要がある
+    # 既存の呼び出し側でbase_tagを渡すように修正する必要があるが、
+    # ここではbase_tagが未定義の場合は全てのタグを返す
+    base_tag = os.environ.get("BASE_TAG", "")
 
     for image_info in images_info:
         if str(image_info["name"]).startswith("test-"):
@@ -93,7 +99,7 @@ def dockerhub_tag_info_get(docker_hub_username: str) -> list:
 
         elif re.match(pattern, str(image_info["name"])):
             # 本番環境用のイメージの場合
-            if str(image_info["name"]).startswith(f"{base_tag}"):
+            if base_tag and str(image_info["name"]).startswith(f"{base_tag}"):
                 tags_product.append(image_info["name"])
 
     return tags_product
@@ -104,7 +110,7 @@ def tag_create(mode: str, tags_product: list[str], base_tag: str) -> str:
     #################################################
     # docker hub上での現在の最大バージョンを求める。
     #################################################
-    max_tag: dict[str, int] = {"major": 0, "minor": 0, "patch": 1}
+    max_tag: dict[str, int] = {"major": 0, "minor": 0, "patch": 0}
     for tag in tags_product:
         product_major, product_minor, product_patch = tag.split(".")
 
