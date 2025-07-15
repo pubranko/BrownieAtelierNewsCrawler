@@ -111,7 +111,6 @@ def tag_create(mode: str, tags_product: list[str], base_tag: str) -> str:
     # docker hub上での現在の最大バージョンを求める。
     #################################################
     max_tag: dict[str, int] = {"major": 0, "minor": 0, "patch": 0}
-    first_base_tag: bool = False if tags_product else True
     for tag in tags_product:
         product_major, product_minor, product_patch = tag.split(".")
 
