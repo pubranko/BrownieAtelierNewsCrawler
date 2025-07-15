@@ -1,6 +1,6 @@
-# Brawnie Atlier（ブラウニー工房）
+# Brownie Atelier News Crawler（ブラウニー工房・ニュースクローラー）
 ## 目次
-### Brawnie Atlier（ブラウニー工房）
+### Brownie Atelier News Crawler（ブラウニー工房・ニュースクローラー）
   - [システム概要](#システム概要)
   - [当資料の基準日](#当資料の基準日)
   - [主要技術](#主要技術)
