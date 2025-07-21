@@ -1,4 +1,3 @@
-from typing import Any
 from datetime import date
 
 from BrownieAtelierMongo.collection_models.asynchronous_report_model import \
@@ -71,3 +70,6 @@ def mongo_export_selector_flow(
 
     else:
         logger.error(f"=== init_taskが正常に完了しなかったため、後続タスクの実行を中止しました。")
+
+def main(**kwargs):
+    mongo_export_selector_flow(**kwargs)

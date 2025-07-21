@@ -53,3 +53,7 @@ def manual_scrapying_flow(
 
     else:
         logger.error(f"=== init_taskが正常に完了しなかったため、後続タスクの実行を中止しました。")
+
+
+def main(**kwargs):
+    manual_scrapying_flow(**kwargs)
