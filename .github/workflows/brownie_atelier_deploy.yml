@@ -58,9 +58,6 @@ jobs:
         # ホスト（ローカル）側のmongoDB接続用のcrtやpemファイルの保管ディレクトリ
         LOCAL_MONGO_KEY_DIR: /tmp
 
-        # docker-compose command選択
-        CONTAINER_START_COMMAND: /bin/sh -c "/home/common_user/BrownieAtelierNewsCrawler/sh/prefect_cloud_deploy.sh"
-
         # mongoDBコンテナー一般ユーザー情報、mongoDB接続情報
         BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo-server
         BROWNIE_ATELIER_MONGO__MONGO_PORT: 27017
@@ -163,29 +160,3 @@ jobs:
       - name: push - dockerhub
         run: |
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG}}
-
-      # ########################################################################
-      # # brownie-atelier-news-crawler起動時にdockerネットワークが必要であるため便宜上作成
-      # ########################################################################
-      # - name: brownie-atelier-news-crawler起動用にdockerネットワークを作成
-      #   run: docker network create brownie-atelier-net
-  
-      ##########################################################################################################
-      # prefect flowをprefectクラウドへデプロイ
-      # ※コンテナーの中でPrefectへのデプロイを実施しないとPrefect側に登録される
-      #   Entrypoint(cwdから見たFlowの相対パス)やPath(ユーザー名などを含むcwdまでの絶対パス)が同期がとれない状態となる。
-      #   そのため実際に動作するコンテナー内のユーザー・パスに合わせた状態でデプロイを実施している。
-      #
-      # 2026-7-15にprefect cloudが有料化されるためデプロイ機能をコメントアウト
-      ##########################################################################################################
-      # - name: "Prefect FlowをPrefectクラウドへデプロイ"
-      #   env:
-      #     TZ: ${{ vars.TZ}}
-      #   run: |
-      #     export PREFECT_RUN_SCRIPT="prefect_lib/deployments/flows_register.py"
-      #     docker compose -f docker-compose__news-crawler-container.yml up --abort-on-container-exit
-      #     exit_code=$?
-      #     exit $exit_code
-
-      # # "🍏 This job's status is success."
-      # - run: echo "🍏 Job実行後のステータス： ${{ job.status }}."

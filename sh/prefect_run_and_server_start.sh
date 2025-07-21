@@ -18,7 +18,6 @@ prefect server start &
 sleep $SLEEP_TIME_AFTER_PREFECT_SERVER_STARTUP
 
 cd app
-echo "フロー実行: $PREFECT_RUN_SCRIPT"
+echo "フロー実行"
 export PYTHONPATH=$PWD:$PYTHONPATH
-# python prefect_lib/batch_exec/scraper_info_uploader_exec.py
-python $PREFECT_RUN_SCRIPT
+python prefect_lib/batch_exec/starter.py
