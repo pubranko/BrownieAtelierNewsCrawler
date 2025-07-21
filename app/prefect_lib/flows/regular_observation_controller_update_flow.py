@@ -1,5 +1,3 @@
-from typing import Any, Final
-
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from prefect import flow, get_run_logger
 from prefect.futures import PrefectFuture
@@ -43,3 +41,7 @@ def regular_observation_controller_update_flow(
 
     else:
         logger.error(f"=== init_taskが正常に完了しなかったため、後続タスクの実行を中止しました。")
+
+
+def main(**kwargs):
+    regular_observation_controller_update_flow(**kwargs)

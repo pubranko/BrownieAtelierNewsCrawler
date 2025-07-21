@@ -45,3 +45,7 @@ def manual_news_clip_master_save_flow(
 
     else:
         logger.error(f"=== init_taskが正常に完了しなかったため、後続タスクの実行を中止しました。")
+
+
+def main(**kwargs):
+    manual_news_clip_master_save_flow(**kwargs)

@@ -1,0 +1,73 @@
+# 17時にflows配下の各フローを実行
+18:
+  - flow: prefect_lib/flows/crawl_sync_check_flow.py
+    params:
+      start_time_from: 2025-06-14T00:00:00+09:00
+      start_time_to: 2025-06-14T23:59:59+09:00
+      domain: null
+  - flow: prefect_lib/flows/manual_scrapying_flow.py
+    params:
+      target_start_time_from: 2025-06-14T00:00:00+09:00
+      target_start_time_to: 2025-06-14T23:00:00+09:00
+      urls: null
+      following_processing_execution: false
+  - flow: prefect_lib/flows/manual_news_clip_master_save_flow.py
+    params:
+      domain: null
+      target_start_time_from: 2025-07-21T00:00:00+09:00
+      target_start_time_to: 2025-07-21T23:59:00+09:00
+
+a:
+  - flow: prefect_lib/flows/mongo_export_selector_flow.py
+    params:
+      collections_name:
+        - NewsClipMaster
+      prefix: ""
+      suffix: ""
+      period_date_from: 2025-06-14
+      period_date_to: 2025-06-14
+      crawler_response__registered: true
+  - flow: prefect_lib/flows/mongo_delete_selector_flow.py
+    params:
+      collections_name:
+        - NewsClipMaster
+      period_date_from: 2025-06-14
+      period_date_to: 2025-06-14
+  - flow: prefect_lib/flows/mongo_import_selector_flow.py
+    params: {}
+b:
+  - flow: prefect_lib/flows/regular_observation_controller_update_flow.py
+    params: {}
+  - flow: prefect_lib/flows/scraper_info_uploader_flow.py
+    params: {}
+  - flow: prefect_lib/flows/scraper_pattern_report_flow.py
+    params: {}
+  - flow: prefect_lib/flows/stats_analysis_report_flow.py
+    params: {}
+  - flow: prefect_lib/flows/stats_info_collect_flow.py
+    params: {}
+  - flow: prefect_lib/flows/stop_controller_update_flow.py
+    params: {}
+
+# 3時間ごとに起動するFlowとパラメータを定義。日本時間AM3時（UAT:１８時）のみ日次処理を実行。
+c:
+  - flow: prefect_lib/flows/manual_crawling_flow.py
+    params:
+      spider_names:
+        # - sankei_com_sitemap
+        - asahi_com_sitemap
+        - kyodo_co_jp_sitemap
+        - yomiuri_co_jp_sitemap
+        - jp_reuters_com_sitemap
+        # - epochtimes_jp_crawl
+        # - mainichi_jp_crawl
+        # - nikkei_com_crawl
+      spider_kwargs:
+        debug: true
+        page_span_from: 2W
+        page_span_to: 2
+        lastmod_term_minutes_from: 90
+        lastmod_term_minutes_to: 60
+      following_processing_execution: true
+  - flow: prefect_lib/flows/scraper_pattern_report_flow.py
+    params:

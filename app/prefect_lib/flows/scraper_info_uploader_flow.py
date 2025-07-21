@@ -43,3 +43,7 @@ def scraper_info_by_domain_flow(scraper_info_by_domain_files: list = []):
             end_task(mongo)
     else:
         logger.error(f"=== init_taskが正常に完了しなかったため、後続タスクの実行を中止しました。")
+
+
+def main(**kwargs):
+    scraper_info_by_domain_flow(**kwargs)

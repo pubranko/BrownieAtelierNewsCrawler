@@ -24,6 +24,8 @@ DATA__DIRECT_CRAWL_FILES_DIR: str = os.path.join(DATA, "direct_crawl_files")
 """ダイレクトクロール用のファイルの格納先"""
 DATA__SCRAPER_INFO_BY_DOMAIN_DIR: str = os.path.join(DATA, "scraper_info_by_domain")
 """ドメイン別スクレイパーファイルの格納先"""
+DATA__INFORMATION_ON_SCHEDULED_DIR: str = os.path.join(DATA, "information_on_scheduled")
+"""スケジュール情報の格納先"""
 
 DATA__LOGIN_INFO: str = os.path.join(DATA, "login_info")
 """クロール時にログインが必要なサイトのログイン情報の格納先ディレクトリ"""
