@@ -10,6 +10,7 @@ echo "Current dir: $PWD"
 echo "Prefect home: $PREFECT_HOME"
 echo "API URL: $PREFECT_API_URL"
 echo "Work pool: $PREFECT__WORK_POOL"
+echo "Run script: $PREFECT_RUN_SCRIPT"
 
 # Prefect Serverをバックグラウンドで起動
 prefect server start &
@@ -20,4 +21,5 @@ sleep $SLEEP_TIME_AFTER_PREFECT_SERVER_STARTUP
 cd app
 echo "フロー実行"
 export PYTHONPATH=$PWD:$PYTHONPATH
-python prefect_lib/batch_exec/starter.py
+# python prefect_lib/batch_exec/starter.py
+python $PREFECT_RUN_SCRIPT
