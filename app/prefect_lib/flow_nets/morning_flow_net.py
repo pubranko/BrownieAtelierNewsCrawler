@@ -168,3 +168,7 @@ def morning_flow_net(
 
     # # 定期観測終了後コンテナーを停止させる。
     container_end_task()
+    
+
+def main(**kwargs):
+    morning_flow_net(**kwargs)
