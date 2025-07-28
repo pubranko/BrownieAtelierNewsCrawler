@@ -16,6 +16,7 @@ from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import (
     ScraperInfoByDomainConst, ScraperInfoByDomainData)
 from bs4 import BeautifulSoup as bs4
 from prefect import get_run_logger, task
+from prefect.cache_policies import NO_CACHE
 from prefect_lib.common_module.scraped_record_error_check import \
     scraped_record_error_check
 from prefect_lib.flows import START_TIME
@@ -24,7 +25,7 @@ from pymongo.cursor import Cursor
 from shared.timezone_recovery import timezone_recovery
 
 
-@task
+@task(cache_policy=NO_CACHE)
 def scrapying_task(
     mongo: MongoModel,
     domain: Optional[str],

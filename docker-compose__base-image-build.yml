@@ -1,5 +1,5 @@
 services:
-    brownie_atelier_base:
+    brownie-atelier-news-crawler-base:
         build:
             context: .
             dockerfile: dockerfile_base
@@ -17,4 +17,4 @@ services:
                 GIT_BRANCH: ${GIT_BRANCH}
                 # Firefox の gecko driver
                 GECKO_DRIVER: ${GECKO_DRIVER}
-        image: brownie_atelier_base:${BASE_TAG}
+        image: brownie-atelier-news-crawler-base:${BASE_TAG}

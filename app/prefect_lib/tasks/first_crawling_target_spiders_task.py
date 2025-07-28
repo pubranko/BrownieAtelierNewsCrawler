@@ -4,10 +4,11 @@ from BrownieAtelierMongo.collection_models.controller_model import \
     ControllerModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from prefect import get_run_logger, task
+from prefect.cache_policies import NO_CACHE
 from shared.directory_search_spiders import DirectorySearchSpiders
 
 
-@task
+@task(cache_policy=NO_CACHE)
 def first_crawling_target_spiders_task(mongo: MongoModel) -> list[dict[str, Any]]:
     """
     scrapyによるクロールを実行するための対象スパイダー情報の一覧を生成する。

@@ -12,6 +12,7 @@ from BrownieAtelierNotice import settings
 from prefect import get_run_logger, task
 from prefect.context import FlowRunContext
 from prefect_lib.flows import LOG_FILE_PATH, START_TIME
+from prefect.cache_policies import NO_CACHE
 from shared.resource_check import resource_check
 
 """
@@ -22,7 +23,7 @@ mongoDBのインポートを行う。
 """
 
 
-@task
+@task(cache_policy=NO_CACHE)
 def end_task(mongo: MongoModel):
     """Flow共通終了処理"""
 

@@ -122,7 +122,8 @@ class ExtensionsCrawlSpider(CrawlSpider):
 
         self.pagination_check = PaginationCheck()
 
-    def start_requests(self):
+    # def start_requests(self):
+    async def start(self):
         """
         一覧ページのリクエストを作成する。
         ただしダイレクトクロールの指定がある場合は一覧ページではなく実際の記事へのリクエストを直接作成する。

@@ -19,17 +19,17 @@ jobs:
     env:
         ## dockerfile_baseで参照するubuntuイメージのタグ
         UBUNTU_TAG: 22.04
-        ## # dockerfile_appで参照するbaseイメージのタグ
+        ## # dockerfileで参照するbaseイメージのタグ
         # BASE_TAG: test-0.15
-        # docker-composeで参照するappイメージのタグ。このワークフロー内ではlatest固定とする。
-        APP_TAG: latest
+        # docker-composeで参照するnew_crawlerイメージのタグ。このワークフロー内ではlatest固定とする。
+        NEWS_CRAWLER_TAG: latest
         # コンテナー内rootユーザーパスワード
         CONTAINER_ROOT_PASS: password
         # コンテナ内の一般ユーザー、パスワード
         CONTAINER_USER: common_user
         CONTAINER_USER_PASS: password
         # ブラウニー工房のgitリモートリポジトリー
-        GIT_REMOTE_REPOSITORY: https://github.com/pubranko/BrownieAtelier.git
+        GIT_REMOTE_REPOSITORY: https://github.com/pubranko/BrownieAtelierNewsCrawler.git
         # 上記リポジトリーのgitブランチ
         # GIT_BRANCH: ${{ github.ref }}
         # GIT_BRANCH: ${{github.head_ref}}
@@ -54,7 +54,7 @@ jobs:
 
       - name: ワークスペースチェック
         # テスト前チェックを確認
-        # クローン後はここにソースが格納される /home/runner/work/BrownieAtelier/BrownieAtelier
+        # クローン後はここにソースが格納される /home/runner/work/BrownieAtelierNewsCrawler/BrownieAtelierNewsCrawler
         run: |
           ls -a ${{ github.workspace }}
 
@@ -72,55 +72,55 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.PATH_CACHE }}
-          key: ${{ runner.os }}-brownie_atelier_base-${{ vars.BASE_TAG }}
+          key: ${{ runner.os }}-brownie-atelier-news-crawler-base-${{ vars.BASE_TAG }}
 
       # キャッシュがある場合は tar をdockerにロードしてイメージに追加
       - name: base用キャッシュがある場合は tar をロードしてイメージ一覧に追加
         if: steps.base_image_cache.outputs.cache-hit == 'true'
         run: |
           ls -l ${{ env.PATH_CACHE }}
-          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ vars.BASE_TAG }}.tar
+          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie-atelier-news-crawler-base-${{ vars.BASE_TAG }}.tar
           docker images
 
       - name: baseイメージがキャッシュにない場合にbuildとsave(キャッシュ)を実行
         if: steps.base_image_cache.outputs.cache-hit != 'true'
-        # git branchにはdevelopを固定で割り当てとする。 appイメージ作成側で修正中のブランチやmaster等を適用する運用とする。 
+        # git branchにはdevelopを固定で割り当てとする。 new_crawlerイメージ作成側で修正中のブランチやmaster等を適用する運用とする。 
         run: |
           mkdir ${{ env.PATH_CACHE }}
-          export GIT_BRANCH=develop
+          export GIT_BRANCH=${{ env.GIT_BRANCH }}
           export BASE_TAG=${{ vars.BASE_TAG }}
           docker compose -f docker-compose__base-image-build.yml build
-          docker save brownie_atelier_base:${{ vars.BASE_TAG }} -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ vars.BASE_TAG }}.tar
+          docker save brownie-atelier-news-crawler-base:${{ vars.BASE_TAG }} -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie-atelier-news-crawler-base-${{ vars.BASE_TAG }}.tar
           ls -l ${{ env.PATH_CACHE }}
           docker images
 
 
       #################################################
-      # appイメージコンテナー
+      # new_crawlerイメージコンテナー
       #################################################
-      - name: appイメージbuild
-        # appイメージ作成
+      - name: new_crawlerイメージbuild
+        # new_crawlerイメージ作成
         run: |
           export BASE_TAG=${{ vars.BASE_TAG }}
-          docker compose -f docker-compose__app-image-build.yml build
+          docker compose -f docker-compose__news-crawler-image-build.yml build
           docker images
 
-      - name: appイメージに別名のタグを付与 ※リポジトリ名を小文字に変換
+      - name: new_crawlerイメージに別名のタグを付与 ※リポジトリ名を小文字に変換
         run: |
           REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          docker tag brownie_atelier_app:${{ env.APP_TAG }}  ghcr.io/${REPO_NAME}/brownie_atelier_app:${{ env.APP_TAG }}
+          docker tag brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}  ghcr.io/${REPO_NAME}/brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}
 
-      - name: appイメージをコンテナーレジストリーにログイン
+      - name: コンテナーレジストリーにログイン
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }} # 書き込み・参照権限
 
-      - name: appイメージをコンテナーレジストリーにプッシュ
+      - name: new_crawlerイメージをコンテナーレジストリーにプッシュ
         run: |
           REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          docker push ghcr.io/${REPO_NAME}/brownie_atelier_app:${{ env.APP_TAG }}
+          docker push ghcr.io/${REPO_NAME}/brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}
 
   ########################################
   # テスト本体
@@ -135,10 +135,10 @@ jobs:
         MONGO_TAG: 7.0.1-jammy
         ## dockerfile_baseで参照するubuntuイメージのタグ
         UBUNTU_TAG: 22.04
-        ## # dockerfile_appで参照するbaseイメージのタグ
+        ## # dockerfileで参照するbaseイメージのタグ
         # BASE_TAG: test-0.15
-        # docker-composeで参照するappイメージのタグ。このワークフロー内ではlatest固定とする。
-        APP_TAG: latest
+        # docker-composeで参照するnew_crawlerイメージのタグ。このワークフロー内ではlatest固定とする。
+        NEWS_CRAWLER_TAG: latest
         # コンテナ内の一般ユーザー、パスワード
         CONTAINER_USER: common_user
         CONTAINER_USER_PASS: password
@@ -151,7 +151,7 @@ jobs:
         LOCAL_MONGO_KEY_DIR: /tmp
 
         # docker compose command選択
-        CONTAINER_START_COMMAND: /bin/sh -c "/home/common_user/BrownieAtelier/sh/github_actions_unit_test.sh"
+        CONTAINER_START_COMMAND: /bin/sh -c "/home/common_user/BrownieAtelierNewsCrawler/sh/prefect_run_and_server_start.sh"
 
         # mongoDBコンテナー一般ユーザー情報、mongoDB接続情報
         BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo-server
@@ -173,11 +173,9 @@ jobs:
         # dummy
         HOST_OS_IP_ADDRESS: 192.0.0.1
         # dummy
-        PREFECT_HOME: /home/common_user/BrownieAtelier # コンテナー内のディレクトリ構成
-        PREFECT_API_URL:
-        PREFECT__API_KEY:
-        PREFECT__WORK_SPACE:
-        PREFECT__WORK_POOL:
+        PREFECT_HOME: /home/common_user/BrownieAtelierNewsCrawler/data/prefect_data # コンテナー内のディレクトリ構成
+        PREFECT_API_URL: http://127.0.0.1:4200/api
+        SLEEP_TIME_AFTER_PREFECT_SERVER_STARTUP: ${{ vars.SLEEP_TIME_AFTER_PREFECT_SERVER_STARTUP}}
         SCRAPY__LOG_LEVEL: INFO
 
         # Docker イメージの tar アーカイブ出力先のパス
@@ -194,7 +192,7 @@ jobs:
 
       - name: ワークスペースチェック
         # テスト前チェックを確認
-        # クローン後はここにソースが格納される /home/runner/work/BrownieAtelier/BrownieAtelier
+        # クローン後はここにソースが格納される /home/runner/work/BrownieAtelierNewsCrawler/BrownieAtelierNewsCrawler
         run: |
           ls -a ${{ github.workspace }}
 
@@ -230,28 +228,28 @@ jobs:
           docker ps -a
 
       ########################################################################
-      # appイメージをプル
+      # new_crawlerイメージをプル
       ########################################################################
-      - name: appイメージをコンテナーレジストリーにログイン
+      - name: コンテナーレジストリーにログイン
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }} # 書き込み・参照権限
 
-      - name: appイメージをプル
+      - name: new_crawlerイメージをプル
         run: |
           REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          docker pull ghcr.io/${REPO_NAME}/brownie_atelier_app:${{ env.APP_TAG }}
+          docker pull ghcr.io/${REPO_NAME}/brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}
 
-      - name: appイメージに別名のタグを付与
+      - name: new_crawlerイメージに別名のタグを付与
         run: |
           REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          docker tag ghcr.io/${REPO_NAME}/brownie_atelier_app:${{ env.APP_TAG }}  brownie_atelier_app:${{ env.APP_TAG }}
+          docker tag ghcr.io/${REPO_NAME}/brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}  brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}
           docker images
 
       #################################################
-      # appイメージコンテナーを起動して各種フロー実行
+      # new_crawlerイメージコンテナーを起動して各種フロー実行
       #################################################
       - name: "<1>各ニュースサイト別スクレイピングの情報登録  <2>定期観測用のスパイダー登録  <3>初回定期観測"
         env:
@@ -259,7 +257,7 @@ jobs:
         # 各種フローテスト
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_01.py"
-          docker compose -f docker-compose__app-container.yml up --abort-on-container-exit
+          docker compose -f docker-compose__news-crawler-container.yml up --abort-on-container-exit
           exit_code=$?
           exit $exit_code
 
@@ -268,7 +266,7 @@ jobs:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_02.py"
-          docker compose -f docker-compose__app-container.yml up --abort-on-container-exit
+          docker compose -f docker-compose__news-crawler-container.yml up --abort-on-container-exit
           exit_code=$?
           exit $exit_code
 
@@ -277,7 +275,7 @@ jobs:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_03.py"
-          docker compose -f docker-compose__app-container.yml up --abort-on-container-exit
+          docker compose -f docker-compose__news-crawler-container.yml up --abort-on-container-exit
           exit_code=$?
           exit $exit_code
 
@@ -286,7 +284,7 @@ jobs:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_04.py"
-          docker compose -f docker-compose__app-container.yml up --abort-on-container-exit
+          docker compose -f docker-compose__news-crawler-container.yml up --abort-on-container-exit
           exit_code=$?
           exit $exit_code
 
@@ -295,7 +293,7 @@ jobs:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_05.py"
-          docker compose -f docker-compose__app-container.yml up --abort-on-container-exit
+          docker compose -f docker-compose__news-crawler-container.yml up --abort-on-container-exit
           exit_code=$?
           exit $exit_code
 
@@ -304,7 +302,7 @@ jobs:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_06.py"
-          docker compose -f docker-compose__app-container.yml up --abort-on-container-exit
+          docker compose -f docker-compose__news-crawler-container.yml up --abort-on-container-exit
           exit_code=$?
           exit $exit_code
 
@@ -313,7 +311,7 @@ jobs:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_07.py"
-          docker compose -f docker-compose__app-container.yml up --abort-on-container-exit
+          docker compose -f docker-compose__news-crawler-container.yml up --abort-on-container-exit
           exit_code=$?
           exit $exit_code
 
@@ -322,7 +320,7 @@ jobs:
           TZ: ${{ vars.TZ}}
         run: |
           export PREFECT_RUN_SCRIPT="prefect_lib/github_actions_unit_tests/github_actions_unit_test_08.py"
-          docker compose -f docker-compose__app-container.yml up --abort-on-container-exit
+          docker compose -f docker-compose__news-crawler-container.yml up --abort-on-container-exit
           exit_code=$?
           exit $exit_code
 

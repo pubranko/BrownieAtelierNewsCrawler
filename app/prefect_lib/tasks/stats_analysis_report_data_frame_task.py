@@ -4,6 +4,7 @@ from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from BrownieAtelierMongo.collection_models.stats_info_collect_model import \
     StatsInfoCollectModel
 from prefect import get_run_logger, task
+from prefect.cache_policies import NO_CACHE
 from prefect_lib.data_models.stats_analysis_report_input import \
     StatsAnalysisReportInput
 from prefect_lib.data_models.stats_info_collect_data import \
@@ -12,7 +13,7 @@ from prefect_lib.flows import START_TIME
 from pymongo.cursor import Cursor
 
 
-@task
+@task(cache_policy=NO_CACHE)
 def stats_analysis_report_data_frame_task(
     mongo: MongoModel, stats_analysis_report_input: StatsAnalysisReportInput
 ) -> Union[StatsInfoCollectData, None]:

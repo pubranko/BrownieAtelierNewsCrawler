@@ -1,6 +1,6 @@
-# Brawnie Atlier（ブラウニー工房）
+# Brownie Atelier News Crawler（ブラウニー工房・ニュースクローラー）
 ## 目次
-### Brawnie Atlier（ブラウニー工房）
+### Brownie Atelier News Crawler（ブラウニー工房・ニュースクローラー）
   - [システム概要](#システム概要)
   - [当資料の基準日](#当資料の基準日)
   - [主要技術](#主要技術)
@@ -95,18 +95,20 @@
 
 | No. | リポジトリ名                                               | メイン | サブ  | 概要 | gitリポジトリー |
 | :-- | :-------------------------------------------------------- | :----: | :--: | :--- | :------------ |
-| 1   | BrownieAtelier<br>ブラウニーアトリエ                        | 〇     |      | ブラウニー工房の主要ブランチ。<br>各種処理の実行には、フレームワーク：Prefect2のFlowを使用。<br>クローリングには、フレームワーク：Scrapyを使用。<br>スクレイピングには、上記フレームワークを使用せずbeautiful soupライブラリーを使用。 | https://github.com/pubranko/BrownieAtelier.git|
-| 2   | BrownieAtelierController<br>ブラウニーアトリエコントローラー | 〇     |      | AzureFunctionにより、ブラウニー工房を格納しているコンテナ、MongoDBコンテナの起動・停止を行う。| https://github.com/pubranko/BrownieAtelierController.git |
-| 3   | BrownieAtelierMongo<br>ブラウニーアトリエMongoDB            |        | 〇   | Gitサブモジュール。MongoDBコンテナへの接続、参照、更新を行う専用モジュール。 | https://github.com/pubranko/BrownieAtelierMongo.git      |
-| 4   | BrownieAtelierNotice<br>ブラウニーアトリエ通知              |        | 〇   | Gitサブモジュール。Slackまたはメールによる送信機能。エラー発生時の通知用モジュール。| https://github.com/pubranko/BrownieAtelierNotice.git     |
-| 5   | BrownieAtelierStorage<br>ブラウニーアトリエストレージ        |        | 〇   | Gitサブモジュール。AzureStoregeへの接続、参照、更新を行う専用モジュール。 | https://github.com/pubranko/BrownieAtelierStorage.git    |
+| 1   | BrownieAtelierNewsCrawler<br>ブラウニーアトリエニュースクローラー                        | 〇     |      | ブラウニー工房の主要ブランチ。<br>各種処理の実行には、フレームワーク：Prefect3のFlowを使用。<br>クローリングには、フレームワーク：Scrapyを使用。<br>スクレイピングには、上記フレームワークを使用せずbeautiful soupライブラリーを使用。 | https://github.com/pubranko/BrownieAtelierNewsCrawler.git|
+| 2   | BrownieAtelierApiCrawler<br>ブラウニーアトリエAPIクローラー                        | 〇     |      | ブラウニー工房の主要ブランチ。<br>各種処理の実行には、フレームワーク：Prefect3のFlowを使用。<br>クローリングには、フレームワーク：Scrapyを使用。<br>スクレイピングには、上記フレームワークを使用せずbeautiful soupライブラリーを使用。 | https://github.com/pubranko/BrownieAtelierApiCrawler.git|
+| 3   | BrownieAtelierController<br>ブラウニーアトリエコントローラー | 〇     |      | AzureFunctionにより、ブラウニー工房を格納しているコンテナ、MongoDBコンテナの起動・停止を行う。| https://github.com/pubranko/BrownieAtelierController.git |
+| 4   | BrownieAtelierMongo<br>ブラウニーアトリエMongoDB            |        | 〇   | Gitサブモジュール。MongoDBコンテナへの接続、参照、更新を行う専用モジュール。 | https://github.com/pubranko/BrownieAtelierMongo.git      |
+| 5   | BrownieAtelierNotice<br>ブラウニーアトリエ通知              |        | 〇   | Gitサブモジュール。Slackまたはメールによる送信機能。エラー発生時の通知用モジュール。| https://github.com/pubranko/BrownieAtelierNotice.git     |
+| 6   | BrownieAtelierStorage<br>ブラウニーアトリエストレージ        |        | 〇   | Gitサブモジュール。AzureStoregeへの接続、参照、更新を行う専用モジュール。 | https://github.com/pubranko/BrownieAtelierStorage.git    |
+| 7   | BrownieAtelierStorage<br>ブラウニーアトリエ解析機        |        | 〇   | Gitサブモジュール。LLMへ接続し解析を実施させる専用モジュール。 | https://github.com/pubranko/BrownieAtelierAnalyzer.git    |
 
 [目次へ戻る](#目次)
 
 ## プロジェクトで作成/使用するdockerリポジトリ一覧
 | No. | イメージ名                        | コンテナー名         | イメージリポジトリリンク                      | イメージリポジト補足説明                                |
 | :-- | :------------------------------- | :------------------ | :------------------------------------------ | :---------------------------------------------------- |
-| 1   | mikuras/brownie_atelier_app:0.15 | Brownie-atelier-app | https://hub.docker.com/repositories/mikuras | ブラウニー工房のアプリをUbuntu22.04へ格納したイメージ    |
+| 1   | mikuras/brownie-atelier-news-crawler:0.15 | Brownie-atelier-news-crawler | https://hub.docker.com/repositories/mikuras | ブラウニー工房のアプリをUbuntu22.04へ格納したイメージ    |
 | 2   | mongo:7.0.4-jammy                | mongo-azure-db      | https://hub.docker.com/_/mongo              | MongoDB公式イメージ                                   |
 
 [目次へ戻る](#目次)

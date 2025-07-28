@@ -38,10 +38,10 @@ jobs:
         MONGO_TAG: 7.0.1-jammy
         ## dockerfile_baseで参照するubuntuイメージのタグ
         UBUNTU_TAG: 22.04
-        ## # dockerfile_appで参照するbaseイメージのタグ
-        # BASE_TAG: test-0.15
-        # docker-composeで参照するappイメージのタグ
-        # APP_TAG: test-0.15
+        ## dockerfileで参照するbaseイメージのタグ
+        BASE_TAG: ${{ vars.BASE_TAG }}
+        # docker-composeで参照するnew_crawlerイメージのタグ
+        # NEWS_CRAWLER_TAG: test-0.15
         # コンテナー内rootユーザーパスワード
         CONTAINER_ROOT_USER: root_user
         CONTAINER_ROOT_PASS: password
@@ -49,7 +49,7 @@ jobs:
         CONTAINER_USER: common_user
         CONTAINER_USER_PASS: password
         # ブラウニー工房のgitリモートリポジトリー
-        GIT_REMOTE_REPOSITORY: https://github.com/pubranko/BrownieAtelier.git
+        GIT_REMOTE_REPOSITORY: https://github.com/pubranko/BrownieAtelierNewsCrawler.git
         # 上記リポジトリーのgitブランチ
         GIT_BRANCH: ${{github.ref_name}}
         # Firefox の gecko driver
@@ -57,9 +57,6 @@ jobs:
 
         # ホスト（ローカル）側のmongoDB接続用のcrtやpemファイルの保管ディレクトリ
         LOCAL_MONGO_KEY_DIR: /tmp
-
-        # docker-compose command選択
-        CONTAINER_START_COMMAND: /bin/sh -c "/home/common_user/BrownieAtelier/sh/prefect_cloud_deploy.sh"
 
         # mongoDBコンテナー一般ユーザー情報、mongoDB接続情報
         BROWNIE_ATELIER_MONGO__MONGO_SERVER: mongo-server
@@ -77,12 +74,12 @@ jobs:
         # 
         HOST_OS_IP_ADDRESS: 192.0.0.1
         # Prefect
-        # PREFECT_HOME: ${{ github.workspace }} # /home/runner/work/BrownieAtelier/BrownieAtelier
+        # PREFECT_HOME: ${{ github.workspace }} # /home/runner/work/BrownieAtelierNewsCrawler/BrownieAtelierNewsCrawler
         PREFECT_HOME: ${{ github.workspace }}
-        PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
-        PREFECT__API_KEY: ${{ secrets.PREFECT__API_KEY }}
-        PREFECT__WORK_SPACE: ${{ secrets.PREFECT__WORK_SPACE }}
-        PREFECT__WORK_POOL: ${{ secrets.PREFECT__WORK_POOL }}
+        # PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
+        # PREFECT__API_KEY: ${{ secrets.PREFECT__API_KEY }} # prefect cloudと接続する場合のみ必要
+        # PREFECT__WORK_SPACE: ${{ secrets.PREFECT__WORK_SPACE }}
+        # PREFECT__WORK_POOL: ${{ secrets.PREFECT__WORK_POOL }}
         PREFECT__DATA:
         SCRAPY__LOG_LEVEL:
         # Docker イメージの tar アーカイブ出力先のパス
@@ -96,7 +93,7 @@ jobs:
 
       - name: ワークスペースチェック
         # テスト前チェックを確認
-        # クローン後はここにソースが格納される /home/runner/work/BrownieAtelier/BrownieAtelier
+        # クローン後はここにソースが格納される /home/runner/work/BrownieAtelierNewsCrawler/BrownieAtelierNewsCrawler
         run: |
           ls -a ${{ github.workspace }}
 
@@ -110,49 +107,46 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.PATH_CACHE }}
-          key: ${{ runner.os }}-brownie_atelier_base-${{ vars.BASE_TAG }}
+          key: ${{ runner.os }}-brownie-atelier-news-crawler-base-${{ env.BASE_TAG }}
 
       # キャッシュがある場合は tar をdockerにロードしてイメージに追加
       - name: base用キャッシュがある場合は tar をロードしてイメージ一覧に追加
         if: steps.base_image_cache.outputs.cache-hit == 'true'
         run: |
           ls -l ${{ env.PATH_CACHE }}
-          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ vars.BASE_TAG }}.tar
+          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie-atelier-news-crawler-base-${{ env.BASE_TAG }}.tar
           docker images
 
       - name: baseイメージがキャッシュにない場合にbuildとsave(キャッシュ)を実行
         if: steps.base_image_cache.outputs.cache-hit != 'true'
-        # git branchにはdevelopを固定で割り当てとする。 appイメージ作成側で修正中のブランチやmaster等を適用する運用とする。 
+        # git branchにはdevelopを固定で割り当てとする。 new_crawlerイメージ作成側で修正中のブランチやmaster等を適用する運用とする。 
         run: |
           mkdir ${{ env.PATH_CACHE }}
           export GIT_BRANCH=develop
-          export BASE_TAG=${{ vars.BASE_TAG }}
           docker compose -f docker-compose__base-image-build.yml build
-          docker save brownie_atelier_base:${{ vars.BASE_TAG }} -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie_atelier_base-${{ vars.BASE_TAG }}.tar
+          docker save brownie-atelier-news-crawler-base:${{ env.BASE_TAG }} -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie-atelier-news-crawler-base-${{ env.BASE_TAG }}.tar
           ls -l ${{ env.PATH_CACHE }}
           docker images
 
       #################################################
-      # appイメージコンテナー
+      # new_crawlerイメージコンテナー
       #################################################
-      - name: appイメージタグ採番
+      - name: new_crawlerイメージタグ採番
         run: |
-          export BASE_TAG=${{ vars.BASE_TAG }}
           export DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
-          echo "APP_TAG=$(python app/scripts/tag_create.py --mode ${{ needs.Branch-Controll.outputs.env_name }})" >> $GITHUB_ENV
+          echo "NEWS_CRAWLER_TAG=$(python app/scripts/tag_create.py --mode ${{ needs.Branch-Controll.outputs.env_name }})" >> $GITHUB_ENV
 
-      - name: appイメージbuild
-        # appイメージ作成
+      - name: new_crawlerイメージbuild
+        # new_crawlerイメージ作成
         run: |
-          export BASE_TAG=${{ vars.BASE_TAG }}
-          export APP_TAG=${{ env.APP_TAG }}
+          export NEWS_CRAWLER_TAG=${{ env.NEWS_CRAWLER_TAG }}
           export DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
-          docker compose -f docker-compose__app-image-build.yml build
-          docker tag brownie_atelier_app:${{ env.APP_TAG }} ${{ secrets.DOCKER_HUB_USERNAME }}/brownie_atelier_app:${{ env.APP_TAG }}
+          docker compose -f docker-compose__news-crawler-image-build.yml build
+          docker tag brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }} ${{ secrets.DOCKER_HUB_USERNAME }}/brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}
           docker images
 
       #################################################
-      # appイメージをdocker hubへpush
+      # new_crawlerイメージをdocker hubへpush
       #################################################
 
       # dockerhubにログイン
@@ -165,29 +159,4 @@ jobs:
       # dockerhubへpush
       - name: push - dockerhub
         run: |
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/brownie_atelier_app:${{ env.APP_TAG}}
-
-      ########################################################################
-      # brownie_atelier_app起動時にdockerネットワークが必要であるため便宜上作成
-      ########################################################################
-      - name: brownie_atelier_app起動用にdockerネットワークを作成
-        run: docker network create brownie-atelier-net
-  
-      ##########################################################################################################
-      # prefect flowをprefectクラウドへデプロイ
-      # ※コンテナーの中でPrefectへのデプロイを実施しないとPrefect側に登録される
-      #   Entrypoint(cwdから見たFlowの相対パス)やPath(ユーザー名などを含むcwdまでの絶対パス)が同期がとれない状態となる。
-      #   そのため実際に動作するコンテナー内のユーザー・パスに合わせた状態でデプロイを実施している。
-      ##########################################################################################################
-
-      - name: "Prefect FlowをPrefectクラウドへデプロイ"
-        env:
-          TZ: ${{ vars.TZ}}
-        run: |
-          export PREFECT_RUN_SCRIPT="prefect_lib/deployments/flows_register.py"
-          docker compose -f docker-compose__app-container.yml up --abort-on-container-exit
-          exit_code=$?
-          exit $exit_code
-
-      # "🍏 This job's status is success."
-      - run: echo "🍏 Job実行後のステータス： ${{ job.status }}."
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG}}

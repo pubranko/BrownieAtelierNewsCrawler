@@ -16,10 +16,11 @@ from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
 from BrownieAtelierMongo.collection_models.stats_info_collect_model import \
     StatsInfoCollectModel
 from prefect import get_run_logger, task
+from prefect.cache_policies import NO_CACHE
 from pymongo.command_cursor import CommandCursor, RawBatchCommandCursor
 
 
-@task
+@task(cache_policy=NO_CACHE)
 def mongo_delete_task(
     mongo: MongoModel,
     period_from: datetime,  # 月次エクスポートを行うデータの基準年月

@@ -78,3 +78,7 @@ def crawl_sync_check_flow(
 
     else:
         logger.error(f"=== init_taskが正常に完了しなかったため、後続タスクの実行を中止しました。")
+
+
+def main(**kwargs):
+    crawl_sync_check_flow(**kwargs)

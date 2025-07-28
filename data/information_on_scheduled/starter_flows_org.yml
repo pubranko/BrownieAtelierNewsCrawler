@@ -1,0 +1,8 @@
+# 3時間ごとに起動するFlowとパラメータを定義。通常は定期観測を実行する。
+18:
+  - flow: prefect_lib/flow_nets/morning_flow_net.py
+    params:
+# 3時間ごとに起動するFlowとパラメータを定義。通常は定期観測を実行する。
+default:
+  - flow: prefect_lib/flows/regular_observation_flow.py
+    params:

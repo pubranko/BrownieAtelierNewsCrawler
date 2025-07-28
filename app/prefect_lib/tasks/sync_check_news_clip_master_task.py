@@ -9,10 +9,11 @@ from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from BrownieAtelierMongo.collection_models.news_clip_master_model import \
     NewsClipMasterModel
 from prefect import get_run_logger, task
+from prefect.cache_policies import NO_CACHE
 from prefect_lib.flows import START_TIME
 
 
-@task
+@task(cache_policy=NO_CACHE)
 def sync_check_news_clip_master_task(
     mongo: MongoModel,
     domain: Optional[str],

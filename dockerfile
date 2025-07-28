@@ -1,19 +1,17 @@
 ARG BASE_TAG
-FROM brownie_atelier_base:${BASE_TAG}
+FROM brownie-atelier-news-crawler-base:${BASE_TAG}
 
 #LABELでメタ情報を入れることができる
-LABEL maintainer="BrownieAtelierApp"
+LABEL maintainer="BrownieAtelierNewsCrawler"
 
 ARG CONTAINER_USER
 ARG GIT_BRANCH
 
 # リポジトリ一覧を更新、インストール済みのパッケージ更新
-RUN echo ${CONTAINER_USER} | sudo -S apt-get update
 RUN echo ${CONTAINER_USER} | sudo -S apt update
-RUN echo ${CONTAINER_USER} | sudo -S apt -y upgrade
 
 # アプリ用ディレクトリへ移動
-WORKDIR /home/${CONTAINER_USER}/BrownieAtelier
+WORKDIR /home/${CONTAINER_USER}/BrownieAtelierNewsCrawler
 
 # リモートリポジトリよりpullを実行し最新ソースを取得する。
 RUN git config pull.rebase false
@@ -21,15 +19,15 @@ RUN git pull origin "${GIT_BRANCH}"
 RUN git submodule update --recursive
 
 # シェルに実行権限を付与
-WORKDIR /home/${CONTAINER_USER}/BrownieAtelier/sh
+WORKDIR /home/${CONTAINER_USER}/BrownieAtelierNewsCrawler/sh
 RUN chmod 755 ./*
-WORKDIR /home/${CONTAINER_USER}/BrownieAtelier/data
+WORKDIR /home/${CONTAINER_USER}/BrownieAtelierNewsCrawler/data
 RUN chmod 766 ./*
 RUN ls -la
 
-# Pipfile.lockからインストール（更新があった場合）
-WORKDIR /home/${CONTAINER_USER}/BrownieAtelier
-RUN python3 -m pipenv sync
+# uv.lockからインストール（更新があった場合）
+WORKDIR /home/${CONTAINER_USER}/BrownieAtelierNewsCrawler
+RUN .venv/bin/uv sync --frozen
 RUN ls -la
 RUN .venv/bin/pip list
 
