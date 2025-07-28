@@ -1,0 +1,23 @@
+default:
+
+  - flow: prefect_lib/flows/manual_crawling_flow.py
+    params:
+      spider_names:
+        - sankei_com_sitemap
+        - asahi_com_sitemap
+        - kyodo_co_jp_sitemap
+        - yomiuri_co_jp_sitemap
+        - jp_reuters_com_sitemap
+        - epochtimes_jp_crawl
+        - mainichi_jp_crawl
+        - nikkei_com_crawl
+      spider_kwargs:
+        debug: true
+        page_span_from: 2
+        page_span_to: 2
+        lastmod_term_minutes_from: 90
+        lastmod_term_minutes_to: 60
+      following_processing_execution: true
+
+  - flow: prefect_lib/flows/regular_observation_flow.py
+    params:
