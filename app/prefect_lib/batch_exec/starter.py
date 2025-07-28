@@ -2,7 +2,7 @@ import os
 import yaml
 import datetime
 import logging
-from shared.settings import DATA__INFORMATION_ON_SCHEDULED_DIR
+from shared.settings import DATA__INFORMATION_ON_SCHEDULED_DIR, DATA__STARTER_FLOWS_FILE
 import importlib.util
 import importlib
 from typing import cast
@@ -19,7 +19,7 @@ def load_schedule_dict() -> dict:
         dict: スケジュール情報の辞書
     """
     # YAMLファイルから辞書を取得
-    schedule_path = os.path.join(DATA__INFORMATION_ON_SCHEDULED_DIR, "starter_flows.yml")
+    schedule_path = os.path.join(DATA__INFORMATION_ON_SCHEDULED_DIR, DATA__STARTER_FLOWS_FILE)
     with open(schedule_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
