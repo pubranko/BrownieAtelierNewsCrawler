@@ -1,0 +1,18 @@
+default:
+
+  - flow: prefect_lib/flows/regular_observation_controller_update_flow.py
+    params: 
+      register_type: add
+      spiders_name: 
+        - asahi_com_sitemap
+        - epochtimes_jp_crawl
+        - jp_reuters_com_sitemap
+        - kyodo_co_jp_sitemap
+        - mainichi_jp_crawl
+        - nikkei_com_crawl
+        - yomiuri_co_jp_sitemap
+        - sankei_com_sitemap
+  - flow: prefect_lib/flows/scraper_info_uploader_flow.py
+    params:
+      scraper_info_by_domain_files: []
+
