@@ -1,21 +1,25 @@
 # Brownie Atelier News Crawler（ブラウニー工房・ニュースクローラー）
 ## 目次
 ### Brownie Atelier News Crawler（ブラウニー工房・ニュースクローラー）
+- [Brownie Atelier News Crawler（ブラウニー工房・ニュースクローラー）](#brownie-atelier-news-crawlerブラウニー工房ニュースクローラー)
+  - [目次](#目次)
+    - [Brownie Atelier News Crawler（ブラウニー工房・ニュースクローラー）](#brownie-atelier-news-crawlerブラウニー工房ニュースクローラー-1)
   - [システム概要](#システム概要)
   - [当資料の基準日](#当資料の基準日)
   - [主要技術](#主要技術)
   - [システム概要図](#システム概要図)
-  - [自動テスト＆デプロイ（Github-Actions）](#自動テスト＆デプロイ)
+  - [自動テスト＆デプロイ](#自動テストデプロイ)
   - [定期観測の処理の流れ](#定期観測の処理の流れ)
     - [主要機能である定期観測(regular\_observation\_flow.py)の処理の流れを紹介](#主要機能である定期観測regular_observation_flowpyの処理の流れを紹介)
   - [プロジェクトで使用されるGitリポジトリ](#プロジェクトで使用されるgitリポジトリ)
   - [プロジェクトで作成/使用するdockerリポジトリ一覧](#プロジェクトで作成使用するdockerリポジトリ一覧)
   - [現在実装済みのFlowの一覧](#現在実装済みのflowの一覧)
     - [各種登録系](#各種登録系)
-    - [ニュースクロール・スクレイピング系](#ニュースクロールと・スクレイピング系)
+    - [ニュースクロールと・スクレイピング系](#ニュースクロールとスクレイピング系)
     - [MongoDB更新系](#mongodb更新系)
     - [レポート系](#レポート系)
     - [チェック系](#チェック系)
+    - [定期実行系](#定期実行系)
   - [MongoDBのコレクション](#mongodbのコレクション)
     - [Mongoコレクション一覧](#mongoコレクション一覧)
     - [Mongoコレクションの削除運用](#mongoコレクションの削除運用)
@@ -44,7 +48,7 @@
 [目次へ戻る](#目次)
 
 ## システム概要図
-<a href="static/システム概要図.jpg" target="_blank">
+<a href="static/システム概要図.pdf" target="_blank">
   <img src="static/システム概要図.jpg" width="200" alt="画像の説明">
 </a>
 
