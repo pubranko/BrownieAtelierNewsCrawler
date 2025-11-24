@@ -11,7 +11,7 @@ def test_exec():
 
     # 基準日指定でテスト
     morning_flow_net(
-        datetime(2025, 6, 15, 0, 0, 0, 000000).astimezone(TIMEZONE)
+        datetime(2025, 8, 1, 0, 0, 0, 000000).astimezone(TIMEZONE)
     )
     
 if __name__ == "__main__":
