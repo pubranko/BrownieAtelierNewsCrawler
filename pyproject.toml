@@ -1,7 +1,7 @@
 [project]
 name = "BrownieAtelierNewsCrawler"
 version = "0.0.1"
-requires-python = "~=3.10"
+requires-python = "~=3.14"
 dependencies = [
     "prefect>=3.4.0",
     "Scrapy>=2.0.0",
@@ -35,10 +35,8 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "flake8",
-    "autopep8",
-    "black",
-    "isort",
+    "ruff",
+    "pyrefly",
     "sphinx",
     "jupyter",
 ]
@@ -49,3 +47,24 @@ package = false
 [[tool.uv.index]]
 name = "pypi"
 url = "https://pypi.org/simple"
+
+# ruff：コードチェック、フォーマッター。
+[tool.ruff]
+line-length = 120           # 1行の最大長
+target-version = "py314"    # 対象 Python バージョン（3.14）
+
+# ruffのコードチェック対象
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors（構文エラー、スタイル違反）
+    "W",    # pycodestyle warnings（警告）
+    "F",    # Pyflakes（未使用変数、未定義変数）
+    "I",    # isort（import 文のソート）
+    "B",    # flake8-bugbear（一般的なバグの原因）
+    "C4",   # flake8-comprehensions（リスト内包表記の最適化）
+    "UP",   # pyupgrade（古い Python 構文の警告）
+]
+
+# pyrefly：型チェックを3.14のバージョン基準で実施
+[tool.pyrefly]
+python-version = "3.14"
