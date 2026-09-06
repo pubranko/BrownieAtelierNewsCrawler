@@ -1,13 +1,12 @@
-from typing import Any
+from collections.abc import Sequence
 
-from lxml.etree import _Element
 from news_crawl.spiders.extensions_class.extensions_sitemap import ExtensionsSitemapSpider
 
 
 class AsahiComSitemapSpider(ExtensionsSitemapSpider):
     name = "asahi_com_sitemap"
     allowed_domains = ["asahi.com"]
-    sitemap_urls: list = ["http://www.asahi.com/sitemap.xml"]
+    sitemap_urls: Sequence[str] = ["http://www.asahi.com/sitemap.xml"]
     _domain_name: str = "asahi_com"  # 各種処理で使用するドメイン名の一元管理
     _spider_version: float = 1.0
 

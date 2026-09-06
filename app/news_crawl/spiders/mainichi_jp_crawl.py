@@ -1,7 +1,8 @@
 import time
 import urllib.parse
+from collections.abc import Callable
 from datetime import datetime
-from typing import Any, cast, Callable
+from typing import Any, cast
 
 import scrapy
 from dateutil import parser
@@ -12,14 +13,11 @@ from news_crawl.spiders.common.url_pattern_skip_check import url_pattern_skip_ch
 from news_crawl.spiders.common.urls_continued_skip_check import UrlsContinuedSkipCheck
 from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
 from scrapy.http import TextResponse
-from scrapy_selenium import SeleniumRequest
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-
 
 base_start_url: str = "https://mainichi.jp/flash/"  # ピックアップ、新着
 
@@ -33,7 +31,7 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
     _domain_name: str = "mainichi_jp"  # 各種処理で使用するドメイン名の一元管理
     _spider_version: float = 1.0
 
-    custom_settings: dict = {
+    custom_settings: dict[str, Any] | None = {
         "DEPTH_LIMIT": 0,
         "DEPTH_STATS_VERBOSE": True,
         "DOWNLOADER_MIDDLEWARES": {
@@ -50,9 +48,6 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
     # )
     # seleniumモード
     selenium_mode__start_request: bool = True
-    # splashモード
-    # splash_mode: bool = True
-
     def __init__(self, *args, **kwargs):
         """(拡張メソッド)
         親クラスの__init__処理後に追加で初期処理を行う。
@@ -88,7 +83,7 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
             target_article_element = f"#article-list > ul > li:nth-child({number_of_details_in_page * load_page})"
             WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.CSS_SELECTOR, target_article_element)))
 
-            target_next_page_element = f"div.main-contents span.link-more"
+            target_next_page_element = "div.main-contents span.link-more"
             # 要素がDOM上に存在し、表示されていて、有効（クリック可能）な状態まで最大60秒待機します。
             WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, target_next_page_element)))
 
@@ -104,7 +99,9 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
             # 各記事のリンク（element）より最終更新日時のみ抽出したリストを生成
             lastmods: list[datetime] = [parser.parse(_.text) for _ in lastmod_find_elems]
             # 各記事より抽出したリンクと最終更新日時を内包したリストを生成
-            extracts: list[dict] = [{"link": link, "lastmod": lastmod} for link, lastmod in zip(links, lastmods)]
+            extracts: list[dict] = [
+                {"link": link, "lastmod": lastmod} for link, lastmod in zip(links, lastmods, strict=False)
+            ]
 
             self.logger.info(f"=== ページ内の記事件数 = {len(links)}")
 
@@ -132,8 +129,8 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
                         }
                     )
 
-            # 前回の5件のurlが全て確認できたら前回以降に追加された記事は全て取得完了と考えられるため終了する。
-            if self.url_continued.skip_flg == True:
+            # 前回の5件のURLをすべて確認したら、前回以降の記事は取得済みとする。
+            if self.url_continued.skip_flg:
                 self.logger.info(
                     f"=== parse_start_response_selenium 前回の続きまで再取得完了 ({driver.current_url})",
                 )
@@ -181,14 +178,14 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
         driver.set_page_load_timeout(60)
         driver.set_script_timeout(60)
 
-        # 毎日はSPAであるため、まず一覧ページ上で１ページ目から対象ページまでのロードを行わせる。(２ページ目から表示などできないため、、、)
+        # 毎日はSPAのため、一覧ページの1ページ目から対象ページまで順にロードする。
         load_page: int = 1
         while load_page <= self.page_to:
             # 各ページ内の末尾の明細が表示されるまで待機。
             target_article_element = f"#article-list > ul > li:nth-child({number_of_details_in_page * load_page})"
             WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.CSS_SELECTOR, target_article_element)))
 
-            target_next_page_element = f"div.main-contents span.link-more"
+            target_next_page_element = "div.main-contents span.link-more"
             # 要素がDOM上に存在し、表示されていて、有効（クリック可能）な状態まで最大60秒待機します。
             WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, target_next_page_element)))
 
@@ -225,7 +222,8 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
         select_lastmods: list[datetime] = [parser.parse(_.text) for _ in lastmod_find_elems[start_link:end_link]]
         # 上記の各リストよりリンクと最終更新日時を内包したリストを生成
         select_extracts: list[dict] = [
-            {"link": link, "lastmod": lastmod} for link, lastmod in zip(select_links, select_lastmods)
+            {"link": link, "lastmod": lastmod}
+            for link, lastmod in zip(select_links, select_lastmods, strict=False)
         ]
 
         self.logger.info(f"=== 抽出対象の記事件数 = {len(select_links)}")
@@ -233,7 +231,9 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
         assumed_number_of_cases: int = number_of_details_in_page * (self.page_to - self.page_from + 1)
         if not len(select_links) == assumed_number_of_cases:
             self.logger.warning(
-                f"=== parse_start_response_selenium ページ内で取得できた件数が想定の{assumed_number_of_cases}件と異なる。確認要。 ( {len(select_links)} 件)"
+                "=== parse_start_response_selenium "
+                f"ページ内で取得できた件数が想定の{assumed_number_of_cases}件と異なる。"
+                f"確認要。 ( {len(select_links)} 件)"
             )
 
         for extract in select_extracts:
@@ -259,9 +259,9 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
                 )
                 self.crawl_target_urls.append(url)
 
-            # 前回からの続きの指定がある場合、前回の5件のurlが全て確認できたら前回以降に追加された記事は全て取得完了と考えられるため終了する。
+            # 前回の5件のURLをすべて確認したら、前回以降の記事は取得済みとする。
             if self.news_crawl_input.continued:
-                if self.url_continued.skip_flg == False:
+                if not self.url_continued.skip_flg:
                     self.logger.info(
                         f"=== parse_start_response_selenium 前回の続きまで再取得完了 ({driver.current_url})",
                     )

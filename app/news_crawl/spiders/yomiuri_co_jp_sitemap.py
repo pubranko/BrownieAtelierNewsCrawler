@@ -1,10 +1,12 @@
+from collections.abc import Sequence
+
 from news_crawl.spiders.extensions_class.extensions_sitemap import ExtensionsSitemapSpider
 
 
 class YomiuriCoJpSitemapSpider(ExtensionsSitemapSpider):
     name: str = "yomiuri_co_jp_sitemap"
     allowed_domains: list = ["yomiuri.co.jp"]
-    sitemap_urls: list = [
+    sitemap_urls: Sequence[str] = [
         "https://www.yomiuri.co.jp/sitemap-news-latest.xml",
         "https://www.yomiuri.co.jp/sitemap-news-past-1.xml",
         "https://www.yomiuri.co.jp/sitemap-news-past-2.xml",

@@ -75,8 +75,6 @@ TELNETCONSOLE_ENABLED = False
 # スパイダーのミドルウェアを作る場合に使用する。
 SPIDER_MIDDLEWARES = {
     # 'news_crawl.middlewares.NewsCrawlSpiderMiddleware': 543,
-    # Splash用
-    # 'scrapy_splash.SplashDeduplicateArgsMiddleware': 100,
 }
 
 # Enable or disable downloader middlewares
@@ -84,9 +82,6 @@ SPIDER_MIDDLEWARES = {
 # ダウンロードのミドルウェアを自作のものを使いたい場合、以下の設定を変える。
 DOWNLOADER_MIDDLEWARES = {
     #'news_crawl.middlewares.NewsCrawlDownloaderMiddleware': 543,
-    # splash用
-    # 'scrapy_splash.SplashCookiesMiddleware': 723,
-    # 'scrapy_splash.SplashMiddleware': 725,
     # selenium用 -> カスタムバージョン
     # 'news_crawl.scrapy_selenium_custom_middlewares.SeleniumMiddleware': 800,
     # selenium用
@@ -221,12 +216,6 @@ SELENIUM_FIREFOX_PROFILE_DIRECTORY = (
 )
 
 
-# Scrapy-Splashの設定
-SPLASH_URL = "http://localhost:8050/"
-DUPEFILTER_CLASS = "scrapy_splash.SplashAwareDupeFilter"
-HTTPCACHE_STORAGE = "scrapy_splash.SplashAwareFSCacheStorage"
-
-# splashの再起動でエラーが多発する。その分をretryでカバーしたい。
 RETRY_ENABLED = True
 # RETRY_TIMES = 2    requestオブジェクトで直接拡張させたのでここでの設定不要。
 RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408, 429]

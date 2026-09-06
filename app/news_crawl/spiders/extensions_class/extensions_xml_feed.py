@@ -1,4 +1,5 @@
 import pickle
+from collections.abc import Iterable
 from datetime import datetime
 from typing import Any
 
@@ -6,11 +7,9 @@ import scrapy
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from news_crawl.items import NewsCrawlItem
 from news_crawl.news_crawl_input import NewsCrawlInput
-from news_crawl.spiders.common.spider_closed import spider_closed
-from news_crawl.spiders.common.spider_init import spider_init
 from news_crawl.spiders.common.start_request_debug_file_generate import start_request_debug_file_generate
 from scrapy.http import Response
-from scrapy.http.response.xml import XmlResponse
+from scrapy.selector import Selector
 from scrapy.spiders import XMLFeedSpider
 from scrapy.utils.spider import iterate_spider_output
 
@@ -32,7 +31,7 @@ class ExtensionsXmlFeedSpider(XMLFeedSpider):
     start_urls: list = [
         "https://www.sample.com/sitemap.xml",
     ]  # 継承先で上書き要。
-    custom_settings: dict = {
+    custom_settings: dict[str, Any] | None = {
         "DEPTH_LIMIT": 2,
         "DEPTH_STATS_VERBOSE": True,
     }
@@ -78,7 +77,7 @@ class ExtensionsXmlFeedSpider(XMLFeedSpider):
                 callback=self._parse,  # dont_filter=True
             )
 
-    def parse_nodes(self, response: XmlResponse, nodes):
+    def parse_nodes(self, response: Response, nodes: Iterable[Selector]) -> Any:
         """(オーバーライド)
         各xmlファイルの初期処理、主処理、終了処理を記述可能
         """
@@ -88,8 +87,7 @@ class ExtensionsXmlFeedSpider(XMLFeedSpider):
         # 主処理
         for selector in nodes:
             ret: Any = iterate_spider_output(self.parse_node(response, selector))
-            for result_item in self.process_results(response, ret):
-                yield result_item
+            yield from self.process_results(response, ret)
         # 終了処理
         start_request_debug_file_generate(self.name, response.url, self._entries, self.news_crawl_input.debug)
 

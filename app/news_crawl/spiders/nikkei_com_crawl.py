@@ -1,6 +1,7 @@
 import copy
 import urllib.parse
-from typing import Final, cast, Callable
+from collections.abc import Callable
+from typing import Any, Final, cast
 
 import scrapy
 from news_crawl.spiders.common.start_request_debug_file_generate import LASTMOD as debug_file__LASTMOD
@@ -11,11 +12,7 @@ from news_crawl.spiders.common.urls_continued_skip_check import UrlsContinuedSki
 from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
 from scrapy.http import TextResponse
 
-
 base_start_url: str = "https://www.nikkei.com/news/category/"
-# "https://www.nikkei.com/news/category/",  # 新着
-# 'https://www.nikkei.com/news/category/?page=1',  #クエリー部分で取得開始したい記事を指定。省略すればpage=1として処理される。
-# 'https://www.nikkei.com/news/category/?page=2',  # 初期処理で指定ページに合わせてpage=部をカスタマイズ
 
 
 class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
@@ -27,7 +24,7 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
     _domain_name: str = "nikkei_com"  # 各種処理で使用するドメイン名の一元管理
     _spider_version: float = 1.0
 
-    custom_settings: dict = {
+    custom_settings: dict[str, Any] | None = {
         "DEPTH_LIMIT": 0,
         "DEPTH_STATS_VERBOSE": True,
         "DOWNLOADER_MIDDLEWARES": {
@@ -48,6 +45,10 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
     # selenium_mode: bool = True
 
     ITEMS_ON_PAGE_COUNT: Final[int] = 30
+    ARTICLE_LINK_SELECTOR: Final[str] = (
+        "main[class^=main] article[class^=sokuhoCard] > div[class^=container] "
+        "> div[class^=textArea_] > a[href]::attr(href)"
+    )
 
     def __init__(self, *args, **kwargs):
         """(拡張メソッド)
@@ -82,10 +83,7 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
 
         # ページ内の対象urlを抽出
         # ※1ページ目と２ページ目以降でリンクを抽出するcssセレクターが異なるため以下のように操作
-        links = response.css(
-            # f"#CONTENTS_MAIN > div > h3.m-miM09_title > a[href]::attr(href)"
-            f"main[class^=main] article[class^=sokuhoCard] > div[class^=container] > div[class^=textArea_] > a[href]::attr(href)"
-        ).getall()
+        links: list[str] = response.css(self.ARTICLE_LINK_SELECTOR).getall()
         self.logger.info(f"=== ページ内の記事件数 = {len(links)}")
         # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
         if not len(links) == self.ITEMS_ON_PAGE_COUNT:
@@ -114,8 +112,8 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
                     }
                 )
 
-        # 前回からの続きの指定がある場合、前回の10件のurlが全て確認できたら前回以降に追加された記事は全て取得完了と考えられるため終了する。
-        if self.url_continued.skip_flg == True:
+        # 前回の10件のURLをすべて確認したら、前回以降の記事は取得済みとする。
+        if self.url_continued.skip_flg:
             self.logger.info(
                 f"=== parse_start_response 前回の続きまで再取得完了 ({response.url})",
             )
@@ -153,9 +151,7 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
 
         # ページ内の対象urlを抽出
         # ※1ページ目と２ページ目以降でリンクを抽出するcssセレクターが異なるため以下のように操作
-        links = response.css(
-            f"main[class^=main] article[class^=sokuhoCard] > div[class^=container] > div[class^=textArea_] > a[href]::attr(href)"
-        ).getall()
+        links: list[str] = response.css(self.ARTICLE_LINK_SELECTOR).getall()
         self.logger.info(f"=== ページ内の記事件数 = {len(links)}")
         # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
         if not len(links) == self.ITEMS_ON_PAGE_COUNT:

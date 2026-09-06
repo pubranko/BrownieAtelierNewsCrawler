@@ -1,9 +1,9 @@
 import urllib.parse
+from collections.abc import Callable
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 import scrapy
-from news_crawl.spiders.common.lua_script_get import lua_script_get
 from news_crawl.spiders.common.start_request_debug_file_generate import LASTMOD as debug_file__LASTMOD
 from news_crawl.spiders.common.start_request_debug_file_generate import LOC as debug_file__LOC
 from news_crawl.spiders.common.start_request_debug_file_generate import start_request_debug_file_generate
@@ -12,8 +12,6 @@ from news_crawl.spiders.common.urls_continued_skip_check import UrlsContinuedSki
 from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
 from scrapy.http import TextResponse
 from scrapy_selenium import SeleniumRequest
-from scrapy_splash import SplashRequest
-from scrapy_splash.response import SplashJsonResponse
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
@@ -52,9 +50,6 @@ class JpReutersComCrawlSpider(ExtensionsCrawlSpider):
     # )
     # seleniumモード
     selenium_mode: bool = True
-    # splashモード
-    # splash_mode: bool = True
-
     def __init__(self, *args, **kwargs):
         """(拡張メソッド)
         親クラスの__init__処理後に追加で初期処理を行う。
@@ -70,8 +65,8 @@ class JpReutersComCrawlSpider(ExtensionsCrawlSpider):
         # 開始ページからURLを生成
         url = f"https://jp.reuters.com/news/archive?view=page&page={self.page_from}&pageSize=10"
         self.start_urls.append(url)
-        # https://jp.reuters.com/news/archive?view=page&page=1&pageSize=10  →  https://jp.reuters.com/news/archive を抽出
-        _ = str(url).split("?")[0]
+        # 開始URLからクエリ文字列を除去し、ベースURLを取り出す。
+        _ = url.split("?")[0]
         # keyにドット(.)があるとエラーMongoDBがエラーとなるためアンダースコアに置き換え
         self.base_url = _.replace(".", "_")
 
@@ -82,22 +77,6 @@ class JpReutersComCrawlSpider(ExtensionsCrawlSpider):
         if self.selenium_mode:
             for url in self.start_urls:
                 yield SeleniumRequest(url=url, callback=self.parse_start_response_selenium)
-
-        elif self.splash_mode:
-            for url in self.start_urls:
-                yield SplashRequest(
-                    url=url,
-                    callback=self.parse_start_response_splash,
-                    meta={"max_retry_times": 20},
-                    endpoint="execute",
-                    cache_args=["lua_source"],
-                    args={
-                        "lua_source": lua_script_get("first_load"),
-                        "find_element": "div.control-nav > a.control-nav-next",  # 左記の要素が表示されるまで待機させる。
-                    },
-                    headers={"X-My-Header": "value"},
-                    session_id=self.session_id,
-                )  # 任意の値
 
     def parse_start_response_selenium(self, response: TextResponse):
         """(拡張メソッド)
@@ -124,7 +103,8 @@ class JpReutersComCrawlSpider(ExtensionsCrawlSpider):
             # ページ内記事は通常10件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
             if not len(links) == 10:
                 self.logger.warning(
-                    f"=== parse_start_response 1ページ内で取得できた件数が想定の10件と異なる。確認要。 ( {len(links)} 件)"
+                    "=== parse_start_response "
+                    f"1ページ内で取得できた件数が想定の10件と異なる。確認要。 ( {len(links)} 件)"
                 )
 
             for link in links:
@@ -157,8 +137,8 @@ class JpReutersComCrawlSpider(ExtensionsCrawlSpider):
                 self.news_crawl_input.debug,
             )
 
-            # 前回からの続きの指定がある場合、前回の5件のurlが全て確認できたら前回以降に追加された記事は全て取得完了と考えられるため終了する。
-            if self.url_continued.skip_flg == True:
+            # 前回の5件のURLをすべて確認したら、前回以降の記事は取得済みとする。
+            if self.url_continued.skip_flg:
                 self.logger.info(
                     f"=== parse_start_response 前回の続きまで再取得完了 ({driver.current_url})",
                 )
@@ -176,91 +156,10 @@ class JpReutersComCrawlSpider(ExtensionsCrawlSpider):
         for _ in self.crawl_urls_list:
             yield scrapy.Request(
                 response.urljoin(_[self.CRAWL_POINT__LOC]),
-                callback=self.parse_news,
+                callback=cast(Callable, self.parse_news),
             )
         # 次回向けに1ページ目の5件をcontrollerへ保存する
         self._crawl_point[self.base_url] = {
             self.CRAWL_POINT__URLS: self.all_urls_list[0 : self.url_continued.check_count],
             self.CRAWL_POINT__CRAWLING_START_TIME: self.news_crawl_input.crawling_start_time,
         }
-
-    def parse_start_response_splash(self, response: SplashJsonResponse):
-        """(拡張メソッド)
-        取得したレスポンスよりDBへ書き込み(splash版)
-        """
-        self.logger.info(f"=== parse_start_response 現在解析中のURL = {response.url}")
-
-        # ページ内の対象urlを抽出
-        links: list = response.css(".story-content a[href]::attr(href)").getall()
-        self.logger.info(f"=== ページ内の記事件数 = {len(links)}")
-        # ページ内記事は通常10件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
-        if not len(links) == 10:
-            self.logger.warning(
-                f"=== parse_start_response 1ページ内で取得できた件数が想定の10件と異なる。確認要。 ( {len(links)} 件)"
-            )
-
-        for link in links:
-            url: str = urllib.parse.unquote(response.urljoin(link))
-            self.all_urls_list.append({debug_file__LOC: url, debug_file__LASTMOD: ""})
-            # 前回からの続きの指定がある場合、
-            # 前回取得したurlが確認できたら確認済み（削除）にする。
-            if self.url_continued.skip_check(url):
-                pass
-            elif url_pattern_skip_check(url, self.news_crawl_input.url_pattern):
-                pass
-            else:
-                self.crawl_urls_list.append(
-                    {
-                        self.CRAWL_URLS_LIST__LOC: url,
-                        self.CRAWL_URLS_LIST__LASTMOD: "",
-                        self.CRAWL_URLS_LIST__SOURCE_URL: response.url,
-                    }
-                )
-
-        # 前回からの続きの指定がある場合、前回の5件のurlが全て確認できたら前回以降に追加された記事は全て取得完了と考えられるため終了する。
-        if self.url_continued.skip_flg == False:
-            self.logger.info(
-                f"=== parse_start_response 前回の続きまで再取得完了 ({response.url})",
-            )
-            self.page = self.page_to + 1
-
-        start_request_debug_file_generate(
-            self.name,
-            response.url,
-            self.all_urls_list[-10:],
-            self.news_crawl_input.debug,
-        )
-
-        # 次のページを読み込む
-        self.page += 1
-        next_page_element = (
-            'div.control-nav > a.control-nav-next[href="?view=page&page=' + str(self.page + 1) + '&pageSize=10"]'
-        )
-        click_element = "div.control-nav > a.control-nav-next"
-        if self.page <= self.page_to:
-            yield SplashRequest(
-                url=response.url,
-                callback=self.parse_start_response_splash,
-                endpoint="execute",
-                cache_args=["lua_source"],
-                args={
-                    "lua_source": lua_script_get("click"),
-                    "click_element": click_element,  # 左記の要素をクリックする
-                    # クリック後、左記の要素が表示されるまで待機させる。(現ページ＋２)
-                    "find_element": next_page_element,
-                },
-                headers={"X-My-Header": "value"},
-                session_id=self.session_id,
-            )
-        else:
-            # リスト(self.urls_list)に溜めたurlをリクエストへ登録する。
-            for _ in self.crawl_urls_list:
-                yield scrapy.Request(
-                    response.urljoin(_[self.CRAWL_POINT__LOC]),
-                    callback=self.parse_news,
-                )
-            # 次回向けに1ページ目の5件をcontrollerへ保存する
-            self._crawl_point[self.base_url] = {
-                self.CRAWL_POINT__URLS: self.all_urls_list[0 : self.url_continued.check_count],
-                self.CRAWL_POINT__CRAWLING_START_TIME: self.news_crawl_input.crawling_start_time,
-            }

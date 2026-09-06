@@ -1,5 +1,5 @@
-from prefect_lib.flows.first_observation_flow import first_observation_flow
 # from prefect.testing.utilities import prefect_test_harness
+from prefect_lib.flows.first_observation_flow import first_observation_flow
 
 
 def test_exec():

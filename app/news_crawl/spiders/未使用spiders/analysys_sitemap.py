@@ -23,9 +23,9 @@ class AnalysysSitemapSpider(ExtensionsSitemapSpider):
     # def __init__(self, *args, **kwargs):
     #     super().__init__(*args, **kwargs)
 
-    def sitemap_filter(self, entries):
+    def custom_sitemap_filter(self, entries):
         """
-        extensions_sitemapのsitemap_filterで各サイトをクロールしないようにオーバーライド。
+        extensions_sitemapのcustom_sitemap_filterで各サイトをクロールしないようにオーバーライド。
         ただしサイトマップ本体の保存機能は使用する。
         """
         start_request_debug_file_generate(

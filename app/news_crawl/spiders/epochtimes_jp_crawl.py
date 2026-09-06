@@ -1,9 +1,9 @@
 import urllib.parse
+from collections.abc import Callable
 from time import sleep
-from typing import Any, Final, cast, Callable
+from typing import Any, Final, cast
 
 import scrapy
-from news_crawl.items import NewsCrawlItem
 from news_crawl.spiders.common.start_request_debug_file_generate import LASTMOD as debug_file__LASTMOD
 from news_crawl.spiders.common.start_request_debug_file_generate import LOC as debug_file__LOC
 from news_crawl.spiders.common.start_request_debug_file_generate import start_request_debug_file_generate
@@ -13,7 +13,7 @@ from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawl
 from scrapy.exceptions import CloseSpider
 from scrapy.http import TextResponse
 from scrapy_selenium import SeleniumRequest
-from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -34,7 +34,7 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
     _domain_name: str = "epochtimes_jp"  # 各種処理で使用するドメイン名の一元管理
     _spider_version: float = 1.0
 
-    custom_settings: dict = {
+    custom_settings: dict[str, Any] | None = {
         "DEPTH_LIMIT": 0,
         "DEPTH_STATS_VERBOSE": True,
         "DOWNLOADER_MIDDLEWARES": {
@@ -90,7 +90,7 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
         self.logger.info(f"=== parse_start_response 現在解析中のURL = {response.url}")
 
         # ページ内の対象urlを抽出
-        links = response.css(f".main_content > .left_col > .posts_list .post_title > a[href]::attr(href)").getall()
+        links = response.css(".main_content > .left_col > .posts_list .post_title > a[href]::attr(href)").getall()
         self.logger.info(f"=== ページ内の記事件数 = {len(links)}")
         # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
         if not len(links) == 30:
@@ -128,8 +128,8 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
             self.news_crawl_input.debug,
         )
 
-        if self.url_continued.skip_flg == True:
-            # 前回の10件のurlが全て確認できたら前回以降に追加された記事は全て取得完了と考えられるためクロール対象のURLはすべて取得済みとする。
+        if self.url_continued.skip_flg:
+            # 前回の10件のURLをすべて確認したら、前回以降の記事は取得済みとする。
             self.logger.info(
                 f"=== parse_start_response 前回の続きまで再取得完了 ({response.url})",
             )
@@ -171,7 +171,7 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
         self.logger.info(f"=== parse_start_response 現在解析中のURL = {response.url}")
 
         # ページ内の対象urlを抽出
-        links = response.css(f".main_content > .left_col > .posts_list .post_title > a[href]::attr(href)").getall()
+        links = response.css(".main_content > .left_col > .posts_list .post_title > a[href]::attr(href)").getall()
         self.logger.info(f"=== ページ内の記事件数 = {len(links)}")
         # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
         if not len(links) == self.ITEMS_ON_PAGE_COUNT:
@@ -242,7 +242,7 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
             self.logger.critical(
                 f"指定したYAMLファイルがない、またはファイルの中よりユーザー・パスワードが取得できませんでした。{e}"
             )
-            raise CloseSpider()
+            raise CloseSpider() from e
         else:
             user = yaml_file[self.allowed_domains[0]]["user"]
             password = yaml_file[self.allowed_domains[0]]["password"]
@@ -310,7 +310,7 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
             # ページ内の対象urlを抽出
             _ = driver.find_elements(
                 By.CSS_SELECTOR,
-                f".main_content > .left_col > .posts_list .post_title > a[href]",
+                ".main_content > .left_col > .posts_list .post_title > a[href]",
             )
             # _ = driver.find_elements_by_css_selector(
             #     f'.main_content > .left_col > .posts_list .post_title > a[href]')
@@ -319,7 +319,8 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
             # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
             if not len(links) == 30:
                 self.logger.warning(
-                    f"=== parse_start_response 1ページ内で取得できた件数が想定の30件と異なる。確認要。 ( {len(links)} 件)"
+                    "=== parse_start_response "
+                    f"1ページ内で取得できた件数が想定の30件と異なる。確認要。 ( {len(links)} 件)"
                 )
 
             for link in links:
@@ -352,8 +353,8 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
                 self.news_crawl_input.debug,
             )
 
-            # 前回からの続きの指定がある場合、前回の10件のurlが全て確認できたら前回以降に追加された記事は全て取得完了と考えられるため終了する。
-            if self.url_continued.skip_flg == True:
+            # 前回の10件のURLをすべて確認したら、前回以降の記事は取得済みとする。
+            if self.url_continued.skip_flg:
                 self.logger.info(
                     f"=== parse_start_response 前回の続きまで再取得完了 ({driver.current_url})",
                 )

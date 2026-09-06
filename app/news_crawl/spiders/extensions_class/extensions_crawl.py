@@ -1,6 +1,7 @@
 import pickle
+from collections.abc import Callable, Iterable
 from datetime import datetime
-from typing import Any, Final, Callable
+from typing import Any, Final
 from urllib.parse import unquote
 
 import scrapy
@@ -20,7 +21,6 @@ from news_crawl.spiders.common.spider_init import spider_init
 from news_crawl.spiders.common.urls_continued_skip_check import UrlsContinuedSkipCheck
 from scrapy.http import TextResponse
 from scrapy.spiders import CrawlSpider
-from scrapy_splash import SplashRequest
 from scrapy_selenium import SeleniumRequest
 
 
@@ -36,7 +36,7 @@ class ExtensionsCrawlSpider(CrawlSpider):
     start_urls: list = [
         "https://www.sample.com/crawl.html",
     ]  # 継承先で上書き要。
-    custom_settings: dict = {
+    custom_settings: dict[str, Any] | None = {
         "DEPTH_LIMIT": 2,
         "DEPTH_STATS_VERBOSE": True,
     }
@@ -58,9 +58,6 @@ class ExtensionsCrawlSpider(CrawlSpider):
     """記事本体のページへのリクエストにseleniumを使用する場合True。それ以外False"""
     selenium_mode__start_request: bool = False
     """開始ページ（一覧ページ）へのリクエストにseleniumを使用する場合True。それ以外False"""
-    # splashモード
-    splash_mode: bool = False
-
     # 一覧ページの情報を保存 [{'source_url': '', 'lastmod': '', 'loc': ''},,,]
     crawl_urls_list: list[dict[str, Any]] = []
 
@@ -125,7 +122,7 @@ class ExtensionsCrawlSpider(CrawlSpider):
         """
         # クロールの種類に応じて開始させるurls、レスポンスを処理させるCall Back関数、seleniumのモードを設定
         if self.news_crawl_input.direct_crawl_urls:
-            # ダイレクトクロール指定がある場合、一覧ページなどはクロールせず、引数で受け取ったURLリストのみクロールさせる。
+            # ダイレクトクロール指定時は、一覧ページをクロールせず、指定されたURLだけをクロールする。
             start_urls: list = self.news_crawl_input.direct_crawl_urls
             callback: Callable = self.parse_news
             selenium_mode = self.selenium_mode
@@ -146,28 +143,24 @@ class ExtensionsCrawlSpider(CrawlSpider):
             else:
                 yield scrapy.Request(url=url, callback=callback)
 
-    def parse_start_response_continued_crawl_mode(self):
+    def parse_start_response_continued_crawl_mode(self, response: TextResponse) -> Iterable[scrapy.Request]:
         """(拡張メソッド)
         継承先でオーバーライドして使用する。
         前回の続きからクロールする場合の処理を記載してください。
         """
-        pass
+        return ()
 
-    def parse_start_response_page_crawl_mode(self):
+    def parse_start_response_page_crawl_mode(self, response: TextResponse) -> Iterable[scrapy.Request]:
         """(拡張メソッド)
         継承先でオーバーライドして使用する。
         ページにより範囲指定でクロールする場合の処理を記載してください。
         """
-        pass
+        return ()
 
     def parse_news(self, response: TextResponse):
         """(拡張メソッド)
         取得したレスポンスよりDBへ書き込み
         """
-        # selenium、splash、通常モードにより処理を切り分ける
-        meta = {}
-        args = {}
-
         urls: set = set()
         req: list = []
         # ページ内の全リンクを抽出（重複分はsetで削除）
@@ -179,10 +172,7 @@ class ExtensionsCrawlSpider(CrawlSpider):
                 urls.add(link_url)
 
         for url in urls:
-            if self.splash_mode:
-                req.append(SplashRequest(url=url, callback=self.parse, meta=meta, args=args))
-            else:
-                req.append(scrapy.Request(url=url, callback=self.parse))
+            req.append(scrapy.Request(url=url, callback=self.parse))
         yield from req
 
         # クロール時のスパイダーのバージョン情報を記録 ( ex: 'jp_reuters_com_crawl:1.0 / extensions_crawl:1.0' )
@@ -230,7 +220,8 @@ class ExtensionsCrawlSpider(CrawlSpider):
         """
         if self.news_crawl_input.page_span_from and self.news_crawl_input.page_span_to:  # ページ範囲指定ありの場合
             self.logger.info(
-                f"=== page_span_from ~ page_span_to {self.news_crawl_input.page_span_from} : {self.news_crawl_input.page_span_to}"
+                "=== page_span_from ~ page_span_to "
+                f"{self.news_crawl_input.page_span_from} : {self.news_crawl_input.page_span_to}"
             )
             return (
                 self.news_crawl_input.page_span_from,
