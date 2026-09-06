@@ -40,9 +40,7 @@ class StatsInfoCollectInput(BaseModel):
             base_date_from = self.base_date
             base_date_from = datetime.combine(self.base_date, time.min, TIMEZONE)
         else:
-            base_date_from = start_time.replace(
-                hour=0, minute=0, second=0, microsecond=0
-            ) - relativedelta(days=1)
+            base_date_from = start_time.replace(hour=0, minute=0, second=0, microsecond=0) - relativedelta(days=1)
 
         base_date_to = base_date_from + relativedelta(days=1)
 

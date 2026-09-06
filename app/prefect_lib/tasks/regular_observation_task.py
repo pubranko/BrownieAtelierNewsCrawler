@@ -1,7 +1,6 @@
 from typing import Any
 
-from BrownieAtelierMongo.collection_models.controller_model import \
-    ControllerModel
+from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from prefect import get_run_logger, task
 from prefect.cache_policies import NO_CACHE
@@ -34,13 +33,9 @@ def regular_observation_task(mongo: MongoModel) -> list[dict[str, Any]]:
 
         domain = spider_info[directory_search_spiders.DOMAIN]
         if domain in stop_domain:
-            logger.info(
-                f"=== Stop domainの指定によりクロール中止 : ドメイン({domain}) : spider_name({spider_name})"
-            )
+            logger.info(f"=== Stop domainの指定によりクロール中止 : ドメイン({domain}) : spider_name({spider_name})")
         elif not spider_name in spider_name_set:
-            logger.info(
-                f"=== 定期観測に登録がないスパイダーは対象外 : ドメイン({domain}) : spider_name({spider_name})"
-            )
+            logger.info(f"=== 定期観測に登録がないスパイダーは対象外 : ドメイン({domain}) : spider_name({spider_name})")
         elif len(crawl_point_record) == 0:
             logger.info(
                 f"=== クロールポイントがない（初回未実行）スパイダーは対象外 : ドメイン({domain}) : spider_name({spider_name})"

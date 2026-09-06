@@ -1,5 +1,4 @@
-from news_crawl.spiders.extensions_class.extensions_sitemap import \
-    ExtensionsSitemapSpider
+from news_crawl.spiders.extensions_class.extensions_sitemap import ExtensionsSitemapSpider
 
 
 class YomiuriCoJpSitemapSpider(ExtensionsSitemapSpider):

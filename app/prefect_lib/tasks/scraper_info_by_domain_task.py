@@ -3,10 +3,8 @@ import json
 import os
 
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import \
-    ScraperInfoByDomainModel
-from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import \
-    ScraperInfoByDomainConst
+from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import ScraperInfoByDomainModel
+from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import ScraperInfoByDomainConst
 from prefect import get_run_logger, task
 from prefect.cache_policies import NO_CACHE
 from pydantic import ValidationError
@@ -51,18 +49,13 @@ def scraper_info_by_domain_task(scraper_info_by_domain_files: list, mongo: Mongo
             scraper_info_by_domain_model.data_check(scraper=scraper_info)
         except ValidationError as e:
             error_info: list = e.errors()
-            logger.error(f'=== エラー({file_path}) : {error_info[0]["msg"]}')
+            logger.error(f"=== エラー({file_path}) : {error_info[0]['msg']}")
         else:
             scraper_info_by_domain_model.update_one(
-                filter={
-                    ScraperInfoByDomainConst.DOMAIN: scraper_info[
-                        ScraperInfoByDomainConst.DOMAIN
-                    ]
-                },
+                filter={ScraperInfoByDomainConst.DOMAIN: scraper_info[ScraperInfoByDomainConst.DOMAIN]},
                 record={"$set": scraper_info},
             )
             logger.info(f"=== 登録完了 : {file_path}")
 
         # 処理の終わったファイルオブジェクトを削除
         del file, scraper_info
-

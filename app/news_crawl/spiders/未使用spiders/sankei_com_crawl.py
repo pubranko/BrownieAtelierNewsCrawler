@@ -7,10 +7,8 @@ import scrapy
 from bs4 import BeautifulSoup as bs4
 from bs4.element import ResultSet
 from dateutil import parser
-from news_crawl.spiders.common.start_request_debug_file_generate import \
-    start_request_debug_file_generate
-from news_crawl.spiders.extensions_class.extensions_crawl import \
-    ExtensionsCrawlSpider
+from news_crawl.spiders.common.start_request_debug_file_generate import start_request_debug_file_generate
+from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
 from scrapy.exceptions import CloseSpider
 from scrapy.http import Response
 from scrapy_selenium import SeleniumRequest
@@ -97,9 +95,7 @@ class SankeiComCrawlSpider(ExtensionsCrawlSpider):
         # 直近の数分間の指定がある場合
         until_this_time: datetime = self.news_crawl_input.crawling_start_time
         if "lastmod_recent_time" in self.kwargs_save:
-            until_this_time = until_this_time - timedelta(
-                minutes=int(self.kwargs_save["lastmod_recent_time"])
-            )
+            until_this_time = until_this_time - timedelta(minutes=int(self.kwargs_save["lastmod_recent_time"]))
             self.logger.info(
                 f"=== parse_start_response : lastmod_recent_timeより計算した時間 {until_this_time.isoformat()}"
             )
@@ -108,17 +104,13 @@ class SankeiComCrawlSpider(ExtensionsCrawlSpider):
         if "continued" in self.kwargs_save:
             last_time = parser.parse(self._crawl_point[response.url]["latest_lastmod"])
         # 処理中のページ内で、最大のlastmodとurlを記録するエリア。とりあえず初期値には約10年前を指定。
-        max_lstmod: datetime = datetime.now().astimezone(
-            self.settings["TIMEZONE"]
-        ) - timedelta(days=3650)
+        max_lstmod: datetime = datetime.now().astimezone(self.settings["TIMEZONE"]) - timedelta(days=3650)
         max_url: str = ""
 
         page = page_from
         next_page_flg = False
         debug_urls_list = []
-        self.logger.info(
-            f"=== parse_start_response 現在解析中のpage={page} と URL = {driver.current_url}"
-        )
+        self.logger.info(f"=== parse_start_response 現在解析中のpage={page} と URL = {driver.current_url}")
         while page <= page_to:  # 条件はあとで考える
             # Javascript実行が終了するまで最大30秒間待つように指定
             driver.set_script_timeout(60)
@@ -132,15 +124,11 @@ class SankeiComCrawlSpider(ExtensionsCrawlSpider):
             element: WebElement
             for element in elements:
                 # 要素から、url,title,最終更新時間を取得
-                url: str = element.find_element_by_css_selector(
-                    "h4 a[href]"
-                ).get_attribute("href")
+                url: str = element.find_element_by_css_selector("h4 a[href]").get_attribute("href")
                 title = element.find_element_by_css_selector("h4 a").text
                 _ = element.find_element_by_css_selector(".under-headline time")
                 lastmod_str: str = _.get_attribute("datetime")
-                lastmod_parse: datetime = parser.parse(lastmod_str).astimezone(
-                    self.settings["TIMEZONE"]
-                )
+                lastmod_parse: datetime = parser.parse(lastmod_str).astimezone(self.settings["TIMEZONE"])
 
                 # 最新の記事の時間とurlを記録
                 if max_lstmod < lastmod_parse:
@@ -157,16 +145,11 @@ class SankeiComCrawlSpider(ExtensionsCrawlSpider):
                     if lastmod_parse < last_time:
                         crwal_flg = False
                         next_page_flg = True
-                    elif (
-                        lastmod_parse == last_time
-                        and self._crawl_point[response.url]["latest_url"]
-                    ):
+                    elif lastmod_parse == last_time and self._crawl_point[response.url]["latest_url"]:
                         crwal_flg = False
                         next_page_flg = True
 
-                debug_urls_list.append(
-                    {"loc": url, "lastmod": lastmod_parse.isoformat()}
-                )
+                debug_urls_list.append({"loc": url, "lastmod": lastmod_parse.isoformat()})
                 if crwal_flg:
                     # ページ内のURLと更新日時をリストに保存する。
                     urls_list.append({"loc": url, "lastmod": lastmod_parse.isoformat()})
@@ -175,9 +158,7 @@ class SankeiComCrawlSpider(ExtensionsCrawlSpider):
 
             # 次のページを読み込む必要がなくなった場合
             if next_page_flg:
-                self.logger.info(
-                    f"=== parse_start_response 指定範囲のリンク取得完了 ({driver.current_url})"
-                )
+                self.logger.info(f"=== parse_start_response 指定範囲のリンク取得完了 ({driver.current_url})")
                 break
 
             # 次のページを読み込む
@@ -202,17 +183,13 @@ class SankeiComCrawlSpider(ExtensionsCrawlSpider):
             "crawling_start_time": self.news_crawl_input.crawling_start_time.isoformat(),
         }
 
-        start_request_debug_file_generate(
-            self.name, response.url, debug_urls_list, self.news_crawl_input.debug
-        )
+        start_request_debug_file_generate(self.name, response.url, debug_urls_list, self.news_crawl_input.debug)
 
     def pagination_check(self, response: Response) -> ResultSet:
         """(オーバーライド)
         次ページがあれば、BeautifulSoupのResultSetで返す。
         """
         soup = bs4(response.text, "html.parser")
-        pagination: ResultSet = soup.select(
-            ".pagination > .page-list > li:last-child > a[href]"
-        )
+        pagination: ResultSet = soup.select(".pagination > .page-list > li:last-child > a[href]")
 
         return pagination

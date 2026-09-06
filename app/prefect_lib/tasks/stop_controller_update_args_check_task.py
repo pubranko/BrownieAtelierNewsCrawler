@@ -1,21 +1,16 @@
 from prefect import get_run_logger, task
-from prefect_lib.data_models.stop_controller_update_input import \
-    StopControllerUpdateInput
+from prefect_lib.data_models.stop_controller_update_input import StopControllerUpdateInput
 from pydantic import ValidationError
 
 
 @task
-def stop_controller_update_args_check_task(
-    domain: str, command: str, destination: str
-) -> StopControllerUpdateInput:
+def stop_controller_update_args_check_task(domain: str, command: str, destination: str) -> StopControllerUpdateInput:
     """
     ・入力（Flowの引数）のバリデーションチェック。
     ・戻り値: 入力データクラス
     """
     logger = get_run_logger()  # PrefectLogAdapter
-    logger.info(
-        f"=== 引数 : domain= {domain},  command= {command}, destination= {destination}"
-    )
+    logger.info(f"=== 引数 : domain= {domain},  command= {command}, destination= {destination}")
 
     # 入力パラメータのバリデーション
     try:

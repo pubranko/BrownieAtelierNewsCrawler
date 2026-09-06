@@ -14,20 +14,14 @@ from pymongo.cursor import Cursor
 
 path = os.getcwd()
 sys.path.append(path)
-from BrownieAtelierMongo.collection_models.controller_model import \
-    ControllerModel
-from BrownieAtelierMongo.collection_models.crawler_response_model import \
-    CrawlerResponseModel
+from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
+from BrownieAtelierMongo.collection_models.crawler_response_model import CrawlerResponseModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
-    ScrapedFromResponseModel
-from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import \
-    ScraperInfoByDomainModel
-from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import \
-    ScraperInfoByDomainConst
+from BrownieAtelierMongo.collection_models.scraped_from_response_model import ScrapedFromResponseModel
+from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import ScraperInfoByDomainModel
+from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import ScraperInfoByDomainConst
 from prefect_lib.scraper.article_scraper import scraper as artcle_scraper
-from prefect_lib.scraper.publish_date_scraper import \
-    scraper as publish_date_scraper
+from prefect_lib.scraper.publish_date_scraper import scraper as publish_date_scraper
 from prefect_lib.scraper.title_scraper import scraper as title_scraper
 from shared.settings import DATA__DEBUG_FILE_DIR
 from shared.timezone_recovery import timezone_recovery

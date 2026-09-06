@@ -2,11 +2,11 @@ import pickle
 from typing import Any
 
 import scrapy
-from BrownieAtelierMongo.collection_models.crawler_response_model import \
-    CrawlerResponseModel
+from BrownieAtelierMongo.collection_models.crawler_response_model import CrawlerResponseModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from bs4 import BeautifulSoup as bs4
 from dateutil import parser
+
 # from pymongo import MongoClient
 from pymongo.mongo_client import MongoClient
 

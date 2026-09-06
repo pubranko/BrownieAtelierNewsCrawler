@@ -8,8 +8,7 @@ from scrapy.exceptions import CloseSpider
 
 path = os.getcwd()
 sys.path.append(path)
-from BrownieAtelierMongo.collection_models.controller_model import \
-    ControllerModel
+from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 from shared.timezone_recovery import timezone_recovery
 
 
@@ -59,9 +58,7 @@ class LastmodContinuedSkipCheck(object):
 
             # lastmodがあるサイトの場合、タイムゾーンがmongoDBから取得する際消えているため復元する。
             if ControllerModel.LATEST_LASTMOD in self.crawl_point:
-                self.latest_lastmod = timezone_recovery(
-                    self.crawl_point[ControllerModel.LATEST_LASTMOD]
-                )
+                self.latest_lastmod = timezone_recovery(self.crawl_point[ControllerModel.LATEST_LASTMOD])
 
     def skip_check(self, lastmod: datetime) -> bool:
         """

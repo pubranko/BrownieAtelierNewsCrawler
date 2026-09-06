@@ -8,8 +8,7 @@ from prefect_lib.flows import START_TIME
 from prefect_lib.flows.init_flow import init_flow
 from prefect_lib.tasks.end_task import end_task
 from prefect_lib.tasks.init_task import init_task
-from prefect_lib.tasks.news_clip_master_save_task import \
-    news_clip_master_save_task
+from prefect_lib.tasks.news_clip_master_save_task import news_clip_master_save_task
 from prefect_lib.tasks.scrapying_task import scrapying_task
 
 
@@ -27,7 +26,7 @@ def manual_scrapying_flow(
     logger = get_run_logger()  # PrefectLogAdapter
     # 初期処理
     init_task_instance: PrefectFuture = init_task.submit()
-    # 実行結果が返ってくるまで待機し、戻り値を保存。 
+    # 実行結果が返ってくるまで待機し、戻り値を保存。
     #   ※タスクのステータスをresultを受け取る前に判定してもPendingとなる。インスタンスのステータスはリアルタイムで更新されているので注意。
     init_task_result = init_task_instance.result()
 
@@ -36,9 +35,7 @@ def manual_scrapying_flow(
 
         try:
             # 引数で指定されたクロール結果のスクレイピングを実施
-            scrapying_task(
-                mongo, domain, urls, target_start_time_from, target_start_time_to
-            )
+            scrapying_task(mongo, domain, urls, target_start_time_from, target_start_time_to)
 
             if following_processing_execution:
                 # 後続処理実施指定がある場合、スクレイピング結果をニュースクリップマスターへ保存

@@ -30,4 +30,4 @@ def init_flow():
     # 不要なprefect.events.clientsのログを抑制
     logging.getLogger("prefect.events.clients").setLevel(logging.WARNING)
     logger = get_run_logger()  # PrefectLogAdapter
-    logger.info(f'=== 保存用ログファイル: {os.environ.get("SCRAPY__LOG_FILE")}')
+    logger.info(f"=== 保存用ログファイル: {os.environ.get('SCRAPY__LOG_FILE')}")

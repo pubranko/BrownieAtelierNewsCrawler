@@ -8,8 +8,7 @@ from news_crawl.items import NewsCrawlItem
 from news_crawl.news_crawl_input import NewsCrawlInput
 from news_crawl.spiders.common.spider_closed import spider_closed
 from news_crawl.spiders.common.spider_init import spider_init
-from news_crawl.spiders.common.start_request_debug_file_generate import \
-    start_request_debug_file_generate
+from news_crawl.spiders.common.start_request_debug_file_generate import start_request_debug_file_generate
 from scrapy.http import Response
 from scrapy.http.response.xml import XmlResponse
 from scrapy.spiders import XMLFeedSpider
@@ -92,13 +91,9 @@ class ExtensionsXmlFeedSpider(XMLFeedSpider):
             for result_item in self.process_results(response, ret):
                 yield result_item
         # 終了処理
-        start_request_debug_file_generate(
-            self.name, response.url, self._entries, self.news_crawl_input.debug
-        )
+        start_request_debug_file_generate(self.name, response.url, self._entries, self.news_crawl_input.debug)
 
-        self.logger.info(
-            f"=== parse_nodes : XMLの解析完了 : 件数 = {self._xml_extract_count} ,url = {response.url}"
-        )
+        self.logger.info(f"=== parse_nodes : XMLの解析完了 : 件数 = {self._xml_extract_count} ,url = {response.url}")
         # サイトマップごとの最大更新時間を記録(controllerコレクションへ保存する内容)
         self._crawl_point[response.url] = {
             "latest_lastmod": self._max_lstmod,

@@ -4,12 +4,10 @@ from typing import Any, Final, Optional, cast, Callable
 from urllib.parse import unquote
 
 import scrapy
-from BrownieAtelierMongo.collection_models.controller_model import \
-    ControllerModel
-from BrownieAtelierMongo.collection_models.crawler_logs_model import \
-    CrawlerLogsModel
-from BrownieAtelierMongo.collection_models.crawler_response_model import \
-    CrawlerResponseModel
+from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
+from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
+from BrownieAtelierMongo.collection_models.crawler_response_model import CrawlerResponseModel
+
 #
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from bs4 import BeautifulSoup as bs4
@@ -18,17 +16,13 @@ from lxml.etree import _Element
 from news_crawl.items import NewsCrawlItem
 from news_crawl.news_crawl_input import NewsCrawlInput
 from news_crawl.spiders.common.custom_sitemap import CustomSitemap
-from news_crawl.spiders.common.lastmod_continued_skip_check import \
-    LastmodContinuedSkipCheck
-from news_crawl.spiders.common.lastmod_term_skip_check import \
-    LastmodTermSkipCheck
+from news_crawl.spiders.common.lastmod_continued_skip_check import LastmodContinuedSkipCheck
+from news_crawl.spiders.common.lastmod_term_skip_check import LastmodTermSkipCheck
 from news_crawl.spiders.common.pagination_check import PaginationCheck
 from news_crawl.spiders.common.spider_closed import spider_closed
 from news_crawl.spiders.common.spider_init import spider_init
-from news_crawl.spiders.common.start_request_debug_file_generate import \
-    start_request_debug_file_generate
-from news_crawl.spiders.common.url_pattern_skip_check import \
-    url_pattern_skip_check
+from news_crawl.spiders.common.start_request_debug_file_generate import start_request_debug_file_generate
+from news_crawl.spiders.common.url_pattern_skip_check import url_pattern_skip_check
 from scrapy.http import Request, Response, TextResponse
 from scrapy.spiders import SitemapSpider
 from scrapy.spiders.sitemap import iterloc
@@ -131,9 +125,7 @@ class ExtensionsSitemapSpider(SitemapSpider):
     # 定数 (CrawlerResponseModelのsource_of_information)
     #############################################################
     """(CrawlerResponseModel)クロール対象がある一覧ページURL"""
-    CRAWL_URLS_LIST__SOURCE_URL: Final[
-        str
-    ] = CrawlerLogsModel.CRAWL_URLS_LIST__SOURCE_URL
+    CRAWL_URLS_LIST__SOURCE_URL: Final[str] = CrawlerLogsModel.CRAWL_URLS_LIST__SOURCE_URL
     """(CrawlerResponseModel)クロール対象URL"""
     CRAWL_URLS_LIST__LOC: Final[str] = CrawlerLogsModel.CRAWL_URLS_LIST__LOC
     """(CrawlerResponseModel)クロールページの最終更新時間"""
@@ -182,9 +174,7 @@ class ExtensionsSitemapSpider(SitemapSpider):
                 # しかたなくsitemapから取得したことにして後続を実施
                 self.crawl_target_urls.append(loc)
                 if self.selenium_mode:
-                    yield SeleniumRequest(
-                        url=loc, callback=self.selenium_parse, wait_time=2
-                    )
+                    yield SeleniumRequest(url=loc, callback=self.selenium_parse, wait_time=2)
                 elif self.splash_mode:
                     yield SplashRequest(
                         url=loc,
@@ -198,13 +188,11 @@ class ExtensionsSitemapSpider(SitemapSpider):
                         },
                     )
                 else:
-                    yield scrapy.Request(url=loc, callback= cast(Callable, self.parse))
+                    yield scrapy.Request(url=loc, callback=cast(Callable, self.parse))
 
         else:
             for url in self.sitemap_urls:
-                yield scrapy.Request(
-                    url=url, callback=self.custom_parse_sitemap, priority=10
-                )
+                yield scrapy.Request(url=url, callback=self.custom_parse_sitemap, priority=10)
 
     def custom_parse_sitemap(self, response: Response):
         """
@@ -231,9 +219,7 @@ class ExtensionsSitemapSpider(SitemapSpider):
             if sitemap.type == self.SITEMAP_TYPE__SITEMAPINDEX:
                 for loc in iterloc(it, self.sitemap_alternate_links):
                     if any(x.search(loc) for x in self._follow):
-                        yield Request(
-                            loc, callback=self.custom_parse_sitemap, priority=10
-                        )
+                        yield Request(loc, callback=self.custom_parse_sitemap, priority=10)
 
             # 解析中のサイトマップがサイトマップの場合
             elif sitemap.type == "urlset":
@@ -242,9 +228,7 @@ class ExtensionsSitemapSpider(SitemapSpider):
                         if rule_regex.search(loc):
                             # seleniumモードによる切り替え
                             if self.selenium_mode:
-                                yield SeleniumRequest(
-                                    url=loc, callback=call_back, wait_time=2
-                                )
+                                yield SeleniumRequest(url=loc, callback=call_back, wait_time=2)
                             elif self.splash_mode:
                                 yield SplashRequest(
                                     url=loc,
@@ -263,9 +247,7 @@ class ExtensionsSitemapSpider(SitemapSpider):
 
                 # sitemap_filter内で続きのsitemap_urlが生成されていた場合、そのURLへリクエストを行う。
                 if len(self.next_sitemap_url):
-                    self.logger.info(
-                        f"=== {self.name} 次のサイトマップをリクエスト : {self.next_sitemap_url}"
-                    )
+                    self.logger.info(f"=== {self.name} 次のサイトマップをリクエスト : {self.next_sitemap_url}")
                     yield Request(
                         self.next_sitemap_url,
                         callback=self.custom_parse_sitemap,
@@ -282,9 +264,7 @@ class ExtensionsSitemapSpider(SitemapSpider):
         対象のurlの場合、”yield entry”で返すと親クラス側でrequestされる。
         """
         # ExtensionsSitemapSpiderクラスを継承した場合のsitemap_filter共通処理
-        start_request_debug_file_generate(
-            self.name, response.url, entries, self.news_crawl_input.debug
-        )
+        start_request_debug_file_generate(self.name, response.url, entries, self.news_crawl_input.debug)
 
         # 処理中のサイトマップ内で、最大のlastmodを記録するエリア
         max_lstmod: str = ""
@@ -297,9 +277,7 @@ class ExtensionsSitemapSpider(SitemapSpider):
             if max_lstmod < entry[self.SITEMAP__LASTMOD]:
                 max_lstmod = entry[self.SITEMAP__LASTMOD]
             crwal_flg: bool = True
-            date_lastmod = parser.parse(entry[self.SITEMAP__LASTMOD]).astimezone(
-                self.settings["TIMEZONE"]
-            )
+            date_lastmod = parser.parse(entry[self.SITEMAP__LASTMOD]).astimezone(self.settings["TIMEZONE"])
 
             if entries.type == self.SITEMAP_TYPE__SITEMAPINDEX:
                 # 親sitemap側のlastmodと子サイトマップ側のlastmodはは常に一致するわけではなさそう。
@@ -308,9 +286,7 @@ class ExtensionsSitemapSpider(SitemapSpider):
                 if self.lastmod_continued.skip_check(date_lastmod):
                     crwal_flg = False
             else:
-                if url_pattern_skip_check(
-                    entry[self.SITEMAP__LOC], self.news_crawl_input.url_pattern
-                ):
+                if url_pattern_skip_check(entry[self.SITEMAP__LOC], self.news_crawl_input.url_pattern):
                     crwal_flg = False
                 if self.lastmod_term.skip_check(date_lastmod):
                     crwal_flg = False
@@ -362,16 +338,12 @@ class ExtensionsSitemapSpider(SitemapSpider):
             # 最終更新期間(分)の抽出指定があり、まだ引数で指定された「最終更新日時期間指定_from」まで到達していない場合、次のsitemapのURLを生成する。
             if self.lastmod_term.lastmod_term_datetime_from:
                 if self.lastmod_term.lastmod_term_datetime_from < last_lastmod:
-                    self.next_sitemap_url = self.loading_site_map_continued(
-                        response.url
-                    )
+                    self.next_sitemap_url = self.loading_site_map_continued(response.url)
 
             # 前回の続き指定があり、まだ続き指定分まで到達していない場合、次のsitemapのURLを生成する。
             if self.lastmod_continued.continued:
                 if self.lastmod_continued.latest_lastmod < last_lastmod:
-                    self.next_sitemap_url = self.loading_site_map_continued(
-                        response.url
-                    )
+                    self.next_sitemap_url = self.loading_site_map_continued(response.url)
 
     def parse(self, response: TextResponse):
         """
@@ -410,18 +382,14 @@ class ExtensionsSitemapSpider(SitemapSpider):
             link_url: str = unquote(response.urljoin(link))
             # リンクのurlがsitemapで対象としたurlの別ページ、かつ、既知のページネーションで
             # 抽出されていなかった場合リクエストへ追加
-            if self.pagination_check.check(
-                link_url, self.crawl_target_urls, self.logger, self.name
-            ):
+            if self.pagination_check.check(link_url, self.crawl_target_urls, self.logger, self.name):
                 urls.add(link_url)
 
         for url in urls:
             if self.splash_mode:
-                req.append(
-                    SplashRequest(url=url, callback=self.parse, meta=meta, args=args)
-                )
+                req.append(SplashRequest(url=url, callback=self.parse, meta=meta, args=args))
             else:
-                req.append(scrapy.Request(url=url, callback= cast(Callable,self.parse)))
+                req.append(scrapy.Request(url=url, callback=cast(Callable, self.parse)))
         yield from req
 
         # クロール時のスパイダーのバージョン情報を記録 ( ex: 'sankei_com_sitemap:1.0 / extensions_sitemap:1.0' )
@@ -431,12 +399,12 @@ class ExtensionsSitemapSpider(SitemapSpider):
         for record in self.crawl_urls_list:
             record: dict
             if response.url == record["loc"]:
-                source_of_information[
-                    CrawlerResponseModel.SOURCE_OF_INFORMATION__SOURCE_URL
-                ] = record[self.CRAWL_URLS_LIST__SOURCE_URL]
-                source_of_information[
-                    CrawlerResponseModel.SOURCE_OF_INFORMATION__LASTMOD
-                ] = record[self.CRAWL_URLS_LIST__LASTMOD]
+                source_of_information[CrawlerResponseModel.SOURCE_OF_INFORMATION__SOURCE_URL] = record[
+                    self.CRAWL_URLS_LIST__SOURCE_URL
+                ]
+                source_of_information[CrawlerResponseModel.SOURCE_OF_INFORMATION__LASTMOD] = record[
+                    self.CRAWL_URLS_LIST__LASTMOD
+                ]
 
         yield NewsCrawlItem(
             domain=self.allowed_domains[0],
@@ -474,9 +442,7 @@ class ExtensionsSitemapSpider(SitemapSpider):
         for css_selector in self.known_pagination_css_selectors:
             # 既知のページネーションのurlの場合リクエストへ追加
             # elem = driver.find_elements_by_css_selector(css_selector)
-            elems: list[WebElement] = driver.find_elements(
-                By.CSS_SELECTOR, css_selector
-            )
+            elems: list[WebElement] = driver.find_elements(By.CSS_SELECTOR, css_selector)
 
             known_links = [unquote(str(el.get_attribute("href"))) for el in elems]
 
@@ -492,15 +458,11 @@ class ExtensionsSitemapSpider(SitemapSpider):
             link_url: str = unquote(response.urljoin(str(link)))
             # リンクのurlがsitemapで対象としたurlの別ページ、かつ、既知のページネーションで
             # 抽出されていなかった場合リクエストへ追加
-            if self.pagination_check.check(
-                link_url, self.crawl_target_urls, self.logger, self.name
-            ):
+            if self.pagination_check.check(link_url, self.crawl_target_urls, self.logger, self.name):
                 urls.add(link_url)
 
         for url in urls:
-            req.append(
-                SeleniumRequest(url=url, callback=self.selenium_parse, wait_time=2)
-            )
+            req.append(SeleniumRequest(url=url, callback=self.selenium_parse, wait_time=2))
         yield from req
 
         _info = f"{self.name}:{str(self._spider_version)} / {self.EXTENSIONS_SITEMAP}:{str(self._extensions_sitemap_version)}"
@@ -509,12 +471,12 @@ class ExtensionsSitemapSpider(SitemapSpider):
         for record in self.crawl_urls_list:
             record: dict
             if response.url == record["loc"]:
-                source_of_information[
-                    CrawlerResponseModel.SOURCE_OF_INFORMATION__SOURCE_URL
-                ] = record[self.CRAWL_URLS_LIST__SOURCE_URL]
-                source_of_information[
-                    CrawlerResponseModel.SOURCE_OF_INFORMATION__LASTMOD
-                ] = record[self.CRAWL_URLS_LIST__LASTMOD]
+                source_of_information[CrawlerResponseModel.SOURCE_OF_INFORMATION__SOURCE_URL] = record[
+                    self.CRAWL_URLS_LIST__SOURCE_URL
+                ]
+                source_of_information[CrawlerResponseModel.SOURCE_OF_INFORMATION__LASTMOD] = record[
+                    self.CRAWL_URLS_LIST__LASTMOD
+                ]
 
         yield NewsCrawlItem(
             domain=self.allowed_domains[0],

@@ -1,14 +1,10 @@
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.news_clip_master_model import \
-    NewsClipMasterModel
-from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import \
-    ScraperInfoByDomainModel
+from BrownieAtelierMongo.collection_models.news_clip_master_model import NewsClipMasterModel
+from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import ScraperInfoByDomainModel
 from prefect import get_run_logger, task
 from prefect.cache_policies import NO_CACHE
-from prefect_lib.data_models.scraper_pattern_report_data import \
-    ScraperPatternReportData
-from prefect_lib.data_models.scraper_pattern_report_input import \
-    ScraperPatternReportInput
+from prefect_lib.data_models.scraper_pattern_report_data import ScraperPatternReportData
+from prefect_lib.data_models.scraper_pattern_report_input import ScraperPatternReportInput
 
 
 @task(cache_policy=NO_CACHE)
@@ -32,20 +28,12 @@ def scraper_pattern_report_data_frame_task(
     base_date_from, base_date_to = scraper_pattern_report_input.base_date_get()
 
     # ドメイン別にニュースクリップマスターより取得した件数を確認。
-    for (
-        scraper_info_by_domain_data
-    ) in scraper_info_by_domain.find_and_data_models_get():
+    for scraper_info_by_domain_data in scraper_info_by_domain.find_and_data_models_get():
         # ニュースクリップマスターより、対象期間に取得したレコード件数を確認
         conditions: list = []
-        conditions.append(
-            {NewsClipMasterModel.CRAWLING_START_TIME: {"$gte": base_date_from}}
-        )
-        conditions.append(
-            {NewsClipMasterModel.CRAWLING_START_TIME: {"$lt": base_date_to}}
-        )
-        conditions.append(
-            {NewsClipMasterModel.DOMAIN: scraper_info_by_domain_data.domain_get()}
-        )
+        conditions.append({NewsClipMasterModel.CRAWLING_START_TIME: {"$gte": base_date_from}})
+        conditions.append({NewsClipMasterModel.CRAWLING_START_TIME: {"$lt": base_date_to}})
+        conditions.append({NewsClipMasterModel.DOMAIN: scraper_info_by_domain_data.domain_get()})
         filter: dict = {"$and": conditions}
         record_count = news_clip_master.count(filter=filter)
 
@@ -55,9 +43,7 @@ def scraper_pattern_report_data_frame_task(
         )
 
         # データフレーム（マスター）を作成
-        skeleton_for_counters: list = (
-            scraper_info_by_domain_data.making_into_a_table_format()
-        )
+        skeleton_for_counters: list = scraper_info_by_domain_data.making_into_a_table_format()
         for skeleton_for_counter in skeleton_for_counters:
             scraper_pattern_report_data.scraper_info_master_store(skeleton_for_counter)
 
@@ -76,9 +62,7 @@ def scraper_pattern_report_data_frame_task(
             for pattern_key, pattern_value in pattern_info.items():
                 scraper_pattern_report_data.scraper_info_counter_store(
                     {
-                        scraper_pattern_report_data.DOMAIN: master_record[
-                            NewsClipMasterModel.DOMAIN
-                        ],
+                        scraper_pattern_report_data.DOMAIN: master_record[NewsClipMasterModel.DOMAIN],
                         scraper_pattern_report_data.SCRAPE_ITEMS: pattern_key,
                         scraper_pattern_report_data.PATTERN: pattern_value,
                         scraper_pattern_report_data.COUNT_OF_USE: 1,

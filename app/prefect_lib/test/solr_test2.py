@@ -51,5 +51,5 @@ results = solr.search(
         # ファセット、取得したいフィールド
         #'facet': facet,
         #'facet_field': ','.join(facet_field),
-    }
+    },
 )

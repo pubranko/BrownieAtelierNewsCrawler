@@ -9,17 +9,14 @@ from logging import Logger
 from typing import Any, Union
 
 import requests
-from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import \
-    ScraperInfoByDomainConst
+from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import ScraperInfoByDomainConst
 from bs4 import BeautifulSoup as bs4
 from bs4.element import ResultSet, Tag
 from dateutil.parser import parse
 from shared.settings import TIMEZONE
 
 
-def scraper(
-    soup: bs4, scraper: str, scrape_parm: list[dict[str, str]]
-) -> tuple[dict, dict]:
+def scraper(soup: bs4, scraper: str, scrape_parm: list[dict[str, str]]) -> tuple[dict, dict]:
     """ """
     scraped_result: dict = {}
     scraped_pattern: dict = {}
@@ -28,13 +25,9 @@ def scraper(
     ### cssセレクターでスクレイプ対象を取得できるまで繰り返し ###
     for scrape_info in scrape_parm:
         # scraped_item = soup.select(scrape_info['css_selecter'])
-        scraped_item = soup.select(
-            scrape_info[ScraperInfoByDomainConst.ITEM__CSS_SELECTER]
-        )
+        scraped_item = soup.select(scrape_info[ScraperInfoByDomainConst.ITEM__CSS_SELECTER])
         if type(scraped_item) is ResultSet:
-            scraped_pattern = {
-                scraper: scrape_info[ScraperInfoByDomainConst.ITEM__PATTERN]
-            }
+            scraped_pattern = {scraper: scrape_info[ScraperInfoByDomainConst.ITEM__PATTERN]}
             item_text: list[str] = [tag.get_text() for tag in scraped_item]
             scraped_result["article"] = "\n".join(item_text).strip()
             break

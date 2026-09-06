@@ -2,8 +2,7 @@ from datetime import date
 from typing import Optional
 
 from prefect import get_run_logger, task
-from prefect_lib.data_models.stats_info_collect_input import \
-    StatsInfoCollectInput
+from prefect_lib.data_models.stats_info_collect_input import StatsInfoCollectInput
 from prefect_lib.flows import START_TIME
 from pydantic import ValidationError
 
@@ -25,8 +24,6 @@ def stats_info_collect_args_check_task(
         logger.error(f"=== エラー内容: {e.errors()}")
         raise ValueError()
 
-    logger.info(
-        f"=== 基準日from ~ to : {stats_info_collect_input.base_date_get(START_TIME)}"
-    )
+    logger.info(f"=== 基準日from ~ to : {stats_info_collect_input.base_date_get(START_TIME)}")
 
     return stats_info_collect_input

@@ -14,7 +14,7 @@ logger = logging.getLogger(f"prefect.{__name__}")
 
 
 def load_schedule_dict() -> dict:
-    """ スケジュール情報を読み込み、辞書形式で返す
+    """スケジュール情報を読み込み、辞書形式で返す
     Returns:
         dict: スケジュール情報の辞書
     """
@@ -23,8 +23,9 @@ def load_schedule_dict() -> dict:
     with open(schedule_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
+
 def main():
-    
+
     # スケジュール情報の読み込み
     schedule_dict: dict = load_schedule_dict()
     # 現在の時間を取得して、スケジュールに基づいたフロー情報＆パラメータを取得

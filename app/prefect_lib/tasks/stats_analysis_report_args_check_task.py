@@ -2,8 +2,7 @@ from datetime import date
 from typing import Optional
 
 from prefect import get_run_logger, task
-from prefect_lib.data_models.stats_analysis_report_input import \
-    StatsAnalysisReportInput
+from prefect_lib.data_models.stats_analysis_report_input import StatsAnalysisReportInput
 from prefect_lib.flows import START_TIME
 from pydantic import ValidationError
 
@@ -17,9 +16,7 @@ def stats_analysis_report_args_check_task(
     ・戻り値: 入力データクラス
     """
     logger = get_run_logger()  # PrefectLogAdapter
-    logger.info(
-        f"=== 引数 : report_term= {report_term}, totalling_term= {totalling_term}, base_date = {base_date}"
-    )
+    logger.info(f"=== 引数 : report_term= {report_term}, totalling_term= {totalling_term}, base_date = {base_date}")
 
     # 入力パラメータのバリデーション
     try:
@@ -33,8 +30,6 @@ def stats_analysis_report_args_check_task(
         logger.error(f"=== バリデーションエラー: {e.errors()}")
         raise ValueError()
 
-    logger.info(
-        f"=== 基準日from ~ to : {stats_analysis_report_input.base_date_get(START_TIME)}"
-    )
+    logger.info(f"=== 基準日from ~ to : {stats_analysis_report_input.base_date_get(START_TIME)}")
 
     return stats_analysis_report_input

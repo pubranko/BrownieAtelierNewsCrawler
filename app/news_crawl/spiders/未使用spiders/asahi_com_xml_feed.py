@@ -3,8 +3,7 @@ from datetime import datetime, timedelta
 
 import scrapy
 from dateutil import parser
-from news_crawl.spiders.extensions_class.extensions_xml_feed import \
-    ExtensionsXmlFeedSpider
+from news_crawl.spiders.extensions_class.extensions_xml_feed import ExtensionsXmlFeedSpider
 from scrapy.http.response.xml import XmlResponse
 from scrapy.selector.unified import Selector
 
@@ -48,9 +47,7 @@ class AsahiComXmlFeedSpider(ExtensionsXmlFeedSpider):
         # until_this_time: datetime = self._crawling_start_time
         until_this_time: datetime = self.news_crawl_input.crawling_start_time
         if "lastmod_recent_time" in self.kwargs_save:
-            until_this_time = until_this_time - timedelta(
-                minutes=int(self.kwargs_save["lastmod_recent_time"])
-            )
+            until_this_time = until_this_time - timedelta(minutes=int(self.kwargs_save["lastmod_recent_time"]))
 
         # 前回からの続きの指定がある場合
         _last_time: datetime = datetime.now()  # 型ヒントエラー回避用の初期値
@@ -97,10 +94,7 @@ class AsahiComXmlFeedSpider(ExtensionsXmlFeedSpider):
         if "continued" in self.kwargs_save:
             if _date_lastmod < _last_time:
                 _crwal_flg = False
-            elif (
-                _date_lastmod == _last_time
-                and self._crawl_point[response.url]["latest_url"]
-            ):
+            elif _date_lastmod == _last_time and self._crawl_point[response.url]["latest_url"]:
                 _crwal_flg = False
 
         if _crwal_flg:

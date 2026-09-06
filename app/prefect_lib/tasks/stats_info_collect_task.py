@@ -1,24 +1,19 @@
 from datetime import datetime
 from typing import Any
 
-from BrownieAtelierMongo.collection_models.crawler_logs_model import \
-    CrawlerLogsModel
+from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from prefect import get_run_logger, task
 from prefect.cache_policies import NO_CACHE
-from prefect_lib.data_models.stats_info_collect_data import \
-    StatsInfoCollectData
-from prefect_lib.data_models.stats_info_collect_input import \
-    StatsInfoCollectInput
+from prefect_lib.data_models.stats_info_collect_data import StatsInfoCollectData
+from prefect_lib.data_models.stats_info_collect_input import StatsInfoCollectInput
 from prefect_lib.flows import START_TIME
 from pymongo.cursor import Cursor
 from shared.timezone_recovery import timezone_recovery
 
 
 @task(cache_policy=NO_CACHE)
-def stats_info_collect_task(
-    mongo: MongoModel, stats_info_collect_input: StatsInfoCollectInput
-) -> StatsInfoCollectData:
+def stats_info_collect_task(mongo: MongoModel, stats_info_collect_input: StatsInfoCollectInput) -> StatsInfoCollectData:
     """
     クローラーログより取得したスパイダーレポートをクローラーログの集計用クラスへ流し込みデータフレームを生成する。
     生成したデータフレームクラスを返す。
@@ -32,9 +27,7 @@ def stats_info_collect_task(
     crawler_logs = CrawlerLogsModel(mongo)
     base_date_from, base_date_to = stats_info_collect_input.base_date_get(START_TIME)
     conditions: list = []
-    conditions.append(
-        {CrawlerLogsModel.RECORD_TYPE: CrawlerLogsModel.RECORD_TYPE__SPIDER_REPORTS}
-    )
+    conditions.append({CrawlerLogsModel.RECORD_TYPE: CrawlerLogsModel.RECORD_TYPE__SPIDER_REPORTS})
     conditions.append({CrawlerLogsModel.START_TIME: {"$gte": base_date_from}})
     conditions.append({CrawlerLogsModel.START_TIME: {"$lt": base_date_to}})
 

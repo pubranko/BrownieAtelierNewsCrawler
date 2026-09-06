@@ -38,7 +38,7 @@ results = solr.search(
     **{
         "sort": "url asc,title desc,",  # ソートのやり方。 desc降順 asc昇順。 %20は空白に置き換えること。
         "fl": "title,url",  # 取得したいフィールドを限定する場合、
-    }
+    },
 )
 
 for result in results:
@@ -55,7 +55,7 @@ results = solr.search(
         "hl.simple.pre": "<em>",  # ハイライトしたい文字の前に太字タグを設定
         "start": 0,  # 検索結果の開始件数。※１件目より表示。
         "rows": 2,  # 検索結果の表示件数。※１件のみ表示。
-    }
+    },
 )
 
 for result in results:
@@ -72,7 +72,7 @@ results = solr.search(
         "sort": "url asc,title desc,",  # ソートのやり方。 desc降順 asc昇順。 %20は空白に置き換えること。
         "fq": ["title:3or2", "article:8984"],  # 絞り込み検索で、複数の値で絞り込むときはfqにリストで渡す。
         # リストごとにand結合となる。リスト内の要素にorを入れることもできる。
-    }
+    },
 )
 
 for result in results:
@@ -84,7 +84,7 @@ results = solr.search(
     **{
         "facet": "on",  # title＝テストで検索し、その結果をファセットとして取得する。
         "facet.field": ["title", "article"],
-    }
+    },
 )
 
 print("    Saw {0} result(s).".format(len(results.facets["facet_fields"]["article"])))

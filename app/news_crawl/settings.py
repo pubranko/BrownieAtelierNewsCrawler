@@ -27,9 +27,7 @@ NEWSPIDER_MODULE = "news_crawl.spiders"
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # リクエストに含まれるユーザーエージェントの指定
 # USER_AGENT = 'news_crawl (+http://www.yourdomain.com)'
-USER_AGENT = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0"
-)
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0"
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
@@ -208,10 +206,7 @@ INSTALL_ROOT_HANDLER = False
 SELENIUM_DRIVER_NAME = "firefox"
 SELENIUM_DRIVER_EXECUTABLE_PATH = which("geckodriver")
 # SELENIUM_DRIVER_ARGUMENTS = ["-headless"]
-SELENIUM_DRIVER_ARGUMENTS = [
-    "--headless",
-    "--window-size=1920,1080"
-]
+SELENIUM_DRIVER_ARGUMENTS = ["--headless", "--window-size=1920,1080"]
 # ブラウザ・通信の不可軽減のため、独自の設定を追加してみた。
 #   その他の設定については、ここが参考になりそう https://www.programcreek.com/python/example/100026/selenium.webdriver.FirefoxProfile
 #   1:通常、2:禁止

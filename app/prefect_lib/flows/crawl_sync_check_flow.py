@@ -7,12 +7,10 @@ from prefect.futures import PrefectFuture
 from prefect_lib.flows.init_flow import init_flow
 from prefect_lib.tasks.end_task import end_task
 from prefect_lib.tasks.init_task import init_task
-from prefect_lib.tasks.sync_check_crawler_response_task import \
-    sync_check_crawler_response_task
-from prefect_lib.tasks.sync_check_news_clip_master_task import \
-    sync_check_news_clip_master_task
-from prefect_lib.tasks.sync_check_notice_result_task import \
-    sync_check_notice_result_task
+from prefect_lib.tasks.sync_check_crawler_response_task import sync_check_crawler_response_task
+from prefect_lib.tasks.sync_check_news_clip_master_task import sync_check_news_clip_master_task
+from prefect_lib.tasks.sync_check_notice_result_task import sync_check_notice_result_task
+
 
 @flow(name="Crawl sync check flow")
 def crawl_sync_check_flow(
@@ -27,7 +25,7 @@ def crawl_sync_check_flow(
     # 初期処理を実行
     # init_task_instance: PrefectFuture = init_task.submit()
     init_task_instance: PrefectFuture = init_task.submit()
-    # 実行結果が返ってくるまで待機し、戻り値を保存。 
+    # 実行結果が返ってくるまで待機し、戻り値を保存。
     #   ※タスクのステータスをresultを受け取る前に判定してもPendingとなる。インスタンスのステータスはリアルタイムで更新されているので注意。
     init_task_result = init_task_instance.result()
 
@@ -41,18 +39,14 @@ def crawl_sync_check_flow(
                 response_sync_list,
                 response_async_list,
                 response_async_domain_aggregate,
-            ) = sync_check_crawler_response_task(
-                mongo, domain, start_time_from, start_time_to
-            )
+            ) = sync_check_crawler_response_task(mongo, domain, start_time_from, start_time_to)
 
             # crawler_responseとnews_clip_masterが同期しているかチェックする。
             (
                 master_sync_list,
                 master_async_list,
                 master_async_domain_aggregate,
-            ) = sync_check_news_clip_master_task(
-                mongo, domain, start_time_from, start_time_to, response_sync_list
-            )
+            ) = sync_check_news_clip_master_task(mongo, domain, start_time_from, start_time_to, response_sync_list)
 
             # 当分の間solrとの同期チェックは中止。solr側の本格開発が始まってから開放予定。
             # solr_sync_list, solr_async_list, solr_async_domain_aggregate = sync_check_solr_news_clip(

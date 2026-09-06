@@ -1,9 +1,11 @@
 import os
 import sys
+
 # カレントディレクトリをpythonpathに追加
-current_directory = os.environ.get('PWD')
+current_directory = os.environ.get("PWD")
 if current_directory:
     sys.path.append(current_directory)
+
 
 def test_exec():
     # <4>
@@ -11,6 +13,7 @@ def test_exec():
     #   manual_crawling_flow.py
     #   その他を全て指定 (a:産経, b:朝日, c:読売, d:エポック, e:ロイター, f:共同, g:毎日, h:日経)
     from prefect_lib.flows.manual_crawling_flow import manual_crawling_flow
+
     manual_crawling_flow(
         spider_names=[
             "sankei_com_sitemap",
@@ -29,8 +32,9 @@ def test_exec():
             lastmod_term_minutes_from=120,
             lastmod_term_minutes_to=60,
         ),
-        following_processing_execution=True  # 後続処理実行(scrapying,news_clip_masterへの登録,solrへの登録)
+        following_processing_execution=True,  # 後続処理実行(scrapying,news_clip_masterへの登録,solrへの登録)
     )
+
 
 if __name__ == "__main__":
     test_exec()

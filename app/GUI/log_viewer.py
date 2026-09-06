@@ -17,8 +17,7 @@ from pymongo.cursor import Cursor
 
 path = os.getcwd()
 sys.path.append(path)
-from BrownieAtelierMongo.collection_models.crawler_logs_model import \
-    CrawlerLogsModel
+from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from GUI.log_viewer_validator import LogViewerValidator
 from shared.directory_search_task import directory_search_task
@@ -111,9 +110,7 @@ class LogViewer(tkinter.Frame):
         record_type_list.sort()
         self.record_type_label = tkinter.LabelFrame(self, text="record_type")
         # 縦スクロールバー付きのリストボックス
-        self.yscroll = tkinter.Scrollbar(
-            self.record_type_label, orient=tkinter.VERTICAL
-        )
+        self.yscroll = tkinter.Scrollbar(self.record_type_label, orient=tkinter.VERTICAL)
         self.yscroll.pack(side=tkinter.RIGHT, fill=tkinter.Y)
         self.record_type = tkinter.Listbox(
             self.record_type_label,
@@ -162,9 +159,7 @@ class LogViewer(tkinter.Frame):
         self.log_level_label.grid(row=2, column=0, sticky=tkinter.EW)
 
         # ログ検索実行ボタン
-        self.log_list_get_button = tkinter.Button(
-            self, text="ログ一覧取得", command=self.log_list_view
-        )
+        self.log_list_get_button = tkinter.Button(self, text="ログ一覧取得", command=self.log_list_view)
         self.log_list_get_button.grid(row=3, column=0, sticky=tkinter.EW)
 
         # 情報、ページ関連表示ボックス
@@ -196,9 +191,7 @@ class LogViewer(tkinter.Frame):
         )
         self.page_count_label.pack()
         # ページセレクター(最初のページ、前ページ、現在のページ、次ページ、最後のページ)
-        self.page_selecter_label_frame = tkinter.LabelFrame(
-            self.info_box, text="ページ選択", height=2
-        )
+        self.page_selecter_label_frame = tkinter.LabelFrame(self.info_box, text="ページ選択", height=2)
         self.page_selecter_label_frame.grid(row=0, column=2, columnspan=8)
         self.first_page_button = tkinter.Button(
             self.page_selecter_label_frame,
@@ -251,10 +244,7 @@ class LogViewer(tkinter.Frame):
                 time_from=self.time_from.get(),
                 date_to=self.date_to.get(),
                 time_to=self.time_to.get(),
-                record_type=[
-                    self.record_type.get(i, i)[0]
-                    for i in self.record_type.curselection()
-                ],
+                record_type=[self.record_type.get(i, i)[0] for i in self.record_type.curselection()],
                 log_level_value=self.log_level_value.get(),
             )
             print("検索条件 : ", condition_items.dict())
@@ -268,39 +258,19 @@ class LogViewer(tkinter.Frame):
             # 画面で指定された検索条件より、mongoDB検索用のフィルターを作成
             conditions: list = []
             if condition_items.date_from:
-                conditions.append(
-                    {"start_time": {"$gte": condition_items.datetime_from()}}
-                )
+                conditions.append({"start_time": {"$gte": condition_items.datetime_from()}})
             if condition_items.date_to:
-                conditions.append(
-                    {"start_time": {"$lte": condition_items.datetime_to()}}
-                )
+                conditions.append({"start_time": {"$lte": condition_items.datetime_to()}})
             if condition_items.log_level_value == 9:  # ログレベル指定なしの場合
                 if len(condition_items.record_type):
-                    conditions.append(
-                        {"record_type": {"$in": [condition_items.record_type]}}
-                    )
+                    conditions.append({"record_type": {"$in": [condition_items.record_type]}})
             else:
-                conditions.append(
-                    {
-                        "record_type": {
-                            "$in": [
-                                str(x["class_name"]) for x in directory_search_task()
-                            ]
-                        }
-                    }
-                )
+                conditions.append({"record_type": {"$in": [str(x["class_name"]) for x in directory_search_task()]}})
 
                 pattern_traceback = re.compile(r"Traceback \(most recent call last\)\:")
-                pattern_critical = re.compile(
-                    r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} CRITICAL "
-                )
-                pattern_error = re.compile(
-                    r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} ERROR "
-                )
-                pattern_warning = re.compile(
-                    r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} WARNING"
-                )
+                pattern_critical = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} CRITICAL ")
+                pattern_error = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} ERROR ")
+                pattern_warning = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} WARNING")
                 log_level_selecter: list = []
                 if condition_items.log_level_value == 0:
                     log_level_selecter = [
@@ -358,27 +328,21 @@ class LogViewer(tkinter.Frame):
                             relief="groove",
                             width=4,
                         ),
-                        tkinter.Label(
-                            self.logs_frame, text="mongo_id", relief="groove", width=25
-                        ),
+                        tkinter.Label(self.logs_frame, text="mongo_id", relief="groove", width=25),
                         tkinter.Label(
                             self.logs_frame,
                             text="record_type",
                             relief="groove",
                             width=25,
                         ),
-                        tkinter.Label(
-                            self.logs_frame, text="domain", relief="groove", width=15
-                        ),
+                        tkinter.Label(self.logs_frame, text="domain", relief="groove", width=15),
                         tkinter.Label(
                             self.logs_frame,
                             text="start_time",
                             relief="groove",
                             width=20,
                         ),
-                        tkinter.Label(
-                            self.logs_frame, text="", relief="groove", width=5
-                        ),
+                        tkinter.Label(self.logs_frame, text="", relief="groove", width=5),
                     ]
                 )  # 表示ボタン
                 # 明細
@@ -391,21 +355,11 @@ class LogViewer(tkinter.Frame):
                                 text="",
                                 relief="ridge",
                             ),
-                            tkinter.Label(
-                                self.logs_frame, text="", relief="ridge", anchor="w"
-                            ),
-                            tkinter.Label(
-                                self.logs_frame, text="", relief="ridge", anchor="w"
-                            ),
-                            tkinter.Label(
-                                self.logs_frame, text="", relief="ridge", anchor="w"
-                            ),
-                            tkinter.Label(
-                                self.logs_frame, text="", relief="ridge", anchor="w"
-                            ),
-                            tkinter.Button(
-                                self.logs_frame, text="", pady=0, command="", width=5
-                            ),
+                            tkinter.Label(self.logs_frame, text="", relief="ridge", anchor="w"),
+                            tkinter.Label(self.logs_frame, text="", relief="ridge", anchor="w"),
+                            tkinter.Label(self.logs_frame, text="", relief="ridge", anchor="w"),
+                            tkinter.Label(self.logs_frame, text="", relief="ridge", anchor="w"),
+                            tkinter.Button(self.logs_frame, text="", pady=0, command="", width=5),
                         ]
                     )
                     idx += 1
@@ -431,9 +385,7 @@ class LogViewer(tkinter.Frame):
         self.pagenate(page_adjustment)
 
         # 上記で指定したページのログを取得
-        records, records_count = self.logs_list_get(
-            self.current_page.get(), self.record_count.get()
-        )
+        records, records_count = self.logs_list_get(self.current_page.get(), self.record_count.get())
 
         # 上記で取得したログを明細ウィジェットへ編集
         self.logs_detail_edit(self.logs_frame, self.logs_table, records, records_count)
@@ -467,30 +419,20 @@ class LogViewer(tkinter.Frame):
             self.next_page_button["state"] = "normal"
             self.last_page_button["state"] = "normal"
 
-    def logs_detail_edit(
-        self, logs_frame, logs_table, records: Cursor, records_count: int
-    ):
+    def logs_detail_edit(self, logs_frame, logs_table, records: Cursor, records_count: int):
         """
         各レコードをログ明細エリアへ編集
         """
         for idx, record in enumerate(records):
             # レコードよりウィジェットへ設定
-            self.logs_table[idx + 1][0]["text"] = str(
-                idx + 1 + ((self.current_page.get() - 1) * self.number_of_lines)
-            )
+            self.logs_table[idx + 1][0]["text"] = str(idx + 1 + ((self.current_page.get() - 1) * self.number_of_lines))
             self.logs_table[idx + 1][1]["text"] = record["_id"]
             self.logs_table[idx + 1][2]["text"] = record["record_type"]
-            self.logs_table[idx + 1][3]["text"] = (
-                record["domain"] if "domain" in record else ""
-            )
+            self.logs_table[idx + 1][3]["text"] = record["domain"] if "domain" in record else ""
             start_time: datetime = timezone_recovery(record["start_time"])
-            self.logs_table[idx + 1][4]["text"] = start_time.strftime(
-                "%Y-%m-%d %H:%M:%S %Z"
-            )
+            self.logs_table[idx + 1][4]["text"] = start_time.strftime("%Y-%m-%d %H:%M:%S %Z")
             self.logs_table[idx + 1][5]["text"] = "詳細表示"
-            self.logs_table[idx + 1][5]["command"] = partial(
-                self.log_view, record["_id"]
-            )
+            self.logs_table[idx + 1][5]["command"] = partial(self.log_view, record["_id"])
 
             # ログにCRITICAL、ERROR、WARNINGが含まれていた場合、文字色を変える。
             text_color: str = "#000000"  # 黒
@@ -502,15 +444,9 @@ class LogViewer(tkinter.Frame):
                 # クリティカルの場合、ログ形式とは限らない。raiseなどは別形式のため、後日検討要。
                 # Traceback (most recent call last):
                 pattern_traceback = re.compile(r"Traceback \(most recent call last\)\:")
-                pattern_critical = re.compile(
-                    r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} CRITICAL "
-                )
-                pattern_error = re.compile(
-                    r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} ERROR "
-                )
-                pattern_warning = re.compile(
-                    r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} WARNING"
-                )
+                pattern_critical = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} CRITICAL ")
+                pattern_error = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} ERROR ")
+                pattern_warning = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} WARNING")
 
                 if pattern_traceback.search(record["logs"]):
                     text_color: str = "#FF0000"  # 赤
@@ -575,14 +511,10 @@ class LogViewer(tkinter.Frame):
             # valueを種類に応じて表示
             if record_key == "logs":
                 # 項目名、コピーボタン
-                copy_button.grid(
-                    row=row_pointer + 1, column=0, sticky=tkinter.NW, ipadx=30
-                )
+                copy_button.grid(row=row_pointer + 1, column=0, sticky=tkinter.NW, ipadx=30)
                 copy_button["command"] = lambda: pyperclip.copy(str(record_value))
                 # 項目値
-                item_value = scrolledtext.ScrolledText(
-                    log_window, wrap=tkinter.WORD, width=200
-                )
+                item_value = scrolledtext.ScrolledText(log_window, wrap=tkinter.WORD, width=200)
                 item_value.insert(tkinter.END, str(record_value))
                 item_value.grid(row=row_pointer, rowspan=2, column=1)
                 # 次の行ポインターへ
@@ -592,9 +524,7 @@ class LogViewer(tkinter.Frame):
                 file_like = io.StringIO("")
                 pprint(record_value, stream=file_like)
                 # 項目名、コピーボタン
-                copy_button.grid(
-                    row=row_pointer + 1, column=0, sticky=tkinter.NW, ipadx=30
-                )
+                copy_button.grid(row=row_pointer + 1, column=0, sticky=tkinter.NW, ipadx=30)
                 copy_button["command"] = self.clipboard_copy(file_like.getvalue())
                 # 項目値
                 item_value = scrolledtext.ScrolledText(

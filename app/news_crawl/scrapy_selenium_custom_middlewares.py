@@ -1,5 +1,7 @@
 """This module contains the ``SeleniumMiddleware`` scrapy middleware"""
+
 import os
+
 # from logging import logger,INFO
 import subprocess
 from importlib import import_module
@@ -77,24 +79,16 @@ class SeleniumMiddleware:
 
         driver_name = crawler.settings.get("SELENIUM_DRIVER_NAME")
         driver_executable_path = crawler.settings.get("SELENIUM_DRIVER_EXECUTABLE_PATH")
-        browser_executable_path = crawler.settings.get(
-            "SELENIUM_BROWSER_EXECUTABLE_PATH"
-        )
+        browser_executable_path = crawler.settings.get("SELENIUM_BROWSER_EXECUTABLE_PATH")
         driver_arguments = crawler.settings.get("SELENIUM_DRIVER_ARGUMENTS")
 
         if not driver_name or not driver_executable_path:
-            raise NotConfigured(
-                "SELENIUM_DRIVER_NAME and SELENIUM_DRIVER_EXECUTABLE_PATH must be set"
-            )
+            raise NotConfigured("SELENIUM_DRIVER_NAME and SELENIUM_DRIVER_EXECUTABLE_PATH must be set")
 
         # firefox用のプロファイルを作成してミドルウェアのインスタンス作成時に
         # それを使用するようカスタマイズ
-        set_preferences: dict[str, int] = crawler.settings.get(
-            "SELENIUM_DRIVER_SET_PREFERENCE"
-        )
-        new_profile = FirefoxProfile(
-            profile_directory=crawler.settings.get("SELENIUM_FIREFOX_PROFILE_DIRECTORY")
-        )
+        set_preferences: dict[str, int] = crawler.settings.get("SELENIUM_DRIVER_SET_PREFERENCE")
+        new_profile = FirefoxProfile(profile_directory=crawler.settings.get("SELENIUM_FIREFOX_PROFILE_DIRECTORY"))
         for key, value in set_preferences.items():
             new_profile.set_preference(key, value)
         # ここで当ミドルウェアのインスタンス化を行っている。
@@ -130,9 +124,7 @@ class SeleniumMiddleware:
             self.driver.add_cookie({"name": cookie_name, "value": cookie_value})
 
         if request.wait_until:
-            WebDriverWait(self.driver, float(request.wait_time or 0)).until(
-                request.wait_until
-            )
+            WebDriverWait(self.driver, float(request.wait_time or 0)).until(request.wait_until)
 
         if request.screenshot:
             request.meta["screenshot"] = self.driver.get_screenshot_as_png()
@@ -145,9 +137,7 @@ class SeleniumMiddleware:
         # Expose the driver via the "meta" attribute
         request.meta.update({"driver": self.driver})
 
-        return HtmlResponse(
-            self.driver.current_url, body=body, encoding="utf-8", request=request
-        )
+        return HtmlResponse(self.driver.current_url, body=body, encoding="utf-8", request=request)
 
     def spider_closed(self):
         """Shutdown the driver when spider is closed"""

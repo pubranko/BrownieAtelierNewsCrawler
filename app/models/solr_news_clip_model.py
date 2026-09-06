@@ -73,7 +73,7 @@ class SolrNewsClip(object):
                     # ファセット、取得したいフィールド
                     "facet": facet,
                     "facet_field": ",".join(facet_field),
-                }
+                },
             )
             return results
 
@@ -154,9 +154,7 @@ class SolrNewsClip(object):
                         "title": recode["title"],
                         "article": recode["article"],
                         "url": recode["url"],
-                        "publish_date": datetime.strftime(
-                            parser.parse(recode["publish_date"]), "%Y-%m-%d %H:%M"
-                        ),
+                        "publish_date": datetime.strftime(parser.parse(recode["publish_date"]), "%Y-%m-%d %H:%M"),
                         "issuer": recode["issuer"][0],
                         "update_count": recode["update_count"],
                     }

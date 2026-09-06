@@ -2,8 +2,7 @@ from datetime import datetime
 from typing import Optional, Tuple
 
 from prefect import get_run_logger, task
-from prefect_lib.data_models.scraper_pattern_report_input import \
-    ScraperPatternReportInput
+from prefect_lib.data_models.scraper_pattern_report_input import ScraperPatternReportInput
 from prefect_lib.flows import START_TIME
 from pydantic import ValidationError
 

@@ -5,14 +5,12 @@ from prefect import flow, get_run_logger
 from prefect.futures import PrefectFuture
 from prefect_lib.flows import START_TIME
 from prefect_lib.flows.init_flow import init_flow
-from prefect_lib.tasks.crawling_input_create_task import \
-    crawling_input_create_task
+from prefect_lib.tasks.crawling_input_create_task import crawling_input_create_task
 from prefect_lib.tasks.crawling_task import crawling_task
 from prefect_lib.tasks.end_task import end_task
 from prefect_lib.tasks.init_task import init_task
 from prefect_lib.tasks.container_end_task import container_end_task
-from prefect_lib.tasks.news_clip_master_save_task import \
-    news_clip_master_save_task
+from prefect_lib.tasks.news_clip_master_save_task import news_clip_master_save_task
 from prefect_lib.tasks.regular_observation_task import regular_observation_task
 from prefect_lib.tasks.scrapying_task import scrapying_task
 
@@ -25,7 +23,7 @@ def regular_observation_flow():
     logger = get_run_logger()  # PrefectLogAdapter
     # 初期処理
     init_task_instance: PrefectFuture = init_task.submit()
-    # 実行結果が返ってくるまで待機し、戻り値を保存。 
+    # 実行結果が返ってくるまで待機し、戻り値を保存。
     #   ※タスクのステータスをresultを受け取る前に判定してもPendingとなる。インスタンスのステータスはリアルタイムで更新されているので注意。
     init_task_result = init_task_instance.result()
 
@@ -58,6 +56,7 @@ def regular_observation_flow():
 
     else:
         logger.error(f"=== init_taskが正常に完了しなかったため、後続タスクの実行を中止しました。")
+
 
 def main(**kwargs):
     regular_observation_flow(**kwargs)

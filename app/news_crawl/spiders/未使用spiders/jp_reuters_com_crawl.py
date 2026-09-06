@@ -4,18 +4,12 @@ from typing import Any
 
 import scrapy
 from news_crawl.spiders.common.lua_script_get import lua_script_get
-from news_crawl.spiders.common.start_request_debug_file_generate import \
-    LASTMOD as debug_file__LASTMOD
-from news_crawl.spiders.common.start_request_debug_file_generate import \
-    LOC as debug_file__LOC
-from news_crawl.spiders.common.start_request_debug_file_generate import \
-    start_request_debug_file_generate
-from news_crawl.spiders.common.url_pattern_skip_check import \
-    url_pattern_skip_check
-from news_crawl.spiders.common.urls_continued_skip_check import \
-    UrlsContinuedSkipCheck
-from news_crawl.spiders.extensions_class.extensions_crawl import \
-    ExtensionsCrawlSpider
+from news_crawl.spiders.common.start_request_debug_file_generate import LASTMOD as debug_file__LASTMOD
+from news_crawl.spiders.common.start_request_debug_file_generate import LOC as debug_file__LOC
+from news_crawl.spiders.common.start_request_debug_file_generate import start_request_debug_file_generate
+from news_crawl.spiders.common.url_pattern_skip_check import url_pattern_skip_check
+from news_crawl.spiders.common.urls_continued_skip_check import UrlsContinuedSkipCheck
+from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
 from scrapy.http import TextResponse
 from scrapy_selenium import SeleniumRequest
 from scrapy_splash import SplashRequest
@@ -81,17 +75,13 @@ class JpReutersComCrawlSpider(ExtensionsCrawlSpider):
         # keyにドット(.)があるとエラーMongoDBがエラーとなるためアンダースコアに置き換え
         self.base_url = _.replace(".", "_")
 
-        self.url_continued = UrlsContinuedSkipCheck(
-            self._crawl_point, self.base_url, self.news_crawl_input.continued
-        )
+        self.url_continued = UrlsContinuedSkipCheck(self._crawl_point, self.base_url, self.news_crawl_input.continued)
 
     def start_requests(self):
         """ """
         if self.selenium_mode:
             for url in self.start_urls:
-                yield SeleniumRequest(
-                    url=url, callback=self.parse_start_response_selenium
-                )
+                yield SeleniumRequest(url=url, callback=self.parse_start_response_selenium)
 
         elif self.splash_mode:
             for url in self.start_urls:
@@ -117,16 +107,14 @@ class JpReutersComCrawlSpider(ExtensionsCrawlSpider):
         driver: WebDriver = r.meta["driver"]
 
         while self.page <= self.page_to:
-            self.logger.info(
-                f"=== parse_start_response 現在解析中のURL = {driver.current_url}"
-            )
+            self.logger.info(f"=== parse_start_response 現在解析中のURL = {driver.current_url}")
             driver.set_page_load_timeout(60)
             driver.set_script_timeout(60)
 
-            next_page_element = f'div.control-nav > a.control-nav-next[href="?view=page&page={self.page + 1}&pageSize=10"]'
-            WebDriverWait(driver, 60).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, next_page_element))
+            next_page_element = (
+                f'div.control-nav > a.control-nav-next[href="?view=page&page={self.page + 1}&pageSize=10"]'
             )
+            WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.CSS_SELECTOR, next_page_element)))
 
             # ページ内の対象urlを抽出
             _ = driver.find_elements(By.CSS_SELECTOR, ".story-content a[href]")
@@ -142,9 +130,7 @@ class JpReutersComCrawlSpider(ExtensionsCrawlSpider):
             for link in links:
                 # 相対パスの場合絶対パスへ変換。また%エスケープされたものはUTF-8へ変換
                 url: str = urllib.parse.unquote(response.urljoin(link))
-                self.all_urls_list.append(
-                    {debug_file__LOC: url, debug_file__LASTMOD: ""}
-                )
+                self.all_urls_list.append({debug_file__LOC: url, debug_file__LASTMOD: ""})
                 # 前回からの続きの指定がある場合、
                 # 前回取得したurlが確認できたら確認済み（削除）にする。
 
@@ -181,9 +167,7 @@ class JpReutersComCrawlSpider(ExtensionsCrawlSpider):
 
             # 次のページを読み込む
             self.page += 1
-            elem: WebElement = driver.find_element(
-                By.CSS_SELECTOR, "div.control-nav > a.control-nav-next"
-            )
+            elem: WebElement = driver.find_element(By.CSS_SELECTOR, "div.control-nav > a.control-nav-next")
             # elem: WebElement = driver.find_element_by_css_selector(
             #     'div.control-nav > a.control-nav-next')
             elem.click()
@@ -196,9 +180,7 @@ class JpReutersComCrawlSpider(ExtensionsCrawlSpider):
             )
         # 次回向けに1ページ目の5件をcontrollerへ保存する
         self._crawl_point[self.base_url] = {
-            self.CRAWL_POINT__URLS: self.all_urls_list[
-                0 : self.url_continued.check_count
-            ],
+            self.CRAWL_POINT__URLS: self.all_urls_list[0 : self.url_continued.check_count],
             self.CRAWL_POINT__CRAWLING_START_TIME: self.news_crawl_input.crawling_start_time,
         }
 
@@ -252,9 +234,7 @@ class JpReutersComCrawlSpider(ExtensionsCrawlSpider):
         # 次のページを読み込む
         self.page += 1
         next_page_element = (
-            'div.control-nav > a.control-nav-next[href="?view=page&page='
-            + str(self.page + 1)
-            + '&pageSize=10"]'
+            'div.control-nav > a.control-nav-next[href="?view=page&page=' + str(self.page + 1) + '&pageSize=10"]'
         )
         click_element = "div.control-nav > a.control-nav-next"
         if self.page <= self.page_to:
@@ -281,8 +261,6 @@ class JpReutersComCrawlSpider(ExtensionsCrawlSpider):
                 )
             # 次回向けに1ページ目の5件をcontrollerへ保存する
             self._crawl_point[self.base_url] = {
-                self.CRAWL_POINT__URLS: self.all_urls_list[
-                    0 : self.url_continued.check_count
-                ],
+                self.CRAWL_POINT__URLS: self.all_urls_list[0 : self.url_continued.check_count],
                 self.CRAWL_POINT__CRAWLING_START_TIME: self.news_crawl_input.crawling_start_time,
             }

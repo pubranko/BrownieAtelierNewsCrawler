@@ -86,16 +86,8 @@ class DirectorySearchSpiders:
                             domain = members["allowed_domains"][0]
                             domain_name = members["_domain_name"]
                             spider_name = members["name"]
-                            selenium_mode = (
-                                members["selenium_mode"]
-                                if "selenium_mode" in members
-                                else False
-                            )
-                            splash_mode = (
-                                members["splash_mode"]
-                                if "splash_mode" in members
-                                else False
-                            )
+                            selenium_mode = members["selenium_mode"] if "selenium_mode" in members else False
+                            splash_mode = members["splash_mode"] if "splash_mode" in members else False
                     else:
                         select_flg = False
                 else:
@@ -120,9 +112,7 @@ class DirectorySearchSpiders:
         """
         return list(self.spiders_info.keys())
 
-    def spiders_info_list_get(
-        self, target_spiders_name: set[str]
-    ) -> list[dict[str, Any]]:
+    def spiders_info_list_get(self, target_spiders_name: set[str]) -> list[dict[str, Any]]:
         """
         引数(spiders_name)で指定された対象スパイダーのスパイダー情報リストを返す。
         ＜データイメージ＞
@@ -138,9 +128,7 @@ class DirectorySearchSpiders:
 
         return result
 
-    def separate_spider_using_selenium(
-        self, target_spiders_name: set
-    ) -> list[list[dict[str, Any]]]:
+    def separate_spider_using_selenium(self, target_spiders_name: set) -> list[list[dict[str, Any]]]:
         """
         引数(spiders_name)で指定された対象スパイダーセットに対して、
         seleniumを使用しているスパイダーは単独、それ以外は１つにまとめたリストを返す。
@@ -189,10 +177,8 @@ if __name__ == "__main__":
     # execute only if run as a script
     directory_search_spiders = DirectorySearchSpiders()
     spiders_info = directory_search_spiders.spiders_info
-    separate_spider_using_selenium = (
-        directory_search_spiders.separate_spider_using_selenium(
-            set(directory_search_spiders.spiders_name_list_get())
-        )
+    separate_spider_using_selenium = directory_search_spiders.separate_spider_using_selenium(
+        set(directory_search_spiders.spiders_name_list_get())
     )
     from pprint import pprint
 

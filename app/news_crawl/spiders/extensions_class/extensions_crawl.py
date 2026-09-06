@@ -4,25 +4,20 @@ from typing import Any, Final, Callable
 from urllib.parse import unquote
 
 import scrapy
-from BrownieAtelierMongo.collection_models.controller_model import \
-    ControllerModel
-from BrownieAtelierMongo.collection_models.crawler_logs_model import \
-    CrawlerLogsModel
-from BrownieAtelierMongo.collection_models.crawler_response_model import \
-    CrawlerResponseModel
+from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
+from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
+from BrownieAtelierMongo.collection_models.crawler_response_model import CrawlerResponseModel
+
 #
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from news_crawl.items import NewsCrawlItem
 from news_crawl.news_crawl_input import NewsCrawlInput
-from news_crawl.spiders.common.lastmod_continued_skip_check import \
-    LastmodContinuedSkipCheck
-from news_crawl.spiders.common.lastmod_term_skip_check import \
-    LastmodTermSkipCheck
+from news_crawl.spiders.common.lastmod_continued_skip_check import LastmodContinuedSkipCheck
+from news_crawl.spiders.common.lastmod_term_skip_check import LastmodTermSkipCheck
 from news_crawl.spiders.common.pagination_check import PaginationCheck
 from news_crawl.spiders.common.spider_closed import spider_closed
 from news_crawl.spiders.common.spider_init import spider_init
-from news_crawl.spiders.common.urls_continued_skip_check import \
-    UrlsContinuedSkipCheck
+from news_crawl.spiders.common.urls_continued_skip_check import UrlsContinuedSkipCheck
 from scrapy.http import TextResponse
 from scrapy.spiders import CrawlSpider
 from scrapy_splash import SplashRequest
@@ -59,7 +54,7 @@ class ExtensionsCrawlSpider(CrawlSpider):
     """オーバーライド必須 この説明がvscodeで見えているということは、オーバーライドが漏れています。"""
 
     # seleniumモード
-    selenium_mode: bool = False 
+    selenium_mode: bool = False
     """記事本体のページへのリクエストにseleniumを使用する場合True。それ以外False"""
     selenium_mode__start_request: bool = False
     """開始ページ（一覧ページ）へのリクエストにseleniumを使用する場合True。それ以外False"""
@@ -131,26 +126,25 @@ class ExtensionsCrawlSpider(CrawlSpider):
         # クロールの種類に応じて開始させるurls、レスポンスを処理させるCall Back関数、seleniumのモードを設定
         if self.news_crawl_input.direct_crawl_urls:
             # ダイレクトクロール指定がある場合、一覧ページなどはクロールせず、引数で受け取ったURLリストのみクロールさせる。
-            start_urls:list = self.news_crawl_input.direct_crawl_urls
+            start_urls: list = self.news_crawl_input.direct_crawl_urls
             callback: Callable = self.parse_news
             selenium_mode = self.selenium_mode
         elif self.url_continued.continued:
             # 前回の続きからクロールの場合、start_urlsから順に処理させる。レスポンスは続き用の関数に処理される。
-            start_urls:list = self.start_urls
+            start_urls: list = self.start_urls
             callback: Callable = self.parse_start_response_continued_crawl_mode
             selenium_mode = self.selenium_mode__start_request
         else:
             # ページ指定によるクロールの場合、start_urlsから順に処理させる。レスポンスはページ指定用の関数に処理される。
-            start_urls:list = self.start_urls
+            start_urls: list = self.start_urls
             callback: Callable = self.parse_start_response_page_crawl_mode
             selenium_mode = self.selenium_mode__start_request
-        
+
         for url in start_urls:
             if selenium_mode:
                 yield SeleniumRequest(url=url, callback=callback)
             else:
-                yield scrapy.Request(url=url,callback=callback)
-
+                yield scrapy.Request(url=url, callback=callback)
 
     def parse_start_response_continued_crawl_mode(self):
         """(拡張メソッド)
@@ -159,14 +153,12 @@ class ExtensionsCrawlSpider(CrawlSpider):
         """
         pass
 
-
     def parse_start_response_page_crawl_mode(self):
         """(拡張メソッド)
         継承先でオーバーライドして使用する。
         ページにより範囲指定でクロールする場合の処理を記載してください。
         """
         pass
-
 
     def parse_news(self, response: TextResponse):
         """(拡張メソッド)
@@ -183,33 +175,31 @@ class ExtensionsCrawlSpider(CrawlSpider):
             # 相対パスの場合絶対パスへ変換。また%エスケープされたものはUTF-8へ変換
             link_url: str = unquote(response.urljoin(link))
             # リンクのurlが対象としたurlの別ページで抽出されていなかった場合リクエストへ追加
-            if self.pagination_check.check(
-                link_url, self.crawl_target_urls, self.logger, self.name
-            ):
+            if self.pagination_check.check(link_url, self.crawl_target_urls, self.logger, self.name):
                 urls.add(link_url)
 
         for url in urls:
             if self.splash_mode:
-                req.append(
-                    SplashRequest(url=url, callback=self.parse, meta=meta, args=args)
-                )
+                req.append(SplashRequest(url=url, callback=self.parse, meta=meta, args=args))
             else:
                 req.append(scrapy.Request(url=url, callback=self.parse))
         yield from req
 
         # クロール時のスパイダーのバージョン情報を記録 ( ex: 'jp_reuters_com_crawl:1.0 / extensions_crawl:1.0' )
-        _info = f"{self.name}:{str(self._spider_version)} / {self.EXTENSIONS_CRAWL}:{str(self._extensions_crawl_version)}"
+        _info = (
+            f"{self.name}:{str(self._spider_version)} / {self.EXTENSIONS_CRAWL}:{str(self._extensions_crawl_version)}"
+        )
 
         source_of_information: dict = {}
         for record in self.crawl_urls_list:
             record: dict
             if response.url == record[self.CRAWL_URLS_LIST__LOC]:
-                source_of_information[
-                    CrawlerResponseModel.SOURCE_OF_INFORMATION__SOURCE_URL
-                ] = record[self.CRAWL_URLS_LIST__SOURCE_URL]
-                source_of_information[
-                    CrawlerResponseModel.SOURCE_OF_INFORMATION__LASTMOD
-                ] = record[self.CRAWL_URLS_LIST__LASTMOD]
+                source_of_information[CrawlerResponseModel.SOURCE_OF_INFORMATION__SOURCE_URL] = record[
+                    self.CRAWL_URLS_LIST__SOURCE_URL
+                ]
+                source_of_information[CrawlerResponseModel.SOURCE_OF_INFORMATION__LASTMOD] = record[
+                    self.CRAWL_URLS_LIST__LASTMOD
+                ]
 
         yield NewsCrawlItem(
             domain=self.allowed_domains[0],
@@ -232,17 +222,13 @@ class ExtensionsCrawlSpider(CrawlSpider):
         """
         return url["url"]
 
-    def pages_setting(
-        self, default_page_span_from: int, default_page_span_to: int
-    ) -> tuple[int, int]:
+    def pages_setting(self, default_page_span_from: int, default_page_span_to: int) -> tuple[int, int]:
         """(拡張メソッド)
         クロール対象のurlを抽出するページの開始・終了の範囲を決める。
         ・起動時の引数にpagesがある場合は、その指定に従う。
         ・それ以外は、各サイトの標準値に従う。
         """
-        if (
-            self.news_crawl_input.page_span_from and self.news_crawl_input.page_span_to
-        ):  # ページ範囲指定ありの場合
+        if self.news_crawl_input.page_span_from and self.news_crawl_input.page_span_to:  # ページ範囲指定ありの場合
             self.logger.info(
                 f"=== page_span_from ~ page_span_to {self.news_crawl_input.page_span_from} : {self.news_crawl_input.page_span_to}"
             )
@@ -251,7 +237,5 @@ class ExtensionsCrawlSpider(CrawlSpider):
                 self.news_crawl_input.page_span_to,
             )
         else:
-            self.logger.info(
-                f"=== page_span_from ~ page_span_to {default_page_span_from} : {default_page_span_to}"
-            )
+            self.logger.info(f"=== page_span_from ~ page_span_to {default_page_span_from} : {default_page_span_to}")
             return default_page_span_from, default_page_span_to

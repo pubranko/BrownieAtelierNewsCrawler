@@ -3,18 +3,14 @@ from __future__ import annotations  # ExtensionsSitemapSpiderの循環参照を�
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Union
 
-from BrownieAtelierMongo.collection_models.controller_model import \
-    ControllerModel
-from BrownieAtelierMongo.collection_models.crawler_logs_model import \
-    CrawlerLogsModel
+from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
+from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
 from scrapy.statscollectors import MemoryStatsCollector
 from shared.resource_check import resource_check
 
 if TYPE_CHECKING:  # 型チェック時のみインポート
-    from news_crawl.spiders.extensions_class.extensions_crawl import \
-        ExtensionsCrawlSpider
-    from news_crawl.spiders.extensions_class.extensions_sitemap import \
-        ExtensionsSitemapSpider
+    from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
+    from news_crawl.spiders.extensions_class.extensions_sitemap import ExtensionsSitemapSpider
 
     # from news_crawl.spiders.extensions_class.extensions_xml_feed import ExtensionsXmlFeedSpider
 
@@ -30,12 +26,8 @@ def spider_closed(
         spider.logger.info("=== closed : 次回クロールポイント情報の更新Skip")
     else:
         controller = ControllerModel(spider.mongo)
-        controller.crawl_point_update(
-            spider._domain_name, spider.name, spider._crawl_point
-        )
-        spider.logger.info(
-            f"=== closed : controllerに次回クロールポイント情報を保存 \n {spider._crawl_point}"
-        )
+        controller.crawl_point_update(spider._domain_name, spider.name, spider._crawl_point)
+        spider.logger.info(f"=== closed : controllerに次回クロールポイント情報を保存 \n {spider._crawl_point}")
 
     resource_check(spider.logger)
 

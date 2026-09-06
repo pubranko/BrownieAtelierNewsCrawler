@@ -2,33 +2,24 @@ from __future__ import annotations  # ExtensionsSitemapSpiderの循環参照を�
 
 from typing import TYPE_CHECKING, Any, Union
 
-from BrownieAtelierMongo.collection_models.controller_model import \
-    ControllerModel
+from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from news_crawl.news_crawl_input import NewsCrawlInput
-from news_crawl.spiders.common.crawling_domain_duplicate_check import \
-    CrawlingDomainDuplicatePrevention
-from news_crawl.spiders.common.lastmod_continued_skip_check import \
-    LastmodContinuedSkipCheck
-from news_crawl.spiders.common.lastmod_term_skip_check import \
-    LastmodTermSkipCheck
-from news_crawl.spiders.common.start_request_debug_file_init import \
-    start_request_debug_file_init
+from news_crawl.spiders.common.crawling_domain_duplicate_check import CrawlingDomainDuplicatePrevention
+from news_crawl.spiders.common.lastmod_continued_skip_check import LastmodContinuedSkipCheck
+from news_crawl.spiders.common.lastmod_term_skip_check import LastmodTermSkipCheck
+from news_crawl.spiders.common.start_request_debug_file_init import start_request_debug_file_init
 from scrapy.exceptions import CloseSpider
 from shared.resource_check import resource_check
 
 if TYPE_CHECKING:  # 型チェック時のみインポート
-    from news_crawl.spiders.extensions_class.extensions_crawl import \
-        ExtensionsCrawlSpider
-    from news_crawl.spiders.extensions_class.extensions_sitemap import \
-        ExtensionsSitemapSpider
+    from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
+    from news_crawl.spiders.extensions_class.extensions_sitemap import ExtensionsSitemapSpider
 
     # from news_crawl.spiders.extensions_class.extensions_xml_feed import ExtensionsXmlFeedSpider
 
 
-def spider_init(
-    spider: Union[ExtensionsSitemapSpider, ExtensionsCrawlSpider], *args, **kwargs
-):
+def spider_init(spider: Union[ExtensionsSitemapSpider, ExtensionsCrawlSpider], *args, **kwargs):
     """spider共通の初期処理"""
     domain_name: str = spider._domain_name
     spider_name: str = spider.name
@@ -73,9 +64,7 @@ def spider_init(
     elif float(str(resource["swap_memory_percent"])) > 95:
         raise CloseSpider("=== スワップメモリー使用率が95%を超えたためスパイダーを停止します。")
 
-    spider.logger.info(
-        f"=== __init__ : 開始時間({spider.news_crawl_input.crawling_start_time.isoformat()})"
-    )
+    spider.logger.info(f"=== __init__ : 開始時間({spider.news_crawl_input.crawling_start_time.isoformat()})")
     spider.logger.info(f"=== __init__ : 引数({kwargs})")
     spider.logger.info(f"=== __init__ : 今回向けクロールポイント情報 \n {spider._crawl_point}")
 

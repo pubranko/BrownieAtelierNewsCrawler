@@ -1,7 +1,6 @@
 import scrapy
 from news_crawl.spiders.common.custom_sitemap import CustomSitemap
-from news_crawl.spiders.extensions_class.extensions_sitemap import \
-    ExtensionsSitemapSpider
+from news_crawl.spiders.extensions_class.extensions_sitemap import ExtensionsSitemapSpider
 from scrapy.http import Request, Response, TextResponse
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import Rule
@@ -51,9 +50,7 @@ class SankeiComSitemapSpider(ExtensionsSitemapSpider):
         例) https://www.sankei.com/feeds/sitemap/?outputType=xml&from=0  →  https://www.sankei.com/feeds/sitemap/?outputType=xml&from=100
         """
         # サイトマップURLのベース部分
-        sitemap_index_base = (
-            "https://www.sankei.com/feeds/sitemap/?outputType=xml&from="
-        )
+        sitemap_index_base = "https://www.sankei.com/feeds/sitemap/?outputType=xml&from="
         value = int(current_sitemap_url.replace(sitemap_index_base, ""))
         value = value + 100
 

@@ -1,10 +1,8 @@
 import sys
 from datetime import timedelta
 
-from news_crawl.spiders.common.term_days_Calculation import \
-    term_days_Calculation
-from news_crawl.spiders.extensions_class.extensions_sitemap import \
-    ExtensionsSitemapSpider
+from news_crawl.spiders.common.term_days_Calculation import term_days_Calculation
+from news_crawl.spiders.extensions_class.extensions_sitemap import ExtensionsSitemapSpider
 from scrapy.exceptions import CloseSpider
 
 

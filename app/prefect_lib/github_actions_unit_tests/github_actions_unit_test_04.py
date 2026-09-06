@@ -1,10 +1,10 @@
-
 def test_exec():
 
     # カレントディレクトリをpythonpathに追加
     import os
     import sys
-    current_directory = os.environ.get('PWD')
+
+    current_directory = os.environ.get("PWD")
     if current_directory:
         sys.path.append(current_directory)
 
@@ -27,8 +27,7 @@ def test_exec():
     # 手動ニュースクリップマスター保存
     #   manual_news_clip_master_save_flow.py
     # from datetime import datetime
-    from prefect_lib.flows.manual_news_clip_master_save_flow import \
-        manual_news_clip_master_save_flow
+    from prefect_lib.flows.manual_news_clip_master_save_flow import manual_news_clip_master_save_flow
     # from shared.settings import TIMEZONE
 
     manual_news_clip_master_save_flow(
@@ -36,6 +35,7 @@ def test_exec():
         target_start_time_from=datetime.now().astimezone(TIMEZONE) - timedelta(minutes=60),
         target_start_time_to=datetime.now().astimezone(TIMEZONE),
     )
+
 
 if __name__ == "__main__":
     test_exec()

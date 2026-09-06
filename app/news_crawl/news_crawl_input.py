@@ -38,9 +38,7 @@ class NewsCrawlInput(BaseModel):
     crawl_point_non_update: bool = Field(False, title="クロールポイント更新なしフラグ")
 
     # クロール開始となる基準時間。指定がなかった場合、現在時刻とする。
-    crawling_start_time: datetime = Field(
-        datetime.now().astimezone(TIMEZONE), title="クロール開始時間"
-    )
+    crawling_start_time: datetime = Field(datetime.now().astimezone(TIMEZONE), title="クロール開始時間")
 
     # クロール対象・範囲を指定する任意引数
     lastmod_term_minutes_from: Optional[int] = Field(None, title="最終更新期間(分)From")
@@ -69,29 +67,31 @@ class NewsCrawlInput(BaseModel):
         if value:
             for url in value:
                 parsed_url = urlparse(url)
-                assert (
-                    len(parsed_url.scheme) > 0
-                ), f"引数エラー({NewsCrawlInputConst.DIRECT_CRAWL_URLS}): URLとして解析できませんでした {url}"
+                assert len(parsed_url.scheme) > 0, (
+                    f"引数エラー({NewsCrawlInputConst.DIRECT_CRAWL_URLS}): URLとして解析できませんでした {url}"
+                )
         return value
 
     @validator(NewsCrawlInputConst.LASTMOD_TERM_MINUTES_TO)
     def lastmod_term_minutes_to_check(cls, value: int, values: dict) -> int:
         if value and values[NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM]:
-            assert (
-                value <= values[NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM]
-            ), f"引数エラー : {NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM} と {NewsCrawlInputConst.LASTMOD_TERM_MINUTES_TO} は、from > toで指定してください。from({values[NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM]}) : to({value})）"
+            assert value <= values[NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM], (
+                f"引数エラー : {NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM} と {NewsCrawlInputConst.LASTMOD_TERM_MINUTES_TO} は、from > toで指定してください。from({values[NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM]}) : to({value})）"
+            )
         return value
 
     @validator(NewsCrawlInputConst.PAGE_SPAN_TO, always=True)
     def page_span_to_check(cls, value: int, values: dict) -> int:
         assert (values[NewsCrawlInputConst.PAGE_SPAN_FROM] and value) or (
             not values[NewsCrawlInputConst.PAGE_SPAN_FROM] and not value
-        ), f"引数エラー : {NewsCrawlInputConst.PAGE_SPAN_FROM} と {NewsCrawlInputConst.PAGE_SPAN_TO} は同時に指定してください。"
+        ), (
+            f"引数エラー : {NewsCrawlInputConst.PAGE_SPAN_FROM} と {NewsCrawlInputConst.PAGE_SPAN_TO} は同時に指定してください。"
+        )
 
         if value and values[NewsCrawlInputConst.PAGE_SPAN_FROM]:
-            assert (
-                value >= values[NewsCrawlInputConst.PAGE_SPAN_FROM]
-            ), f"引数エラー : {NewsCrawlInputConst.PAGE_SPAN_FROM}と{NewsCrawlInputConst.PAGE_SPAN_TO}はfrom ≦ toで指定してください。from({values[NewsCrawlInputConst.PAGE_SPAN_FROM]}) : to({value})）"
+            assert value >= values[NewsCrawlInputConst.PAGE_SPAN_FROM], (
+                f"引数エラー : {NewsCrawlInputConst.PAGE_SPAN_FROM}と{NewsCrawlInputConst.PAGE_SPAN_TO}はfrom ≦ toで指定してください。from({values[NewsCrawlInputConst.PAGE_SPAN_FROM]}) : to({value})）"
+            )
 
         return value
 

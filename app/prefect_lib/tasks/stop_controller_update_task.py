@@ -1,18 +1,13 @@
-from BrownieAtelierMongo.collection_models.controller_model import \
-    ControllerModel
+from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from prefect import get_run_logger, task
 from prefect.cache_policies import NO_CACHE
-from prefect_lib.data_models.stop_controller_update_input import \
-    StopControllerUpdateInput
-from prefect_lib.flows.stop_controller_update_const import \
-    StopControllerUpdateConst
+from prefect_lib.data_models.stop_controller_update_input import StopControllerUpdateInput
+from prefect_lib.flows.stop_controller_update_const import StopControllerUpdateConst
 
 
 @task(cache_policy=NO_CACHE)
-def stop_controller_update_task(
-    stop_controller_update_input: StopControllerUpdateInput, mongo: MongoModel
-):
+def stop_controller_update_task(stop_controller_update_input: StopControllerUpdateInput, mongo: MongoModel):
     """
     クロール対象のドメインの登録・削除を行う。
     スクレイピング対象のドメインの登録・削除を行う。
@@ -23,9 +18,7 @@ def stop_controller_update_task(
     command: str = stop_controller_update_input.command
     destination: str = stop_controller_update_input.destination
 
-    logger.info(
-        f"=== stop_controller_update_task 引数: {str(domain)} / {str(command)} / {str(destination)}"
-    )
+    logger.info(f"=== stop_controller_update_task 引数: {str(domain)} / {str(command)} / {str(destination)}")
 
     record: list = []
     controller = ControllerModel(mongo)
@@ -42,9 +35,7 @@ def stop_controller_update_task(
         if domain in record:
             record.remove(domain)
         else:
-            logger.error(
-                f"=== Stop Controller Update Task  : domainの登録がありません : {domain}"
-            )
+            logger.error(f"=== Stop Controller Update Task  : domainの登録がありません : {domain}")
             raise ValueError(domain)
 
     # domainの重複除去

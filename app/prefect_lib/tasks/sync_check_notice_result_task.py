@@ -26,13 +26,13 @@ def sync_check_notice_result_task(
     # クロールミス分のurlがあれば
     if len(response_async_list) > 0:
         # メール通知用メッセージ追記
-        message = (
-            f"{message}以下のドメインでクローラーで対象となったにもかかわらず、crawler_responseに登録されていないケースがあります。\n"
-        )
+        message = f"{message}以下のドメインでクローラーで対象となったにもかかわらず、crawler_responseに登録されていないケースがあります。\n"
         for item in response_async_domain_aggregate.items():
             if item[1] > 0:
                 message = message + item[0] + " : " + str(item[1]) + " 件\n"
-                _ = [url for url in response_async_list if urlparse(url).hostname.replace("www.","") == item[0]]    # 非同期リストよりドメインが一致したものだけのリストを生成
+                _ = [
+                    url for url in response_async_list if urlparse(url).hostname.replace("www.", "") == item[0]
+                ]  # 非同期リストよりドメインが一致したものだけのリストを生成
                 message = message + "\n".join(_) + "\n"
 
     # スクレイピングミス分のurlがあれば
@@ -42,7 +42,9 @@ def sync_check_notice_result_task(
         for item in master_async_domain_aggregate.items():
             if item[1] > 0:
                 message = message + item[0] + " : " + str(item[1]) + " 件\n"
-                _ = [url for url in master_async_list if urlparse(url).hostname.replace("www.","") == item[0]]    # 非同期リストよりドメインが一致したものだけのリストを生成
+                _ = [
+                    url for url in master_async_list if urlparse(url).hostname.replace("www.", "") == item[0]
+                ]  # 非同期リストよりドメインが一致したものだけのリストを生成
                 message = message + "\n".join(_) + "\n"
 
     # solrへの送信ミス分のurlがあれば

@@ -6,14 +6,10 @@ from prefect.futures import PrefectFuture
 from prefect_lib.flows.init_flow import init_flow
 from prefect_lib.tasks.end_task import end_task
 from prefect_lib.tasks.init_task import init_task
-from prefect_lib.tasks.scraper_pattern_report_args_check_task import \
-    scraper_pattern_report_args_check_task
-from prefect_lib.tasks.scraper_pattern_report_create_task import \
-    scraper_pattern_report_create_task
-from prefect_lib.tasks.scraper_pattern_report_data_frame_task import \
-    scraper_pattern_report_data_frame_task
-from prefect_lib.tasks.scraper_pattern_report_notice_task import \
-    scraper_pattern_report_notice_task
+from prefect_lib.tasks.scraper_pattern_report_args_check_task import scraper_pattern_report_args_check_task
+from prefect_lib.tasks.scraper_pattern_report_create_task import scraper_pattern_report_create_task
+from prefect_lib.tasks.scraper_pattern_report_data_frame_task import scraper_pattern_report_data_frame_task
+from prefect_lib.tasks.scraper_pattern_report_notice_task import scraper_pattern_report_notice_task
 
 
 @flow(
@@ -27,7 +23,7 @@ def scraper_pattern_report_flow(report_term: str, base_date: Optional[datetime] 
     logger = get_run_logger()  # PrefectLogAdapter
     # 初期処理
     init_task_instance: PrefectFuture = init_task.submit()
-    # 実行結果が返ってくるまで待機し、戻り値を保存。 
+    # 実行結果が返ってくるまで待機し、戻り値を保存。
     #   ※タスクのステータスをresultを受け取る前に判定してもPendingとなる。インスタンスのステータスはリアルタイムで更新されているので注意。
     init_task_result = init_task_instance.result()
 
@@ -36,14 +32,10 @@ def scraper_pattern_report_flow(report_term: str, base_date: Optional[datetime] 
 
         try:
             # 入力（Flowの引数）のバリデーションチェックを行い、入力のデータクラスを生成
-            scraper_pattern_report_input = scraper_pattern_report_args_check_task(
-                report_term, base_date
-            )
+            scraper_pattern_report_input = scraper_pattern_report_args_check_task(report_term, base_date)
 
             # スクレイパー情報解析用のデータフレーム管理クラスを生成
-            scraper_pattern_report_data = scraper_pattern_report_data_frame_task(
-                mongo, scraper_pattern_report_input
-            )
+            scraper_pattern_report_data = scraper_pattern_report_data_frame_task(mongo, scraper_pattern_report_input)
 
             # スクレイパー情報解析レポート用Excel作成
             workbook = scraper_pattern_report_create_task(scraper_pattern_report_data)

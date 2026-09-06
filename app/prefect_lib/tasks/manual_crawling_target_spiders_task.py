@@ -31,13 +31,9 @@ def manual_crawling_target_spiders_task(
             error_spider_names.append(args_spider_name)
     # 引数で渡されたスパイダーが存在しなかった場合、エラー情報をログに出力して停止させる
     if len(error_spider_names):
-        logger.error(
-            f"=== scrapy crwal run : 指定されたspider_nameは存在しませんでした : {error_spider_names}"
-        )
+        logger.error(f"=== scrapy crwal run : 指定されたspider_nameは存在しませんでした : {error_spider_names}")
         raise ValueError(error_spider_names)
 
-    crawling_target_spiders: list[
-        dict[str, Any]
-    ] = directory_search_spiders.spiders_info_list_get(args_spiders_name)
+    crawling_target_spiders: list[dict[str, Any]] = directory_search_spiders.spiders_info_list_get(args_spiders_name)
 
     return crawling_target_spiders

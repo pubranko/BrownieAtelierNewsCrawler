@@ -5,14 +5,11 @@ from prefect_lib.flows import START_TIME
 from prefect_lib.flows.init_flow import init_flow
 from prefect_lib.tasks.end_task import end_task
 from prefect_lib.tasks.init_task import init_task
-from prefect_lib.tasks.regular_observation_controller_update_task import \
-    regular_observation_controller_update_task
+from prefect_lib.tasks.regular_observation_controller_update_task import regular_observation_controller_update_task
 
 
 @flow(name="Regular observation controller update Flow")
-def regular_observation_controller_update_flow(
-    spiders_name: list[str], register_type: str
-):
+def regular_observation_controller_update_flow(spiders_name: list[str], register_type: str):
     init_flow()
 
     # ロガー取得
@@ -20,7 +17,7 @@ def regular_observation_controller_update_flow(
     # 初期処理
     init_task_instance: PrefectFuture = init_task.submit()
 
-    # 実行結果が返ってくるまで待機し、戻り値を保存。 
+    # 実行結果が返ってくるまで待機し、戻り値を保存。
     #   ※タスクのステータスをresultを受け取る前に判定してもPendingとなる。インスタンスのステータスはリアルタイムで更新されているので注意。
     init_task_result = init_task_instance.result()
 
@@ -28,9 +25,7 @@ def regular_observation_controller_update_flow(
         mongo: MongoModel = init_task_result
 
         try:
-            regular_observation_controller_update_task(
-                mongo, spiders_name, register_type
-            )
+            regular_observation_controller_update_task(mongo, spiders_name, register_type)
 
         except Exception as e:
             # 例外をキャッチしてログ出力等の処理を行う

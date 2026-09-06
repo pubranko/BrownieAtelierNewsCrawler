@@ -4,8 +4,7 @@ import io
 from logging import Logger, LoggerAdapter
 from typing import Any, Union
 
-from BrownieAtelierMongo.collection_models.crawler_logs_model import \
-    CrawlerLogsModel
+from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from BrownieAtelierNotice.slack.slack_notice import slack_notice
 from BrownieAtelierNotice import settings
@@ -34,12 +33,8 @@ def end_task(mongo: MongoModel):
         # 2021-08-08 12:31:04 [scrapy.core.engine] INFO: Spider closed (finished)
         # クリティカルの場合、ログ形式とは限らない。raiseなどは別形式のため、後日検討要。
         pattern_traceback = re.compile(r"Traceback.*:")
-        pattern_critical = re.compile(
-            r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} CRITICAL "
-        )
-        pattern_error = re.compile(
-            r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} ERROR "
-        )
+        pattern_critical = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} CRITICAL ")
+        pattern_error = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} ERROR ")
         # pattern_warning = re.compile(
         #     r'[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} WARNING ')
         # 2021-08-08 12:31:04 INFO [prefect.FlowRunner] : Flow run SUCCESS: all reference tasks succeeded
@@ -69,7 +64,6 @@ def end_task(mongo: MongoModel):
                 file=log_record.encode("utf-8"),
                 file_name=f"エラーログ({START_TIME.isoformat()}).txt",
             )
-
 
     def log_save(log_record: str):
         """処理が終わったらログを保存"""

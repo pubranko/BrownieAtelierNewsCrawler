@@ -1,9 +1,8 @@
 from datetime import date
+
 # from prefect.testing.utilities import prefect_test_harness
-from prefect_lib.data_models.stats_analysis_report_input import \
-    StatsAnalysisReportConst
-from prefect_lib.flows.stats_analysis_report_flow import \
-    stats_analysis_report_flow
+from prefect_lib.data_models.stats_analysis_report_input import StatsAnalysisReportConst
+from prefect_lib.flows.stats_analysis_report_flow import stats_analysis_report_flow
 
 
 def test_exec():
@@ -23,6 +22,7 @@ def test_exec():
         # totalling_term=StatsAnalysisReportConst.TOTALLING_TERM__YEARLY,
         base_date=date(2025, 6, 15),  # 左記基準日の１日前、１週間前、１ヶ月前、１年前のデータが対象となる。
     )
+
 
 if __name__ == "__main__":
     test_exec()

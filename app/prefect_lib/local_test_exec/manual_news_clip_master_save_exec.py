@@ -1,8 +1,9 @@
 from datetime import datetime
+
 # from prefect.testing.utilities import prefect_test_harness
-from prefect_lib.flows.manual_news_clip_master_save_flow import \
-    manual_news_clip_master_save_flow
+from prefect_lib.flows.manual_news_clip_master_save_flow import manual_news_clip_master_save_flow
 from shared.settings import TIMEZONE
+
 
 def test_exec():
     # with prefect_test_harness():
@@ -13,6 +14,7 @@ def test_exec():
         target_start_time_from=datetime(2025, 6, 14, 0, 0, 0, 0).astimezone(TIMEZONE),
         target_start_time_to=datetime(2025, 6, 14, 23, 59, 0, 0).astimezone(TIMEZONE),
     )
+
 
 if __name__ == "__main__":
     test_exec()

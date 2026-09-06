@@ -22,7 +22,7 @@ def mongo_delete_selector_flow(
     logger = get_run_logger()  # PrefectLogAdapter
     # 初期処理
     init_task_instance: PrefectFuture = init_task.submit()
-    # 実行結果が返ってくるまで待機し、戻り値を保存。 
+    # 実行結果が返ってくるまで待機し、戻り値を保存。
     #   ※タスクのステータスをresultを受け取る前に判定してもPendingとなる。インスタンスのステータスはリアルタイムで更新されているので注意。
     init_task_result = init_task_instance.result()
 
@@ -31,9 +31,7 @@ def mongo_delete_selector_flow(
 
         try:
             # mongo操作Flowの共通処理
-            dir_path, period_from, period_to = mongo_common_task(
-                "", "", period_date_from, period_date_to
-            )
+            dir_path, period_from, period_to = mongo_common_task("", "", period_date_from, period_date_to)
 
             mongo_delete_task(
                 mongo,

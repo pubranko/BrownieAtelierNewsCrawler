@@ -4,8 +4,7 @@ from typing import Optional
 
 path = os.getcwd()
 sys.path.append(path)
-from BrownieAtelierMongo.collection_models.controller_model import \
-    ControllerModel
+from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 
 
 class UrlsContinuedSkipCheck(object):
@@ -19,9 +18,7 @@ class UrlsContinuedSkipCheck(object):
     skip_flg: bool = False
     check_count: int = 10
 
-    def __init__(
-        self, crawl_point: dict, base_url: str, continued: Optional[bool]
-    ) -> None:
+    def __init__(self, crawl_point: dict, base_url: str, continued: Optional[bool]) -> None:
         """
         前回の続きの指定がある場合、前回のクロールポイントの5件のurlをクラス変数へ保存する。
         """
@@ -29,10 +26,7 @@ class UrlsContinuedSkipCheck(object):
         self.continued = continued
         if self.continued:
             if base_url in crawl_point:
-                self.last_time_urls = [
-                    _[ControllerModel.LOC]
-                    for _ in crawl_point[base_url][ControllerModel.URLS]
-                ]
+                self.last_time_urls = [_[ControllerModel.LOC] for _ in crawl_point[base_url][ControllerModel.URLS]]
 
     def skip_check(self, url: str) -> bool:
         """

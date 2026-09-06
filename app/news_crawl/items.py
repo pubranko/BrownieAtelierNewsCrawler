@@ -4,8 +4,7 @@
 # https://docs.scrapy.org/en/latest/topics/items.html
 
 import scrapy
-from BrownieAtelierMongo.collection_models.crawler_response_model import \
-    CrawlerResponseModel
+from BrownieAtelierMongo.collection_models.crawler_response_model import CrawlerResponseModel
 
 
 class NewsCrawlItem(scrapy.Item):

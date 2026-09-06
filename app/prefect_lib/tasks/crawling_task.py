@@ -1,9 +1,11 @@
 # PrefectとScrapyのtwistedリアクターが種類が異なることで競合してしまった。
 # scrapy側をprefect側に合わせるように以下のように操作
 import sys
+
 if "twisted.internet.reactor" in sys.modules:
     del sys.modules["twisted.internet.reactor"]
 from twisted.internet import asyncioreactor
+
 asyncioreactor.install()
 
 import logging
@@ -19,9 +21,7 @@ from twisted.internet import reactor
 
 
 @task
-def crawling_task(
-    news_crawl_input: NewsCrawlInput, crawling_target_spiders: list[dict[str, Any]]
-):
+def crawling_task(news_crawl_input: NewsCrawlInput, crawling_target_spiders: list[dict[str, Any]]):
     """
     scrapyによるクロールを実行する。
     ・対象のスパイダーを指定できる。
@@ -33,9 +33,7 @@ def crawling_task(
     scrapy_settings = get_project_settings()  # Scrapyの設定（news_crawl.settings.py）を取得
     runner = CrawlerRunner(settings=scrapy_settings)
     configure_logging(install_root_handler=True)  # Scrapy側でrootロガーへ追加
-    scrapy_logger = logging.getLogger(
-        "scrapy"
-    )  # ここでscrapyのトップロガーのレベルを設定しないとdebugになってしまう。
+    scrapy_logger = logging.getLogger("scrapy")  # ここでscrapyのトップロガーのレベルを設定しないとdebugになってしまう。
     scrapy_logger.setLevel(logging.getLevelName(scrapy_settings.get("LOG_LEVEL")))
 
     for spider_info in crawling_target_spiders:

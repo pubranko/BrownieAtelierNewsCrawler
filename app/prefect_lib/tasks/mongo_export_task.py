@@ -5,21 +5,14 @@ from datetime import datetime
 from typing import Any
 import bson
 
-from BrownieAtelierMongo.collection_models.asynchronous_report_model import \
-    AsynchronousReportModel
-from BrownieAtelierMongo.collection_models.controller_model import \
-    ControllerModel
-from BrownieAtelierMongo.collection_models.crawler_logs_model import \
-    CrawlerLogsModel
-from BrownieAtelierMongo.collection_models.crawler_response_model import \
-    CrawlerResponseModel
+from BrownieAtelierMongo.collection_models.asynchronous_report_model import AsynchronousReportModel
+from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
+from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
+from BrownieAtelierMongo.collection_models.crawler_response_model import CrawlerResponseModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.news_clip_master_model import \
-    NewsClipMasterModel
-from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
-    ScrapedFromResponseModel
-from BrownieAtelierMongo.collection_models.stats_info_collect_model import \
-    StatsInfoCollectModel
+from BrownieAtelierMongo.collection_models.news_clip_master_model import NewsClipMasterModel
+from BrownieAtelierMongo.collection_models.scraped_from_response_model import ScrapedFromResponseModel
+from BrownieAtelierMongo.collection_models.stats_info_collect_model import StatsInfoCollectModel
 from prefect import get_run_logger, task
 from prefect.cache_policies import NO_CACHE
 from prefect_lib.flows import START_TIME
@@ -65,12 +58,8 @@ def mongo_export_task(
         if collection_name == CrawlerResponseModel.COLLECTION_NAME:
             collection = CrawlerResponseModel(mongo)
             sort_parameter = [(CrawlerResponseModel.RESPONSE_TIME, ASCENDING)]
-            conditions.append(
-                {CrawlerResponseModel.CRAWLING_START_TIME: {"$gte": period_from}}
-            )
-            conditions.append(
-                {CrawlerResponseModel.CRAWLING_START_TIME: {"$lte": period_to}}
-            )
+            conditions.append({CrawlerResponseModel.CRAWLING_START_TIME: {"$gte": period_from}})
+            conditions.append({CrawlerResponseModel.CRAWLING_START_TIME: {"$lte": period_to}})
             if crawler_response__registered:
                 conditions.append(
                     {
@@ -81,22 +70,14 @@ def mongo_export_task(
         elif collection_name == ScrapedFromResponseModel.COLLECTION_NAME:
             collection = ScrapedFromResponseModel(mongo)
             sort_parameter = []
-            conditions.append(
-                {ScrapedFromResponseModel.SCRAPYING_START_TIME: {"$gte": period_from}}
-            )
-            conditions.append(
-                {ScrapedFromResponseModel.SCRAPYING_START_TIME: {"$lte": period_to}}
-            )
+            conditions.append({ScrapedFromResponseModel.SCRAPYING_START_TIME: {"$gte": period_from}})
+            conditions.append({ScrapedFromResponseModel.SCRAPYING_START_TIME: {"$lte": period_to}})
 
         elif collection_name == NewsClipMasterModel.COLLECTION_NAME:
             collection = NewsClipMasterModel(mongo)
             sort_parameter = [(NewsClipMasterModel.RESPONSE_TIME, ASCENDING)]
-            conditions.append(
-                {NewsClipMasterModel.SCRAPED_SAVE_START_TIME: {"$gte": period_from}}
-            )
-            conditions.append(
-                {NewsClipMasterModel.SCRAPED_SAVE_START_TIME: {"$lte": period_to}}
-            )
+            conditions.append({NewsClipMasterModel.SCRAPED_SAVE_START_TIME: {"$gte": period_from}})
+            conditions.append({NewsClipMasterModel.SCRAPED_SAVE_START_TIME: {"$lte": period_to}})
 
         elif collection_name == CrawlerLogsModel.COLLECTION_NAME:
             collection = CrawlerLogsModel(mongo)
@@ -105,9 +86,7 @@ def mongo_export_task(
 
         elif collection_name == AsynchronousReportModel.COLLECTION_NAME:
             collection = AsynchronousReportModel(mongo)
-            conditions.append(
-                {AsynchronousReportModel.START_TIME: {"$gte": period_from}}
-            )
+            conditions.append({AsynchronousReportModel.START_TIME: {"$gte": period_from}})
             conditions.append({AsynchronousReportModel.START_TIME: {"$lte": period_to}})
 
         elif collection_name == StatsInfoCollectModel.COLLECTION_NAME:
@@ -124,15 +103,15 @@ def mongo_export_task(
             # エクスポート対象件数を確認
             record_count = collection.count(filter)
             logger.info(f"=== {collection_name} バックアップ対象件数 : {str(record_count)}")
-            
+
             documents: list = []
             write_count: int = 0
-            
-            # BSON形式でデータを保存 
-            with gzip.open(file_path, 'wb') as bson_file:
+
+            # BSON形式でデータを保存
+            with gzip.open(file_path, "wb") as bson_file:
                 for document in collection.limited_find(filter=filter, sort=sort_parameter):
                     documents.append(bson.BSON.encode(document))
-                    if (len(documents) >= 100): # 100件ごとにmongoDBへ書き込み
+                    if len(documents) >= 100:  # 100件ごとにmongoDBへ書き込み
                         write_count += 100
                         bson_file.writelines(documents)
                         logger.info(f"=== コレクション({collection_name}) : {write_count}件書き込み完了")
@@ -142,7 +121,6 @@ def mongo_export_task(
                 if documents:
                     bson_file.writelines(documents)
                     del documents
-
 
         # 誤更新防止のため、ファイルの権限を参照に限定
         #   -> Azure Storage Exploreで削除できなくなることがわかったため廃止。

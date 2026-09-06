@@ -53,9 +53,7 @@ class PaginationCheck:
                         crawl_type1 = _.sub("", crawl_target_parse.path)
                         # ページ情報部を除いて比較し一致した場合
                         if crawl_type1 == link_type1:
-                            logger.info(
-                                f"=== {spider_name} ページネーション(type1) : {link_url}"
-                            )
+                            logger.info(f"=== {spider_name} ページネーション(type1) : {link_url}")
                             check_flg = True
 
                     # 拡張子除去後の末尾にページが付与されているケースの場合、追加リクエストの対象とする。
@@ -68,9 +66,7 @@ class PaginationCheck:
                         crawl_type2 = _.sub("", crawl_target_parse.path)
                         # 末尾の拡張子やページ情報を除いて比較し一致した場合
                         if crawl_type2 == link_type2:
-                            logger.info(
-                                f"=== {spider_name} ページネーション(type2) : {link_url}"
-                            )
+                            logger.info(f"=== {spider_name} ページネーション(type2) : {link_url}")
                             check_flg = True
 
                 # クエリーにページが付与されているケースの場合、追加リクエストの対象とする。
@@ -89,9 +85,7 @@ class PaginationCheck:
                     link_query_selected_items: list[tuple] = []
                     for link_query_key, link_query_value in link_query.items():
                         if link_query_key in page_keys:
-                            link_query_selected_items.append(
-                                (link_query_key, link_query_value)
-                            )
+                            link_query_selected_items.append((link_query_key, link_query_value))
 
                     # linkにpege系クエリーがあった場合、
                     for link_query_selected_item in link_query_selected_items:
@@ -100,18 +94,13 @@ class PaginationCheck:
                             # keyが一致
                             if link_query_selected_item[0] in same_path_query:
                                 # valueが一致(同一ページ)した場合は対象外
-                                if (
-                                    link_query_selected_item[1][0]
-                                    == same_path_query[link_query_selected_item[0]][0]
-                                ):
+                                if link_query_selected_item[1][0] == same_path_query[link_query_selected_item[0]][0]:
                                     check_flg = False
                                 # page=1は対象外
                                 elif link_query_selected_item[1][0] == str(1):
                                     check_flg = False
                         if check_flg:
-                            logger.info(
-                                f"=== {spider_name} ページネーション(type3) : {link_url}"
-                            )
+                            logger.info(f"=== {spider_name} ページネーション(type3) : {link_url}")
 
         # クロール対象となったurlを保存
         if check_flg:

@@ -6,29 +6,24 @@ from prefect import flow, get_run_logger
 from prefect.futures import PrefectFuture
 from prefect_lib.flows import START_TIME
 from prefect_lib.flows.init_flow import init_flow
-from prefect_lib.tasks.crawling_input_create_task import \
-    crawling_input_create_task
+from prefect_lib.tasks.crawling_input_create_task import crawling_input_create_task
 from prefect_lib.tasks.crawling_task import crawling_task
 from prefect_lib.tasks.end_task import end_task
 from prefect_lib.tasks.init_task import init_task
-from prefect_lib.tasks.manual_crawling_target_spiders_task import \
-    manual_crawling_target_spiders_task
-from prefect_lib.tasks.news_clip_master_save_task import \
-    news_clip_master_save_task
+from prefect_lib.tasks.manual_crawling_target_spiders_task import manual_crawling_target_spiders_task
+from prefect_lib.tasks.news_clip_master_save_task import news_clip_master_save_task
 from prefect_lib.tasks.scrapying_task import scrapying_task
 
 
 @flow(name="Manual crawling flow")
-def manual_crawling_flow(
-    spider_names: list[str], spider_kwargs: dict, following_processing_execution: bool
-):
+def manual_crawling_flow(spider_names: list[str], spider_kwargs: dict, following_processing_execution: bool):
     init_flow()
 
     # ロガー取得
     logger = get_run_logger()  # PrefectLogAdapter
     # 初期処理
     init_task_instance: PrefectFuture = init_task.submit()
-    # 実行結果が返ってくるまで待機し、戻り値を保存。 
+    # 実行結果が返ってくるまで待機し、戻り値を保存。
     #   ※タスクのステータスをresultを受け取る前に判定してもPendingとなる。インスタンスのステータスはリアルタイムで更新されているので注意。
     init_task_result = init_task_instance.result()
 

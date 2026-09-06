@@ -210,9 +210,7 @@ class StatsInfoCollectData:
                             self.START_TIME: start_time,
                             self.TIME_PERIOD_HOUR: start_time.strftime("%H"),
                             self.SPIDER_NAME: spider_name,
-                            self.ROBOTS_RESPONSE_STATUS: str(key).replace(
-                                self.ROBOTSTXT_RESPONSE_STATUS_COUNT, ""
-                            ),
+                            self.ROBOTS_RESPONSE_STATUS: str(key).replace(self.ROBOTSTXT_RESPONSE_STATUS_COUNT, ""),
                             self.COUNT: value,
                         }
                     ]
@@ -262,46 +260,26 @@ class StatsInfoCollectData:
                     self.START_TIME: start_time,
                     self.TIME_PERIOD_HOUR: start_time.strftime("%H"),
                     self.SPIDER_NAME: spider_name,
-                    self.LOG_COUNT_CRITICAL: stats[self.LOG_COUNT_CRITICAL]
-                    if self.LOG_COUNT_CRITICAL in stats
-                    else 0,
-                    self.LOG_COUNT_ERROR: stats[self.LOG_COUNT_ERROR]
-                    if self.LOG_COUNT_ERROR in stats
-                    else 0,
-                    self.LOG_COUNT_WARNING: stats[self.LOG_COUNT_WARNING]
-                    if self.LOG_COUNT_WARNING in stats
-                    else 0,
+                    self.LOG_COUNT_CRITICAL: stats[self.LOG_COUNT_CRITICAL] if self.LOG_COUNT_CRITICAL in stats else 0,
+                    self.LOG_COUNT_ERROR: stats[self.LOG_COUNT_ERROR] if self.LOG_COUNT_ERROR in stats else 0,
+                    self.LOG_COUNT_WARNING: stats[self.LOG_COUNT_WARNING] if self.LOG_COUNT_WARNING in stats else 0,
                     self.ELAPSED_TIME_SECONDS: stats[self.ELAPSED_TIME_SECONDS]
                     if self.ELAPSED_TIME_SECONDS in stats
                     else 0,
-                    self.MEMUSAGE_MAX: stats[self.MEMUSAGE_MAX]
-                    if self.MEMUSAGE_MAX in stats
-                    else 0,
+                    self.MEMUSAGE_MAX: stats[self.MEMUSAGE_MAX] if self.MEMUSAGE_MAX in stats else 0,
                     self.DOWNLOADER_REQUEST_COUNT: stats[self.DOWNLOADER_REQUEST_COUNT]
                     if self.DOWNLOADER_REQUEST_COUNT in stats
                     else 0,
-                    self.DOWNLOADER_RESPONSE_COUNT: stats[
-                        self.DOWNLOADER_RESPONSE_COUNT
-                    ]
+                    self.DOWNLOADER_RESPONSE_COUNT: stats[self.DOWNLOADER_RESPONSE_COUNT]
                     if self.DOWNLOADER_RESPONSE_COUNT in stats
                     else 0,
-                    self.REQUEST_DEPTH_MAX: stats[self.REQUEST_DEPTH_MAX]
-                    if self.REQUEST_DEPTH_MAX in stats
-                    else 0,
-                    self.DOWNLOADER_RESPONSE_BYTES: stats[
-                        self.DOWNLOADER_RESPONSE_BYTES
-                    ]
+                    self.REQUEST_DEPTH_MAX: stats[self.REQUEST_DEPTH_MAX] if self.REQUEST_DEPTH_MAX in stats else 0,
+                    self.DOWNLOADER_RESPONSE_BYTES: stats[self.DOWNLOADER_RESPONSE_BYTES]
                     if self.DOWNLOADER_RESPONSE_BYTES in stats
                     else 0,
-                    self.RETRY_COUNT: stats[self.RETRY_COUNT]
-                    if self.RETRY_COUNT in stats
-                    else 0,
-                    self.ITEM_SCRAPED_COUNT: stats[self.ITEM_SCRAPED_COUNT]
-                    if self.ITEM_SCRAPED_COUNT in stats
-                    else 0,
-                    self.FINISH_REASON: stats[self.FINISH_REASON]
-                    if self.FINISH_REASON in stats
-                    else 0,
+                    self.RETRY_COUNT: stats[self.RETRY_COUNT] if self.RETRY_COUNT in stats else 0,
+                    self.ITEM_SCRAPED_COUNT: stats[self.ITEM_SCRAPED_COUNT] if self.ITEM_SCRAPED_COUNT in stats else 0,
+                    self.FINISH_REASON: stats[self.FINISH_REASON] if self.FINISH_REASON in stats else 0,
                     # 'record_type': 'spider_stats',
                     # 'start_time': start_time,
                     # 'time_period_hour': start_time.strftime('%H'),
@@ -341,20 +319,19 @@ class StatsInfoCollectData:
         #    空や全NaNのDataFrameは処理しない
         if not record_df.empty and not record_df.isna().all().all():
             if stats_info_collect_record[self.RECORD_TYPE] == self.ROBOTS_RESPONSE_STATUS:
-                clean_existing_df = self.robots_df.dropna(axis=1, how='all')
-                clean_record_df = record_df.dropna(axis=1, how='all')
+                clean_existing_df = self.robots_df.dropna(axis=1, how="all")
+                clean_record_df = record_df.dropna(axis=1, how="all")
                 self.robots_df = pd.concat([clean_existing_df, clean_record_df], ignore_index=True)
 
             elif stats_info_collect_record[self.RECORD_TYPE] == self.DOWNLOADER_RESPONSE_STATUS:
-                clean_existing_df = self.downloader_df.dropna(axis=1, how='all')
-                clean_record_df = record_df.dropna(axis=1, how='all')
+                clean_existing_df = self.downloader_df.dropna(axis=1, how="all")
+                clean_record_df = record_df.dropna(axis=1, how="all")
                 self.downloader_df = pd.concat([clean_existing_df, clean_record_df], ignore_index=True)
 
             elif stats_info_collect_record[self.RECORD_TYPE] == self.SPIDER_STATS:
-                clean_existing_df = self.spider_df.dropna(axis=1, how='all')
-                clean_record_df = record_df.dropna(axis=1, how='all')
+                clean_existing_df = self.spider_df.dropna(axis=1, how="all")
+                clean_record_df = record_df.dropna(axis=1, how="all")
                 self.spider_df = pd.concat([clean_existing_df, clean_record_df], ignore_index=True)
-
 
         # if stats_info_collect_record[self.RECORD_TYPE] == self.ROBOTS_RESPONSE_STATUS:
         #     self.robots_df = pd.concat([self.robots_df, record_df], ignore_index=True)
@@ -385,25 +362,15 @@ class StatsInfoCollectData:
         """
         df[columns] = pd.to_datetime(df[columns])
         df.set_index([self.START_TIME]).tz_localize("UTC").tz_convert("Asia/Tokyo")
-        return (
-            df.set_index([self.START_TIME]).tz_localize("UTC").tz_convert("Asia/Tokyo")
-        )
+        return df.set_index([self.START_TIME]).tz_localize("UTC").tz_convert("Asia/Tokyo")
 
-    def stats_analysis_exec(
-        self, datetime_term_list: list[tuple[datetime, datetime]]
-    ) -> pd.DataFrame:
+    def stats_analysis_exec(self, datetime_term_list: list[tuple[datetime, datetime]]) -> pd.DataFrame:
         """引数で渡された集計期間リストごとに解析を実行"""
         # start_timeをインデックスとしたdataframを生成
         # index生成後ソートを実行する。※ソートしないと将来的にエラーになると警告を受ける。
-        robots_df_index = self.date_time_set_index(
-            self.START_TIME, self.robots_df
-        ).sort_index()
-        downloader_df_index = self.date_time_set_index(
-            self.START_TIME, self.downloader_df
-        ).sort_index()
-        spider_df_index = self.date_time_set_index(
-            self.START_TIME, self.spider_df
-        ).sort_index()
+        robots_df_index = self.date_time_set_index(self.START_TIME, self.robots_df).sort_index()
+        downloader_df_index = self.date_time_set_index(self.START_TIME, self.downloader_df).sort_index()
+        spider_df_index = self.date_time_set_index(self.START_TIME, self.spider_df).sort_index()
 
         date_list: list = []
         for calc_date_from, calc_date_to in datetime_term_list:
@@ -428,24 +395,15 @@ class StatsInfoCollectData:
                 date_from,
                 self.downloader_result_df,
             )
-            self.aggregate_result_set(
-                spider_select_df, [self.SPIDER_NAME], date_from, self.spider_result_df
-            )
+            self.aggregate_result_set(spider_select_df, [self.SPIDER_NAME], date_from, self.spider_result_df)
 
             # 日付リストを作成
             date_list.append(date_from)
 
         # 日付別のスパイダー一覧を作成する。
-        self.spider_list: pd.Series = (
-            self.spider_df[self.SPIDER_NAME].drop_duplicates().sort_values()
-        )
-        spider_by_date: list = [
-            [date, spider]
-            for date, spider in itertools.product(date_list, self.spider_list)
-        ]
-        spider_by_date_df = pd.DataFrame(
-            spider_by_date, columns=[self.AGGREGATE_BASE_TERM, self.SPIDER_NAME]
-        )
+        self.spider_list: pd.Series = self.spider_df[self.SPIDER_NAME].drop_duplicates().sort_values()
+        spider_by_date: list = [[date, spider] for date, spider in itertools.product(date_list, self.spider_list)]
+        spider_by_date_df = pd.DataFrame(spider_by_date, columns=[self.AGGREGATE_BASE_TERM, self.SPIDER_NAME])
 
         # 各データフレームに対してソートを行う。
         df_sort_list: list[tuple[dict[str, pd.DataFrame], list]] = [
@@ -475,9 +433,7 @@ class StatsInfoCollectData:
         ]:
             for dataframes, sort_key in df_sort_list:
                 dataframes[type] = (
-                    pd.merge(spider_by_date_df, dataframes[type], how="left")
-                    .sort_values(by=sort_key)
-                    .fillna("")
+                    pd.merge(spider_by_date_df, dataframes[type], how="left").sort_values(by=sort_key).fillna("")
                 )
 
         spider_result_all_df = pd.merge(
@@ -512,27 +468,19 @@ class StatsInfoCollectData:
         # result_df = {'sum': df, 'mean': df, 'min': df, 'max': df}
         _ = select_df.groupby(by=groupby, as_index=False).sum()
         _[self.AGGREGATE_BASE_TERM] = aggregate_base_term
-        result_df[self.AGGREGATE_TYPE__SUM] = pd.concat(
-            [result_df[self.AGGREGATE_TYPE__SUM], _]
-        ).round(2)
+        result_df[self.AGGREGATE_TYPE__SUM] = pd.concat([result_df[self.AGGREGATE_TYPE__SUM], _]).round(2)
 
         _ = select_df.groupby(by=groupby, as_index=False).mean(numeric_only=True)
         _[self.AGGREGATE_BASE_TERM] = aggregate_base_term
-        result_df[self.AGGREGATE_TYPE__MEAN] = pd.concat(
-            [result_df[self.AGGREGATE_TYPE__MEAN], _]
-        ).round(2)
+        result_df[self.AGGREGATE_TYPE__MEAN] = pd.concat([result_df[self.AGGREGATE_TYPE__MEAN], _]).round(2)
 
         _ = select_df.groupby(by=groupby, as_index=False).min()
         _[self.AGGREGATE_BASE_TERM] = aggregate_base_term
-        result_df[self.AGGREGATE_TYPE__MIN] = pd.concat(
-            [result_df[self.AGGREGATE_TYPE__MIN], _]
-        ).round(2)
+        result_df[self.AGGREGATE_TYPE__MIN] = pd.concat([result_df[self.AGGREGATE_TYPE__MIN], _]).round(2)
 
         _ = select_df.groupby(by=groupby, as_index=False).max()
         _[self.AGGREGATE_BASE_TERM] = aggregate_base_term
-        result_df[self.AGGREGATE_TYPE__MAX] = pd.concat(
-            [result_df[self.AGGREGATE_TYPE__MAX], _]
-        ).round(2)
+        result_df[self.AGGREGATE_TYPE__MAX] = pd.concat([result_df[self.AGGREGATE_TYPE__MAX], _]).round(2)
 
     stats_image = {
         #     # ログレベル件数

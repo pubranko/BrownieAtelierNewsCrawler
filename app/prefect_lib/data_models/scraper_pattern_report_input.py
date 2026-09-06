@@ -66,9 +66,7 @@ class ScraperPatternReportInput(BaseModel):
         return value
 
     @validator(ScraperPatternReportConst.BASE_DATE)
-    def base_date_check(
-        cls, value: Optional[datetime], values: dict
-    ) -> Optional[datetime]:
+    def base_date_check(cls, value: Optional[datetime], values: dict) -> Optional[datetime]:
         if value:
             assert isinstance(value, datetime), "日時型以外がエラー"
         return value

@@ -24,12 +24,8 @@ def mongo_common_task(
         f"=== 引数 : prefix={prefix} suffix={suffix} period_date_from~to= {period_date_from} ~ {period_date_to}"
     )
 
-    period_datetime_from: datetime = datetime.combine(
-        period_date_from, time.min, TIMEZONE
-    )
-    period_datetime_to: datetime = datetime.combine(
-        period_date_to, time.max, TIMEZONE
-    )
+    period_datetime_from: datetime = datetime.combine(period_date_from, time.min, TIMEZONE)
+    period_datetime_to: datetime = datetime.combine(period_date_to, time.max, TIMEZONE)
 
     pre: str = ""
     if prefix:

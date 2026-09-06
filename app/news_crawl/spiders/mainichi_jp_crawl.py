@@ -5,18 +5,12 @@ from typing import Any, cast, Callable
 
 import scrapy
 from dateutil import parser
-from news_crawl.spiders.common.start_request_debug_file_generate import \
-    LASTMOD as debug_file__LASTMOD
-from news_crawl.spiders.common.start_request_debug_file_generate import \
-    LOC as debug_file__LOC
-from news_crawl.spiders.common.start_request_debug_file_generate import \
-    start_request_debug_file_generate
-from news_crawl.spiders.common.url_pattern_skip_check import \
-    url_pattern_skip_check
-from news_crawl.spiders.common.urls_continued_skip_check import \
-    UrlsContinuedSkipCheck
-from news_crawl.spiders.extensions_class.extensions_crawl import \
-    ExtensionsCrawlSpider
+from news_crawl.spiders.common.start_request_debug_file_generate import LASTMOD as debug_file__LASTMOD
+from news_crawl.spiders.common.start_request_debug_file_generate import LOC as debug_file__LOC
+from news_crawl.spiders.common.start_request_debug_file_generate import start_request_debug_file_generate
+from news_crawl.spiders.common.url_pattern_skip_check import url_pattern_skip_check
+from news_crawl.spiders.common.urls_continued_skip_check import UrlsContinuedSkipCheck
+from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
 from scrapy.http import TextResponse
 from scrapy_selenium import SeleniumRequest
 from selenium.webdriver.common.action_chains import ActionChains
@@ -28,6 +22,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 
 base_start_url: str = "https://mainichi.jp/flash/"  # ピックアップ、新着
+
 
 class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
     name: str = "mainichi_jp_crawl"
@@ -69,13 +64,9 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
         self.page: int = self.page_from
         self.all_urls_list: list = []
 
-        self.url_continued = UrlsContinuedSkipCheck(
-            self._crawl_point, base_start_url, self.news_crawl_input.continued
-        )
+        self.url_continued = UrlsContinuedSkipCheck(self._crawl_point, base_start_url, self.news_crawl_input.continued)
 
-    def parse_start_response_continued_crawl_mode(
-        self, response: TextResponse
-    ):
+    def parse_start_response_continued_crawl_mode(self, response: TextResponse):
         """(拡張メソッド)
         取得したレスポンスよりDBへ書き込み(selenium版)
         """
@@ -91,30 +82,18 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
         links: list = []
         load_page: int = 1
         while loop_flg:
-            self.logger.info(
-                f"=== parse_start_response_selenium 現在解析中のURL = {driver.current_url}"
-            )
+            self.logger.info(f"=== parse_start_response_selenium 現在解析中のURL = {driver.current_url}")
 
             # 各ページ内の末尾の明細が表示されるまで待機。
             target_article_element = f"#article-list > ul > li:nth-child({number_of_details_in_page * load_page})"
-            WebDriverWait(driver, 60).until(
-                EC.presence_of_element_located(
-                    (By.CSS_SELECTOR, target_article_element)
-                )
-            )
+            WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.CSS_SELECTOR, target_article_element)))
 
             target_next_page_element = f"div.main-contents span.link-more"
             # 要素がDOM上に存在し、表示されていて、有効（クリック可能）な状態まで最大60秒待機します。
-            WebDriverWait(driver, 60).until(
-                EC.element_to_be_clickable(
-                    (By.CSS_SELECTOR, target_next_page_element)
-                )
-            )
+            WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, target_next_page_element)))
 
             # 記事の一覧ページより、各記事へのリンクと最終更新日時を取得
-            url_find_elems = driver.find_elements(
-                By.CSS_SELECTOR, "#article-list > ul > li > a[href]"
-            )
+            url_find_elems = driver.find_elements(By.CSS_SELECTOR, "#article-list > ul > li > a[href]")
             lastmod_find_elems = driver.find_elements(
                 By.CSS_SELECTOR,
                 "#article-list > ul > li > a > div > div.articlelist-detail > div > span.articletag-date",
@@ -123,14 +102,9 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
             # 各記事のリンク（element）よりリンクのみ抽出したリストを生成
             links = [link.get_attribute("href") for link in url_find_elems]
             # 各記事のリンク（element）より最終更新日時のみ抽出したリストを生成
-            lastmods: list[datetime] = [
-                parser.parse(_.text) for _ in lastmod_find_elems
-            ]
+            lastmods: list[datetime] = [parser.parse(_.text) for _ in lastmod_find_elems]
             # 各記事より抽出したリンクと最終更新日時を内包したリストを生成
-            extracts: list[dict] = [
-                {"link": link, "lastmod": lastmod}
-                for link, lastmod in zip(links, lastmods)
-            ]
+            extracts: list[dict] = [{"link": link, "lastmod": lastmod} for link, lastmod in zip(links, lastmods)]
 
             self.logger.info(f"=== ページ内の記事件数 = {len(links)}")
 
@@ -140,9 +114,7 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
                 # 相対パスの場合絶対パスへ変換。また%エスケープされたものはUTF-8へ変換
                 url: str = urllib.parse.unquote(response.urljoin(extract["link"]))
                 # デバックファイルへ保存する情報を収集(url、lastmod)
-                self.all_urls_list.append(
-                    {debug_file__LOC: url, debug_file__LASTMOD: extract["lastmod"]}
-                )
+                self.all_urls_list.append({debug_file__LOC: url, debug_file__LASTMOD: extract["lastmod"]})
 
                 # 前回からの続きの指定がある場合、
                 # 前回取得したurlまで確認できたらそれ移行は対象外
@@ -168,9 +140,7 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
                 break
             else:
                 # 次のページボタンを選択
-                elem: WebElement = driver.find_element(
-                    By.CSS_SELECTOR, target_next_page_element
-                )
+                elem: WebElement = driver.find_element(By.CSS_SELECTOR, target_next_page_element)
                 # 要素までスクロールを移動。※次へボタンをウィンドウに表示させる。
                 driver.execute_script("arguments[0].scrollIntoView();", elem)
                 time.sleep(1)
@@ -187,9 +157,7 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
 
         # 次回向けに1ページ目の5件をcontrollerへ保存する
         self._crawl_point[base_start_url] = {
-            self.CRAWL_POINT__URLS: self.all_urls_list[
-                0 : self.url_continued.check_count
-            ],
+            self.CRAWL_POINT__URLS: self.all_urls_list[0 : self.url_continued.check_count],
             self.CRAWL_POINT__CRAWLING_START_TIME: self.news_crawl_input.crawling_start_time,
         }
         # debug指定がある場合、現ページの明細数分をデバック用ファイルに保存
@@ -209,9 +177,7 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
 
         number_of_details_in_page: int = 20  # 1ページ内の明細数
 
-        self.logger.info(
-            f"=== parse_start_response_selenium 現在解析中のURL = {driver.current_url}"
-        )
+        self.logger.info(f"=== parse_start_response_selenium 現在解析中のURL = {driver.current_url}")
         driver.set_page_load_timeout(60)
         driver.set_script_timeout(60)
 
@@ -220,26 +186,16 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
         while load_page <= self.page_to:
             # 各ページ内の末尾の明細が表示されるまで待機。
             target_article_element = f"#article-list > ul > li:nth-child({number_of_details_in_page * load_page})"
-            WebDriverWait(driver, 60).until(
-                EC.presence_of_element_located(
-                    (By.CSS_SELECTOR, target_article_element)
-                )
-            )
+            WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.CSS_SELECTOR, target_article_element)))
 
             target_next_page_element = f"div.main-contents span.link-more"
             # 要素がDOM上に存在し、表示されていて、有効（クリック可能）な状態まで最大60秒待機します。
-            WebDriverWait(driver, 60).until(
-                EC.element_to_be_clickable(
-                    (By.CSS_SELECTOR, target_next_page_element)
-                )
-            )
+            WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.CSS_SELECTOR, target_next_page_element)))
 
             # まだ読み込みが必要なページがあった場合はボタンクリック
             if load_page < self.page_to:
                 # 次のページボタンを選択
-                elem: WebElement = driver.find_element(
-                    By.CSS_SELECTOR, target_next_page_element
-                )
+                elem: WebElement = driver.find_element(By.CSS_SELECTOR, target_next_page_element)
                 # 要素までスクロールを移動。※次へボタンをウィンドウに表示させる。
                 driver.execute_script("arguments[0].scrollIntoView();", elem)
                 time.sleep(1)
@@ -248,9 +204,7 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
             load_page += 1
 
         # 記事の一覧ページより、各記事へのリンクと最終更新日時を取得
-        url_find_elems = driver.find_elements(
-            By.CSS_SELECTOR, "#article-list > ul > li > a[href]"
-        )
+        url_find_elems = driver.find_elements(By.CSS_SELECTOR, "#article-list > ul > li > a[href]")
         lastmod_find_elems = driver.find_elements(
             By.CSS_SELECTOR,
             "#article-list > ul > li > a > div > div.articlelist-detail > div > span.articletag-date",
@@ -268,20 +222,15 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
         # 上記開始〜終了インデックス部分のみ抽出したリスト（クロール対象リンクのリスト）を生成
         select_links: list = links[start_link:end_link]
         # 上記開始〜終了インデックスに合わせて最終更新日時のリストを生成
-        select_lastmods: list[datetime] = [
-            parser.parse(_.text) for _ in lastmod_find_elems[start_link:end_link]
-        ]
+        select_lastmods: list[datetime] = [parser.parse(_.text) for _ in lastmod_find_elems[start_link:end_link]]
         # 上記の各リストよりリンクと最終更新日時を内包したリストを生成
         select_extracts: list[dict] = [
-            {"link": link, "lastmod": lastmod}
-            for link, lastmod in zip(select_links, select_lastmods)
+            {"link": link, "lastmod": lastmod} for link, lastmod in zip(select_links, select_lastmods)
         ]
 
         self.logger.info(f"=== 抽出対象の記事件数 = {len(select_links)}")
         # 想定件数とことなる場合はワーニングメール通知（環境によって違うかも、、、）
-        assumed_number_of_cases: int = number_of_details_in_page * (
-            self.page_to - self.page_from + 1
-        )
+        assumed_number_of_cases: int = number_of_details_in_page * (self.page_to - self.page_from + 1)
         if not len(select_links) == assumed_number_of_cases:
             self.logger.warning(
                 f"=== parse_start_response_selenium ページ内で取得できた件数が想定の{assumed_number_of_cases}件と異なる。確認要。 ( {len(select_links)} 件)"
@@ -290,9 +239,7 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
         for extract in select_extracts:
             # 相対パスの場合絶対パスへ変換。また%エスケープされたものはUTF-8へ変換
             url: str = urllib.parse.unquote(response.urljoin(extract["link"]))
-            self.all_urls_list.append(
-                {debug_file__LOC: url, debug_file__LASTMOD: extract["lastmod"]}
-            )
+            self.all_urls_list.append({debug_file__LOC: url, debug_file__LASTMOD: extract["lastmod"]})
 
             # 前回からの続きの指定がある場合、
             # 前回取得したurlまで確認できたらそれ移行は対象外
@@ -330,9 +277,7 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
 
         # 次回向けに1ページ目の5件をcontrollerへ保存する
         self._crawl_point[base_start_url] = {
-            self.CRAWL_POINT__URLS: self.all_urls_list[
-                0 : self.url_continued.check_count
-            ],
+            self.CRAWL_POINT__URLS: self.all_urls_list[0 : self.url_continued.check_count],
             self.CRAWL_POINT__CRAWLING_START_TIME: self.news_crawl_input.crawling_start_time,
         }
         # debug指定がある場合、現ページの明細数分をデバック用ファイルに保存

@@ -3,15 +3,13 @@ from openpyxl import Workbook
 from prefect import get_run_logger, task
 from BrownieAtelierNotice import settings
 from BrownieAtelierNotice.slack.slack_notice import slack_notice
-from prefect_lib.data_models.scraper_pattern_report_input import \
-    ScraperPatternReportInput
+from prefect_lib.data_models.scraper_pattern_report_input import ScraperPatternReportInput
 from prefect_lib.flows import START_TIME
 from shared.settings import DATA
 
+
 @task
-def scraper_pattern_report_notice_task(
-    scraper_pattern_report_input: ScraperPatternReportInput, workbook: Workbook
-):
+def scraper_pattern_report_notice_task(scraper_pattern_report_input: ScraperPatternReportInput, workbook: Workbook):
     """
     scrapyによるクロールを実行するための対象スパイダー情報の一覧を生成する。
     """

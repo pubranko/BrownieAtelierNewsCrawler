@@ -3,22 +3,19 @@ from datetime import datetime
 from importlib import import_module
 from typing import Any, Optional
 
-from BrownieAtelierMongo.collection_models.controller_model import \
-    ControllerModel
-from BrownieAtelierMongo.collection_models.crawler_response_model import \
-    CrawlerResponseModel
+from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
+from BrownieAtelierMongo.collection_models.crawler_response_model import CrawlerResponseModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
-    ScrapedFromResponseModel
-from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import \
-    ScraperInfoByDomainModel
+from BrownieAtelierMongo.collection_models.scraped_from_response_model import ScrapedFromResponseModel
+from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import ScraperInfoByDomainModel
 from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import (
-    ScraperInfoByDomainConst, ScraperInfoByDomainData)
+    ScraperInfoByDomainConst,
+    ScraperInfoByDomainData,
+)
 from bs4 import BeautifulSoup as bs4
 from prefect import get_run_logger, task
 from prefect.cache_policies import NO_CACHE
-from prefect_lib.common_module.scraped_record_error_check import \
-    scraped_record_error_check
+from prefect_lib.common_module.scraped_record_error_check import scraped_record_error_check
 from prefect_lib.flows import START_TIME
 from pymongo import ASCENDING
 from pymongo.cursor import Cursor
@@ -55,13 +52,9 @@ def scrapying_task(
     if domain:
         conditions.append({CrawlerResponseModel.DOMAIN: domain})
     if target_start_time_from:
-        conditions.append(
-            {CrawlerResponseModel.CRAWLING_START_TIME: {"$gte": target_start_time_from}}
-        )
+        conditions.append({CrawlerResponseModel.CRAWLING_START_TIME: {"$gte": target_start_time_from}})
     if target_start_time_to:
-        conditions.append(
-            {CrawlerResponseModel.CRAWLING_START_TIME: {"$lte": target_start_time_to}}
-        )
+        conditions.append({CrawlerResponseModel.CRAWLING_START_TIME: {"$lte": target_start_time_to}})
     if urls:
         conditions.append({CrawlerResponseModel.URL: {"$in": urls}})
     if len(stop_domain) > 0:
@@ -102,9 +95,7 @@ def scrapying_task(
         for record in records:
             # 各サイト共通の項目を設定
             scraped: dict = {}
-            scraped[ScrapedFromResponseModel.DOMAIN] = record[
-                CrawlerResponseModel.DOMAIN
-            ]
+            scraped[ScrapedFromResponseModel.DOMAIN] = record[CrawlerResponseModel.DOMAIN]
             scraped[ScrapedFromResponseModel.URL] = record[CrawlerResponseModel.URL]
             scraped[ScrapedFromResponseModel.RESPONSE_TIME] = timezone_recovery(
                 record[CrawlerResponseModel.RESPONSE_TIME]
@@ -113,44 +104,26 @@ def scrapying_task(
                 record[CrawlerResponseModel.CRAWLING_START_TIME]
             )
             scraped[ScrapedFromResponseModel.SCRAPYING_START_TIME] = START_TIME
-            scraped[ScrapedFromResponseModel.SOURCE_OF_INFORMATION] = record[
-                CrawlerResponseModel.SOURCE_OF_INFORMATION
-            ]
+            scraped[ScrapedFromResponseModel.SOURCE_OF_INFORMATION] = record[CrawlerResponseModel.SOURCE_OF_INFORMATION]
 
             # response_bodyをbs4で解析
-            response_body: str = pickle.loads(
-                record[CrawlerResponseModel.RESPONSE_BODY]
-            )
+            response_body: str = pickle.loads(record[CrawlerResponseModel.RESPONSE_BODY])
             soup: bs4 = bs4(response_body, "lxml")
             scraped[ScrapedFromResponseModel.PATTERN] = {}
 
             # ドメイン別スクレイパー情報をDBより取得
             if not old_domain == record[CrawlerResponseModel.DOMAIN]:
                 scraper_info_by_domain_data_list: list[ScraperInfoByDomainData] = []
-                scraper_info_by_domain_data_list = (
-                    scraper_info_by_domain.find_and_data_models_get(
-                        filter={
-                            ScraperInfoByDomainConst.DOMAIN: record[
-                                CrawlerResponseModel.DOMAIN
-                            ]
-                        }
-                    )
+                scraper_info_by_domain_data_list = scraper_info_by_domain.find_and_data_models_get(
+                    filter={ScraperInfoByDomainConst.DOMAIN: record[CrawlerResponseModel.DOMAIN]}
                 )
-                logger.info(
-                    f"=== ドメイン別スクレイパー情報取得 (domain: {record[CrawlerResponseModel.DOMAIN]})"
-                )
+                logger.info(f"=== ドメイン別スクレイパー情報取得 (domain: {record[CrawlerResponseModel.DOMAIN]})")
 
-            scraper_info_by_domain_data = scraper_info_by_domain_data_list[
-                0
-            ]  # ドメイン単位で取得しているため常に１件
+            scraper_info_by_domain_data = scraper_info_by_domain_data_list[0]  # ドメイン単位で取得しているため常に１件
             for scraper, pattern_list in scraper_info_by_domain_data.scrape_item_get():
                 if not scraper in scraper_mod:
-                    scraper_mod[scraper] = import_module(
-                        "prefect_lib.scraper." + scraper
-                    )
-                scraped_result, scraped_pattern = getattr(
-                    scraper_mod[scraper], "scraper"
-                )(
+                    scraper_mod[scraper] = import_module("prefect_lib.scraper." + scraper)
+                scraped_result, scraped_pattern = getattr(scraper_mod[scraper], "scraper")(
                     soup=soup,
                     scraper=scraper,
                     scrape_parm=pattern_list,

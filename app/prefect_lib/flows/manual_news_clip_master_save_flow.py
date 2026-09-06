@@ -7,8 +7,7 @@ from prefect.futures import PrefectFuture
 from prefect_lib.flows.init_flow import init_flow
 from prefect_lib.tasks.end_task import end_task
 from prefect_lib.tasks.init_task import init_task
-from prefect_lib.tasks.news_clip_master_save_task import \
-    news_clip_master_save_task
+from prefect_lib.tasks.news_clip_master_save_task import news_clip_master_save_task
 
 
 @flow(name="Manual news clip master save flow")
@@ -23,7 +22,7 @@ def manual_news_clip_master_save_flow(
     logger = get_run_logger()  # PrefectLogAdapter
     # 初期処理
     init_task_instance: PrefectFuture = init_task.submit()
-    # 実行結果が返ってくるまで待機し、戻り値を保存。 
+    # 実行結果が返ってくるまで待機し、戻り値を保存。
     #   ※タスクのステータスをresultを受け取る前に判定してもPendingとなる。インスタンスのステータスはリアルタイムで更新されているので注意。
     init_task_result = init_task_instance.result()
 
@@ -32,9 +31,7 @@ def manual_news_clip_master_save_flow(
 
         try:
             # 引数で指定されたクロール結果のスクレイピングを実施
-            news_clip_master_save_task(
-                mongo, domain, target_start_time_from, target_start_time_to
-            )
+            news_clip_master_save_task(mongo, domain, target_start_time_from, target_start_time_to)
 
         except Exception as e:
             # 例外をキャッチしてログ出力等の処理を行う

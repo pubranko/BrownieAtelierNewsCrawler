@@ -1,12 +1,9 @@
 from datetime import datetime
 from typing import Any, Optional
 
-from BrownieAtelierMongo.collection_models.asynchronous_report_model import \
-    AsynchronousReportModel
-from BrownieAtelierMongo.collection_models.crawler_logs_model import \
-    CrawlerLogsModel
-from BrownieAtelierMongo.collection_models.crawler_response_model import \
-    CrawlerResponseModel
+from BrownieAtelierMongo.collection_models.asynchronous_report_model import AsynchronousReportModel
+from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
+from BrownieAtelierMongo.collection_models.crawler_response_model import CrawlerResponseModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from prefect import get_run_logger, task
 from prefect.cache_policies import NO_CACHE
@@ -32,9 +29,7 @@ def sync_check_crawler_response_task(
 
     # スパイダーレポートより、クロール対象となったurlのリストを取得し一覧にする。
     conditions: list = []
-    conditions.append(
-        {CrawlerLogsModel.RECORD_TYPE: CrawlerLogsModel.RECORD_TYPE__SPIDER_REPORTS}
-    )
+    conditions.append({CrawlerLogsModel.RECORD_TYPE: CrawlerLogsModel.RECORD_TYPE__SPIDER_REPORTS})
     if domain:
         conditions.append({CrawlerLogsModel.DOMAIN: domain})
     if start_time_from:
@@ -46,7 +41,6 @@ def sync_check_crawler_response_task(
     else:
         log_filter = None
 
-
     #####################################
     # クローラーレスポンスの有無をチェック #
     #####################################
@@ -54,25 +48,19 @@ def sync_check_crawler_response_task(
     if domain:
         conditions.append({CrawlerResponseModel.DOMAIN: domain})
     if start_time_from:
-        conditions.append(
-            {CrawlerResponseModel.CRAWLING_START_TIME: {"$gte": start_time_from}}
-        )
+        conditions.append({CrawlerResponseModel.CRAWLING_START_TIME: {"$gte": start_time_from}})
     if start_time_to:
-        conditions.append(
-            {CrawlerResponseModel.CRAWLING_START_TIME: {"$lte": start_time_to}}
-        )
+        conditions.append({CrawlerResponseModel.CRAWLING_START_TIME: {"$lte": start_time_to}})
 
     response_sync_list: list = []  # crawler_logsとcrawler_responseで同期
     response_async_list: list = []  # crawler_logsとcrawler_responseで非同期
     response_async_domain_aggregate: dict = {}
     # for log_record in log_records:
-    
-    crawler_logs_count:int = crawler_logs.count(filter=log_filter)
-    logger.info(
-        f"=== 同期チェック(crawler_logs)件数 : {crawler_logs_count})"
-    )
 
-    processed_count:int = 0
+    crawler_logs_count: int = crawler_logs.count(filter=log_filter)
+    logger.info(f"=== 同期チェック(crawler_logs)件数 : {crawler_logs_count})")
+
+    processed_count: int = 0
 
     for log_record in crawler_logs.limited_find(
         filter=log_filter,
@@ -86,10 +74,7 @@ def sync_check_crawler_response_task(
         loc_crawl_urls: list = []
         for temp in log_record[CrawlerLogsModel.CRAWL_URLS_LIST]:
             loc_crawl_urls.extend(
-                [
-                    item[CrawlerLogsModel.CRAWL_URLS_LIST__LOC]
-                    for item in temp[CrawlerLogsModel.CRAWL_URLS_LIST__ITEMS]
-                ]
+                [item[CrawlerLogsModel.CRAWL_URLS_LIST__LOC] for item in temp[CrawlerLogsModel.CRAWL_URLS_LIST__ITEMS]]
             )
 
         # スパイダーレポートよりクロール対象となったurlを順に読み込み、crawler_responseに登録されていることを確認する。
@@ -101,9 +86,7 @@ def sync_check_crawler_response_task(
             if crawler_response.count(filter=master_filter) == 0:
                 response_async_list.append(crawl_url)
                 # 非同期ドメイン集計カウントアップ
-                response_async_domain_aggregate[
-                    log_record[CrawlerLogsModel.DOMAIN]
-                ] += 1
+                response_async_domain_aggregate[log_record[CrawlerLogsModel.DOMAIN]] += 1
 
             # クロール対象とcrawler_responseで同期している場合、同期リストへ保存
             # ※定期観測では1件しか存在しないないはずだが、start_time_from〜toで一定の範囲の
@@ -122,9 +105,7 @@ def sync_check_crawler_response_task(
                     CrawlerResponseModel.RESPONSE_TIME: timezone_recovery(
                         response_record[CrawlerResponseModel.RESPONSE_TIME]
                     ),
-                    CrawlerResponseModel.DOMAIN: response_record[
-                        CrawlerResponseModel.DOMAIN
-                    ],
+                    CrawlerResponseModel.DOMAIN: response_record[CrawlerResponseModel.DOMAIN],
                 }
                 if CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER in response_record:
                     _[CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER] = response_record[
@@ -157,8 +138,6 @@ def sync_check_crawler_response_task(
         counter = f"エラー({len(response_async_list)})/正常({len(response_sync_list)})"
         logger.warning(f"=== 同期チェック結果(crawler -> response) : NG({counter})")
     else:
-        logger.info(
-            f"=== 同期チェック(crawler -> response)結果 : OK(件数 : {len(response_sync_list)})"
-        )
+        logger.info(f"=== 同期チェック(crawler -> response)結果 : OK(件数 : {len(response_sync_list)})")
 
     return response_sync_list, response_async_list, response_async_domain_aggregate

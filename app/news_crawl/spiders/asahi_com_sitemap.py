@@ -1,8 +1,7 @@
 from typing import Any
 
 from lxml.etree import _Element
-from news_crawl.spiders.extensions_class.extensions_sitemap import \
-    ExtensionsSitemapSpider
+from news_crawl.spiders.extensions_class.extensions_sitemap import ExtensionsSitemapSpider
 
 
 class AsahiComSitemapSpider(ExtensionsSitemapSpider):

@@ -4,12 +4,10 @@ import pandas as pd
 from openpyxl import Workbook
 from openpyxl.cell import Cell
 from openpyxl.chart.bar_chart import BarChart
-from openpyxl.styles import (Alignment, Border, Font, PatternFill, Protection,
-                             Side)
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Protection, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
-from prefect_lib.data_models.scraper_pattern_report_data import \
-    ScraperPatternReportData
+from prefect_lib.data_models.scraper_pattern_report_data import ScraperPatternReportData
 
 
 class ScraperPatternReportExcel:
@@ -97,9 +95,7 @@ class ScraperPatternReportExcel:
             head2_cell.border = border
             head2_cell.alignment = Alignment(horizontal="center")  # 中央寄せ
 
-    def scraper_pattern_report_body(
-        self, scraper_pattern_report_data: ScraperPatternReportData
-    ):
+    def scraper_pattern_report_body(self, scraper_pattern_report_data: ScraperPatternReportData):
         """
         スクレイパー情報解析レポート用Excelの編集
         """
@@ -115,9 +111,7 @@ class ScraperPatternReportExcel:
         for col_idx, col_info in enumerate(self.SCRAPER_PATTERN_ANALYSIS_COLUMNS_INFO):
             for row_idx, value in enumerate(result_df[col_info[self.COL]]):
                 # 更新対象のセル
-                any: Any = self.worksheet[
-                    f"{get_column_letter(col_idx + 1)}{str(base_row_idx + row_idx)}"
-                ]
+                any: Any = self.worksheet[f"{get_column_letter(col_idx + 1)}{str(base_row_idx + row_idx)}"]
                 target_cell: Cell = any
 
                 # 更新対象のセルに値を設定
@@ -126,9 +120,7 @@ class ScraperPatternReportExcel:
                 # 同値カラー調整
                 if self.EQUIVALENT_COLOR in col_info:
                     # 比較用の１つ上のセルと同じ値の場合は文字色を変更
-                    any: Any = self.worksheet[
-                        f"{get_column_letter(col_idx + 1)}{str(base_row_idx + row_idx - 1)}"
-                    ]
+                    any: Any = self.worksheet[f"{get_column_letter(col_idx + 1)}{str(base_row_idx + row_idx - 1)}"]
                     compare_cell: Cell = any
                     if target_cell.value == compare_cell.value:
                         target_cell.font = Font(color=col_info[self.EQUIVALENT_COLOR])

@@ -4,23 +4,16 @@ from typing import Any, Final, cast, Callable
 
 import scrapy
 from news_crawl.items import NewsCrawlItem
-from news_crawl.spiders.common.start_request_debug_file_generate import \
-    LASTMOD as debug_file__LASTMOD
-from news_crawl.spiders.common.start_request_debug_file_generate import \
-    LOC as debug_file__LOC
-from news_crawl.spiders.common.start_request_debug_file_generate import \
-    start_request_debug_file_generate
-from news_crawl.spiders.common.url_pattern_skip_check import \
-    url_pattern_skip_check
-from news_crawl.spiders.common.urls_continued_skip_check import \
-    UrlsContinuedSkipCheck
-from news_crawl.spiders.extensions_class.extensions_crawl import \
-    ExtensionsCrawlSpider
+from news_crawl.spiders.common.start_request_debug_file_generate import LASTMOD as debug_file__LASTMOD
+from news_crawl.spiders.common.start_request_debug_file_generate import LOC as debug_file__LOC
+from news_crawl.spiders.common.start_request_debug_file_generate import start_request_debug_file_generate
+from news_crawl.spiders.common.url_pattern_skip_check import url_pattern_skip_check
+from news_crawl.spiders.common.urls_continued_skip_check import UrlsContinuedSkipCheck
+from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
 from scrapy.exceptions import CloseSpider
 from scrapy.http import TextResponse
 from scrapy_selenium import SeleniumRequest
-from selenium.common.exceptions import (NoSuchElementException,
-                                        StaleElementReferenceException)
+from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -97,9 +90,7 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
         self.logger.info(f"=== parse_start_response 現在解析中のURL = {response.url}")
 
         # ページ内の対象urlを抽出
-        links = response.css(
-            f".main_content > .left_col > .posts_list .post_title > a[href]::attr(href)"
-        ).getall()
+        links = response.css(f".main_content > .left_col > .posts_list .post_title > a[href]::attr(href)").getall()
         self.logger.info(f"=== ページ内の記事件数 = {len(links)}")
         # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
         if not len(links) == 30:
@@ -154,9 +145,7 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
 
             # 次回向けに1ページ目の10件をcontrollerへ保存する
             self._crawl_point[self.start_urls[0]] = {
-                self.CRAWL_POINT__URLS: self.all_urls_list[
-                    0 : self.url_continued.check_count
-                ],
+                self.CRAWL_POINT__URLS: self.all_urls_list[0 : self.url_continued.check_count],
                 self.CRAWL_POINT__CRAWLING_START_TIME: self.news_crawl_input.crawling_start_time,
             }
         else:
@@ -182,9 +171,7 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
         self.logger.info(f"=== parse_start_response 現在解析中のURL = {response.url}")
 
         # ページ内の対象urlを抽出
-        links = response.css(
-            f".main_content > .left_col > .posts_list .post_title > a[href]::attr(href)"
-        ).getall()
+        links = response.css(f".main_content > .left_col > .posts_list .post_title > a[href]::attr(href)").getall()
         self.logger.info(f"=== ページ内の記事件数 = {len(links)}")
         # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
         if not len(links) == self.ITEMS_ON_PAGE_COUNT:
@@ -219,15 +206,13 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
         start_request_debug_file_generate(
             self.name,
             response.url,
-            self.all_urls_list[-self.ITEMS_ON_PAGE_COUNT:],
+            self.all_urls_list[-self.ITEMS_ON_PAGE_COUNT :],
             self.news_crawl_input.debug,
         )
 
         # 次回向けに今回の1ページ目(self.page_from)の10件をcontrollerへ保存する
         self._crawl_point[base_start_url] = {
-            self.CRAWL_POINT__URLS: self.all_urls_list[
-                0 : self.url_continued.check_count
-            ],
+            self.CRAWL_POINT__URLS: self.all_urls_list[0 : self.url_continued.check_count],
             self.CRAWL_POINT__CRAWLING_START_TIME: self.news_crawl_input.crawling_start_time,
         }
 
@@ -264,9 +249,7 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
 
         try:
             # elem: WebElement = driver.find_element_by_css_selector('#mypage')  # ログイン前なら存在
-            elem: WebElement = driver.find_element(
-                By.CSS_SELECTOR, "#mypage"
-            )  # ログイン前なら存在
+            elem: WebElement = driver.find_element(By.CSS_SELECTOR, "#mypage")  # ログイン前なら存在
         except NoSuchElementException:  # 既にログイン中ならpass
             pass
         else:
@@ -277,9 +260,7 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
 
             # ログインフォームのiframに入る
             iframe2: WebElement = WebDriverWait(driver, 60).until(
-                EC.presence_of_element_located(
-                    (By.CSS_SELECTOR, "#modal-COMMON-content > p > iframe")
-                )
+                EC.presence_of_element_located((By.CSS_SELECTOR, "#modal-COMMON-content > p > iframe"))
             )
             driver.switch_to.frame(iframe2)
 
@@ -308,9 +289,7 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
         # ログイン済みであることを最終チェック
         try:
             iframe3: WebElement = WebDriverWait(driver, 60).until(
-                EC.presence_of_element_located(
-                    (By.CSS_SELECTOR, "#login_wrapper > iframe")
-                )
+                EC.presence_of_element_located((By.CSS_SELECTOR, "#login_wrapper > iframe"))
             )
             driver.switch_to.frame(iframe3)
             WebDriverWait(driver, 60).until(
@@ -322,17 +301,11 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
 
         # 指定ページをループしてクロール対象のurlを収集
         while self.page <= self.page_to:
-            self.logger.info(
-                f"=== parse_start_response 現在解析中のURL = {driver.current_url}"
-            )
+            self.logger.info(f"=== parse_start_response 現在解析中のURL = {driver.current_url}")
 
             next_page_url = f"{self.start_urls[0]}/{self.page + 1}"
-            next_page_element = (
-                f'.main_content > .left_col > .pagination > a[href="{next_page_url}"]'
-            )
-            WebDriverWait(driver, 60).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, next_page_element))
-            )
+            next_page_element = f'.main_content > .left_col > .pagination > a[href="{next_page_url}"]'
+            WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.CSS_SELECTOR, next_page_element)))
 
             # ページ内の対象urlを抽出
             _ = driver.find_elements(
@@ -352,9 +325,7 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
             for link in links:
                 # 相対パスの場合絶対パスへ変換。また%エスケープされたものはUTF-8へ変換
                 url: str = urllib.parse.unquote(response.urljoin(link))
-                self.all_urls_list.append(
-                    {debug_file__LOC: url, debug_file__LASTMOD: ""}
-                )
+                self.all_urls_list.append({debug_file__LOC: url, debug_file__LASTMOD: ""})
                 # 前回からの続きの指定がある場合、前回取得したurlが確認できたらそれ以降のurlは対象外
                 # urlパターンの指定がある場合、パターンに合わないurlは対象外
                 if self.url_continued.skip_check(url):
@@ -393,9 +364,7 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
             self.page += 1
             if self.page <= self.page_to:
                 # 要素を表示するようスクロールしてクリック
-                elem: WebElement = driver.find_element(
-                    By.CSS_SELECTOR, next_page_element
-                )
+                elem: WebElement = driver.find_element(By.CSS_SELECTOR, next_page_element)
                 # elem: WebElement = driver.find_element_by_css_selector(
                 #     next_page_element)
                 elem.send_keys(Keys.END)  # endキーを押下して画面最下部へ移動
@@ -403,13 +372,9 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
 
         # リスト(self.urls_list)に溜めたクロール対象urlよりリクエストを発行
         for _ in self.crawl_urls_list:
-            yield SeleniumRequest(
-                url=response.urljoin(_[self.CRAWL_POINT__LOC]), callback=self.parse_news
-            )
+            yield SeleniumRequest(url=response.urljoin(_[self.CRAWL_POINT__LOC]), callback=self.parse_news)
         # 次回向けに1ページ目の10件をcontrollerへ保存する
         self._crawl_point[self.start_urls[0]] = {
-            self.CRAWL_POINT__URLS: self.all_urls_list[
-                0 : self.url_continued.check_count
-            ],
+            self.CRAWL_POINT__URLS: self.all_urls_list[0 : self.url_continued.check_count],
             self.CRAWL_POINT__CRAWLING_START_TIME: self.news_crawl_input.crawling_start_time,
         }

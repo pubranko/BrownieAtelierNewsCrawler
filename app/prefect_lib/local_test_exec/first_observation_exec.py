@@ -6,5 +6,6 @@ def test_exec():
     # with prefect_test_harness():
     first_observation_flow()
 
+
 if __name__ == "__main__":
     test_exec()
