@@ -11,9 +11,8 @@
 # ~.venv/lib/python3.8/site-packages/scrapy/settings/default_settings.py
 import os
 from datetime import timedelta, timezone
-from shutil import which
 
-from decouple import AutoConfig, config
+from decouple import config
 
 # .envファイルが存在するパスを指定。実行時のカレントディレクトリに.envを配置している場合、以下の設定不要。
 # config = AutoConfig(search_path="./shared")
@@ -82,10 +81,6 @@ SPIDER_MIDDLEWARES = {
 # ダウンロードのミドルウェアを自作のものを使いたい場合、以下の設定を変える。
 DOWNLOADER_MIDDLEWARES = {
     #'news_crawl.middlewares.NewsCrawlDownloaderMiddleware': 543,
-    # selenium用 -> カスタムバージョン
-    # 'news_crawl.scrapy_selenium_custom_middlewares.SeleniumMiddleware': 800,
-    # selenium用
-    #'scrapy_selenium.SeleniumMiddleware': 800,
     # defalt_settings.pyより
     # Engine side
     # 'scrapy.downloadermiddlewares.robotstxt.RobotsTxtMiddleware': 100,
@@ -197,23 +192,15 @@ LOG_DATEFORMAT = "%Y-%m-%d %H:%M:%S"
 # LOGSTATS_INTERVAL = 60.0
 INSTALL_ROOT_HANDLER = False
 
-# Scrapy-Seleniumの設定。上述のDOWNLOADER_MIDDLEWARES={}にも設定を行っている。
-SELENIUM_DRIVER_NAME = "firefox"
-SELENIUM_DRIVER_EXECUTABLE_PATH = which("geckodriver")
-# SELENIUM_DRIVER_ARGUMENTS = ["-headless"]
-SELENIUM_DRIVER_ARGUMENTS = ["--headless", "--window-size=1920,1080"]
-# ブラウザ・通信の不可軽減のため、独自の設定を追加してみた。
-#   その他の設定については、ここが参考になりそう https://www.programcreek.com/python/example/100026/selenium.webdriver.FirefoxProfile
-#   1:通常、2:禁止
-SELENIUM_DRIVER_SET_PREFERENCE = {
-    "permissions.default.image": 2,  # 画像のダウンロード禁止
-    "permissions.default.image.animation_mode": 2,  # gitなどのアニメーションのダウンロード禁止
-    "permissions.default.stylesheet": 2,  # cssのダウンロード禁止
-    "dom.ipc.plugins.enabled.libflashplayer.so": "false",  # Flashを使わない
+# scrapy-playwright の設定
+TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
+DOWNLOAD_HANDLERS = {
+    "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+    "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
 }
-SELENIUM_FIREFOX_PROFILE_DIRECTORY = (
-    "firefox_profile"  # firefoxのクローラー用にカスタマイズしたプロファイル。Browniatelier/app/firefox_profile
-)
+PLAYWRIGHT_BROWSER_TYPE = "chromium"
+PLAYWRIGHT_LAUNCH_OPTIONS = {"headless": True}
+PLAYWRIGHT_DEFAULT_NAVIGATION_TIMEOUT = 60_000
 
 
 RETRY_ENABLED = True
@@ -245,7 +232,7 @@ EXCLUSIVE_WORK = os.path.join(DATA, "exclusive_work")
     'scrapy.downloadermiddlewares.redirect.RedirectMiddleware': 600,
     'scrapy.downloadermiddlewares.cookies.CookiesMiddleware': 700,
     'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 750,
-    ここにseleniumuが入るイメージ
+    ここにPlaywrightのダウンロードハンドラーが入るイメージ
     'scrapy.downloadermiddlewares.stats.DownloaderStats': 850,
     'scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware': 900,
 }

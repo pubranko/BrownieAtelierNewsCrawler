@@ -5,8 +5,7 @@ requires-python = "~=3.14"
 dependencies = [
     "prefect>=3.4.0",
     "Scrapy>=2.0.0",
-    "scrapy-selenium>=0.0.7",
-    "selenium>=4.0.0",
+    "scrapy-playwright",
     "pymongo>=4.0.0",
     "pysolr>=3.9.0",
     "beautifulsoup4>=4.0.0",
@@ -30,6 +29,7 @@ dependencies = [
     "psutil",
     "slack-sdk>=3.0.0",
     "prefect-docker",
+    "scrapy-playwright>=0.0.48",
 ]
 
 [dependency-groups]

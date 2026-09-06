@@ -1,5 +1,5 @@
 import pickle
-from collections.abc import Callable, Iterable
+from collections.abc import AsyncIterable, Callable, Iterable
 from datetime import datetime
 from typing import Any, Final
 from urllib.parse import unquote
@@ -21,7 +21,6 @@ from news_crawl.spiders.common.spider_init import spider_init
 from news_crawl.spiders.common.urls_continued_skip_check import UrlsContinuedSkipCheck
 from scrapy.http import TextResponse
 from scrapy.spiders import CrawlSpider
-from scrapy_selenium import SeleniumRequest
 
 
 class ExtensionsCrawlSpider(CrawlSpider):
@@ -53,11 +52,12 @@ class ExtensionsCrawlSpider(CrawlSpider):
     _crawl_point: dict = {}
     """オーバーライド必須 この説明がvscodeで見えているということは、オーバーライドが漏れています。"""
 
-    # seleniumモード
-    selenium_mode: bool = False
-    """記事本体のページへのリクエストにseleniumを使用する場合True。それ以外False"""
-    selenium_mode__start_request: bool = False
-    """開始ページ（一覧ページ）へのリクエストにseleniumを使用する場合True。それ以外False"""
+    playwright_mode: bool = False
+    """記事本体のページへのリクエストをPlaywrightで処理する場合True。"""
+    playwright_mode__start_request: bool = False
+    """開始ページ（一覧ページ）へのリクエストをPlaywrightで処理する場合True。"""
+    playwright_include_page: bool = False
+    """コールバックでPlaywrightのPageを直接操作する場合True。"""
     # 一覧ページの情報を保存 [{'source_url': '', 'lastmod': '', 'loc': ''},,,]
     crawl_urls_list: list[dict[str, Any]] = []
 
@@ -120,37 +120,50 @@ class ExtensionsCrawlSpider(CrawlSpider):
         一覧ページのリクエストを作成する。
         ただしダイレクトクロールの指定がある場合は一覧ページではなく実際の記事へのリクエストを直接作成する。
         """
-        # クロールの種類に応じて開始させるurls、レスポンスを処理させるCall Back関数、seleniumのモードを設定
+        # クロールの種類に応じて開始URL、コールバック、Playwright使用有無を設定する。
         if self.news_crawl_input.direct_crawl_urls:
             # ダイレクトクロール指定時は、一覧ページをクロールせず、指定されたURLだけをクロールする。
             start_urls: list = self.news_crawl_input.direct_crawl_urls
             callback: Callable = self.parse_news
-            selenium_mode = self.selenium_mode
+            playwright_mode = self.playwright_mode
         elif self.url_continued.continued:
             # 前回の続きからクロールの場合、start_urlsから順に処理させる。レスポンスは続き用の関数に処理される。
             start_urls: list = self.start_urls
             callback: Callable = self.parse_start_response_continued_crawl_mode
-            selenium_mode = self.selenium_mode__start_request
+            playwright_mode = self.playwright_mode__start_request
         else:
             # ページ指定によるクロールの場合、start_urlsから順に処理させる。レスポンスはページ指定用の関数に処理される。
             start_urls: list = self.start_urls
             callback: Callable = self.parse_start_response_page_crawl_mode
-            selenium_mode = self.selenium_mode__start_request
+            playwright_mode = self.playwright_mode__start_request
 
         for url in start_urls:
-            if selenium_mode:
-                yield SeleniumRequest(url=url, callback=callback)
+            if playwright_mode:
+                yield scrapy.Request(
+                    url=url,
+                    callback=callback,
+                    meta={
+                        "playwright": True,
+                        "playwright_include_page": self.playwright_include_page,
+                        # 広告・計測通信の完了を待たず、DOM構築後にコールバックへ進む。
+                        "playwright_page_goto_kwargs": {"wait_until": "domcontentloaded", "timeout": 60_000},
+                    },
+                )
             else:
                 yield scrapy.Request(url=url, callback=callback)
 
-    def parse_start_response_continued_crawl_mode(self, response: TextResponse) -> Iterable[scrapy.Request]:
+    def parse_start_response_continued_crawl_mode(
+        self, response: TextResponse
+    ) -> Iterable[scrapy.Request] | AsyncIterable[scrapy.Request]:
         """(拡張メソッド)
         継承先でオーバーライドして使用する。
         前回の続きからクロールする場合の処理を記載してください。
         """
         return ()
 
-    def parse_start_response_page_crawl_mode(self, response: TextResponse) -> Iterable[scrapy.Request]:
+    def parse_start_response_page_crawl_mode(
+        self, response: TextResponse
+    ) -> Iterable[scrapy.Request] | AsyncIterable[scrapy.Request]:
         """(拡張メソッド)
         継承先でオーバーライドして使用する。
         ページにより範囲指定でクロールする場合の処理を記載してください。

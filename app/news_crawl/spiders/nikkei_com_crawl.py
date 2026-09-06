@@ -24,14 +24,7 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
     _domain_name: str = "nikkei_com"  # 各種処理で使用するドメイン名の一元管理
     _spider_version: float = 1.0
 
-    custom_settings: dict[str, Any] | None = {
-        "DEPTH_LIMIT": 0,
-        "DEPTH_STATS_VERBOSE": True,
-        "DOWNLOADER_MIDDLEWARES": {
-            # selenium用 -> カスタムバージョン
-            "news_crawl.scrapy_selenium_custom_middlewares.SeleniumMiddleware": 800,
-        },
-    }
+    custom_settings: dict[str, Any] | None = {"DEPTH_LIMIT": 0, "DEPTH_STATS_VERBOSE": True}
 
     _crawl_point: dict = {}
     """次回クロールポイント情報 (ExtensionsCrawlSpiderの同項目をオーバーライド必須)"""

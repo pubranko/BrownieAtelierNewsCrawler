@@ -1,7 +1,6 @@
 import logging
 import os
 from logging import Logger
-from typing import Any
 
 from prefect import get_run_logger
 from prefect_lib.flows import LOG_FILE_PATH
@@ -29,5 +28,10 @@ def init_flow():
     logging.getLogger("websockets.client").setLevel(logging.WARNING)
     # 不要なprefect.events.clientsのログを抑制
     logging.getLogger("prefect.events.clients").setLevel(logging.WARNING)
+    # PlaywrightとScrapy連携ライブラリの詳細ログを抑制
+    logging.getLogger("scrapy_playwright").setLevel(logging.WARNING)
+    logging.getLogger("scrapy-playwright").setLevel(logging.WARNING)
+    logging.getLogger("playwright").setLevel(logging.WARNING)
+    logging.getLogger("pyee").setLevel(logging.WARNING)
     logger = get_run_logger()  # PrefectLogAdapter
     logger.info(f"=== 保存用ログファイル: {os.environ.get('SCRAPY__LOG_FILE')}")

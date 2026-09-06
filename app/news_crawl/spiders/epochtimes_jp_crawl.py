@@ -1,6 +1,5 @@
 import urllib.parse
-from collections.abc import Callable
-from time import sleep
+from collections.abc import Callable, Iterable
 from typing import Any, Final, cast
 
 import scrapy
@@ -10,17 +9,7 @@ from news_crawl.spiders.common.start_request_debug_file_generate import start_re
 from news_crawl.spiders.common.url_pattern_skip_check import url_pattern_skip_check
 from news_crawl.spiders.common.urls_continued_skip_check import UrlsContinuedSkipCheck
 from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
-from scrapy.exceptions import CloseSpider
 from scrapy.http import TextResponse
-from scrapy_selenium import SeleniumRequest
-from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.remote.webdriver import WebDriver
-from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.wait import WebDriverWait
-from shared.login_info_get import login_info_get
 
 base_start_url: str = "https://www.epochtimes.jp/latest"
 
@@ -28,354 +17,74 @@ base_start_url: str = "https://www.epochtimes.jp/latest"
 class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
     name: str = "epochtimes_jp_crawl"
     allowed_domains: list = ["epochtimes.jp"]
-    start_urls: list = [
-        base_start_url,  # 新着
-    ]
-    _domain_name: str = "epochtimes_jp"  # 各種処理で使用するドメイン名の一元管理
+    start_urls: list = [base_start_url]
+    _domain_name: str = "epochtimes_jp"
     _spider_version: float = 1.0
-
-    custom_settings: dict[str, Any] | None = {
-        "DEPTH_LIMIT": 0,
-        "DEPTH_STATS_VERBOSE": True,
-        "DOWNLOADER_MIDDLEWARES": {
-            # selenium用 -> カスタムバージョン
-            "news_crawl.scrapy_selenium_custom_middlewares.SeleniumMiddleware": 800,
-        },
-    }
-
+    custom_settings: dict[str, Any] | None = {"DEPTH_LIMIT": 0, "DEPTH_STATS_VERBOSE": True}
     _crawl_point: dict = {}
-    """次回クロールポイント情報 (ExtensionsCrawlSpiderの同項目をオーバーライド必須)"""
-
-    # rules = (
-    #     Rule(LinkExtractor(
-    #         allow=(r'/article/')), callback='parse_news'),
-    # )
-
-    # seleniumモード
-    # selenium_mode: bool = True
-
+    playwright_mode__start_request: bool = True
     ITEMS_ON_PAGE_COUNT: Final[int] = 30
 
-    def __init__(self, *args, **kwargs):
-        """(拡張メソッド)
-        親クラスの__init__処理後に追加で初期処理を行う。
-        """
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-
-        # クロールする対象ページを決定する。デフォルト１〜３。scrapy起動引数に指定がある場合、そちらを使う。
         self.page_from, self.page_to = self.pages_setting(1, 3)
-        # URLに埋め込むページ数。現在のページ数を保存するエリア。
-        self.page: int = self.page_from
-        self.all_urls_list: list = []
-
+        self.page = self.page_from
+        self.all_urls_list: list[dict[str, str]] = []
         self.url_continued = UrlsContinuedSkipCheck(
             self._crawl_point, self.start_urls[0], self.news_crawl_input.continued
         )
+        if not self.url_continued.continued:
+            self.start_urls = [f"{base_start_url}/{page}" for page in range(self.page_from, self.page_to + 1)]
 
-        if self.url_continued.continued:
-            # 前回の続きからクロールする場合、start_urlsのページより順にクロールする。
-            pass
-        else:
-            # 前回の続き以外は指定ページの範囲でクロールする。
-            # start_urlsを再構築
-            # 例）https://www.epochtimes.jp/latest
-            #     -> https://www.epochtimes.jp/latest/1, https://www.epochtimes.jp/latest/2
-            page_range = range(self.page_from, self.page_to + 1)
-            self.start_urls = [f"{base_start_url}/{p}" for p in page_range]
+    def parse_start_response_continued_crawl_mode(self, response: TextResponse) -> Iterable[scrapy.Request]:
+        yield from self._parse_listing(response, continued=True)
 
-    def parse_start_response_continued_crawl_mode(self, response: TextResponse):
-        """(拡張メソッド)
-        取得したレスポンスよりDBへ書き込み
-        """
-        self.logger.info(f"=== parse_start_response 現在解析中のURL = {response.url}")
+    def parse_start_response_page_crawl_mode(self, response: TextResponse) -> Iterable[scrapy.Request]:
+        yield from self._parse_listing(response, continued=False)
 
-        # ページ内の対象urlを抽出
+    def _parse_listing(self, response: TextResponse, *, continued: bool) -> Iterable[scrapy.Request]:
+        self.logger.info("=== parse_start_response 現在解析中のURL = %s", response.url)
         links = response.css(".main_content > .left_col > .posts_list .post_title > a[href]::attr(href)").getall()
-        self.logger.info(f"=== ページ内の記事件数 = {len(links)}")
-        # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
-        if not len(links) == 30:
-            self.logger.warning(
-                f"=== parse_start_response 1ページ内で取得できた件数が想定の30件と異なる。確認要。 ( {len(links)} 件)"
-            )
+        self.logger.info("=== ページ内の記事件数 = %s", len(links))
+        if len(links) != self.ITEMS_ON_PAGE_COUNT:
+            self.logger.warning("=== 1ページ内で取得できた件数が想定の30件と異なる。確認要。 (%s 件)", len(links))
 
         for link in links:
-            # 相対パスの場合絶対パスへ変換。また%エスケープされたものはUTF-8へ変換
-            url: str = urllib.parse.unquote(response.urljoin(link))
+            url = urllib.parse.unquote(response.urljoin(link))
             self.all_urls_list.append({debug_file__LOC: url, debug_file__LASTMOD: ""})
-
-            # 前回からの続きの指定がある場合、
-            # 前回取得したurlが確認できたら確認済み（削除）にする。
-            if self.url_continued.skip_check(url):
-                pass
-            elif url_pattern_skip_check(url, self.news_crawl_input.url_pattern):
-                pass
-            else:
-                # クロール対象のURL情報を保存
-                self.crawl_urls_list.append(
-                    {
-                        self.CRAWL_URLS_LIST__LOC: url,
-                        self.CRAWL_URLS_LIST__LASTMOD: "",
-                        self.CRAWL_URLS_LIST__SOURCE_URL: response.url,
-                    }
-                )
-                # self.crawl_target_urls.append(url)
-
-        # debug指定がある場合、現ページの３０件をデバック用ファイルに保存
-        start_request_debug_file_generate(
-            self.name,
-            response.url,
-            self.all_urls_list[-30:],
-            self.news_crawl_input.debug,
-        )
-
-        if self.url_continued.skip_flg:
-            # 前回の10件のURLをすべて確認したら、前回以降の記事は取得済みとする。
-            self.logger.info(
-                f"=== parse_start_response 前回の続きまで再取得完了 ({response.url})",
-            )
-            self.page = self.page_to + 1
-            # break
-
-            # クロール対象のURLのリクエストを開始
-            for _ in self.crawl_urls_list:
-                yield scrapy.Request(
-                    response.urljoin(_[self.CRAWL_POINT__LOC]),
-                    callback=cast(Callable, self.parse_news),
-                )
-
-            # 次回向けに1ページ目の10件をcontrollerへ保存する
-            self._crawl_point[self.start_urls[0]] = {
-                self.CRAWL_POINT__URLS: self.all_urls_list[0 : self.url_continued.check_count],
-                self.CRAWL_POINT__CRAWLING_START_TIME: self.news_crawl_input.crawling_start_time,
-            }
-        else:
-            # 前回の10件のurlがまだ未取得であれば次のページに対してもクロールさせる。
-            next_page_url = f"{self.start_urls[0]}/{self.page + 1}"
-            yield scrapy.Request(
-                url=next_page_url,
-                callback=cast(Callable, self.parse_start_response_continued_crawl_mode),
-            )
-
-        # # 次のページを読み込む
-        # self.page += 1
-        # if self.page <= self.page_to:
-        #     next_page_url = f'{self.start_urls[0]}/{self.page + 1}'
-        #     # 要素を表示するようスクロールしてクリック
-        #     yield scrapy.Request(url=next_page_url, callback=self.parse_start_response_continued_crawl_mode)
-
-    def parse_start_response_page_crawl_mode(self, response: TextResponse):
-        """(拡張メソッド)
-        取得したレスポンスよりDBへ書き込み
-        """
-        # while self.page <= self.page_to:
-        self.logger.info(f"=== parse_start_response 現在解析中のURL = {response.url}")
-
-        # ページ内の対象urlを抽出
-        links = response.css(".main_content > .left_col > .posts_list .post_title > a[href]::attr(href)").getall()
-        self.logger.info(f"=== ページ内の記事件数 = {len(links)}")
-        # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
-        if not len(links) == self.ITEMS_ON_PAGE_COUNT:
-            self.logger.warning(
-                f"=== parse_start_response 1ページ内で取得できた件数が想定の30件と異なる。確認要。 ( {len(links)} 件)"
-            )
-
-        for link in links:
-            # 相対パスの場合絶対パスへ変換。また%エスケープされたものはUTF-8へ変換
-            url: str = urllib.parse.unquote(response.urljoin(link))
-            self.all_urls_list.append({debug_file__LOC: url, debug_file__LASTMOD: ""})
-
             if url_pattern_skip_check(url, self.news_crawl_input.url_pattern):
-                pass
-            else:
-                # クロール対象のURL情報を保存
-                self.crawl_urls_list.append(
-                    {
-                        self.CRAWL_URLS_LIST__LOC: url,
-                        self.CRAWL_URLS_LIST__LASTMOD: "",
-                        self.CRAWL_URLS_LIST__SOURCE_URL: response.url,
-                    }
-                )
-                # self.crawl_target_urls.append(url)
-                # クロール対象のURLのリクエストを開始
-                yield scrapy.Request(
-                    response.urljoin(url),
-                    callback=cast(Callable, self.parse_news),
-                )
+                continue
+            if continued and self.url_continued.skip_check(url):
+                continue
+            self.crawl_urls_list.append(
+                {
+                    self.CRAWL_URLS_LIST__LOC: url,
+                    self.CRAWL_URLS_LIST__LASTMOD: "",
+                    self.CRAWL_URLS_LIST__SOURCE_URL: response.url,
+                }
+            )
+            if not continued:
+                yield scrapy.Request(url, callback=cast(Callable, self.parse_news))
 
-        # debug指定がある場合、現ページの３０件をデバック用ファイルに保存
         start_request_debug_file_generate(
-            self.name,
-            response.url,
-            self.all_urls_list[-self.ITEMS_ON_PAGE_COUNT :],
-            self.news_crawl_input.debug,
+            self.name, response.url, self.all_urls_list[-self.ITEMS_ON_PAGE_COUNT :], self.news_crawl_input.debug
         )
-
-        # 次回向けに今回の1ページ目(self.page_from)の10件をcontrollerへ保存する
-        self._crawl_point[base_start_url] = {
-            self.CRAWL_POINT__URLS: self.all_urls_list[0 : self.url_continued.check_count],
-            self.CRAWL_POINT__CRAWLING_START_TIME: self.news_crawl_input.crawling_start_time,
-        }
-
-    def parse_start_response_selenium(self, response: TextResponse):
-        """(拡張メソッド) 現在未使用
-        取得したレスポンスよりDBへ書き込み(selenium版)
-        """
-        r: Any = response.request
-        driver: WebDriver = r.meta["driver"]
-        driver.set_page_load_timeout(60)
-        driver.implicitly_wait(60)
-        driver.set_script_timeout(60)
-
-        # ログイン操作
-        # ログインフォーム部のiframe内に入る
-        iframe: WebElement = WebDriverWait(driver, 60).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "#login_wrapper > iframe"))
-        )
-        driver.switch_to.frame(iframe)
-
-        # ログイン情報を取得する。
-        try:
-            yaml_file = login_info_get()
-            yaml_file[self.allowed_domains[0]]["user"]
-            yaml_file[self.allowed_domains[0]]["password"]
-        except Exception as e:
-            self.logger.critical(
-                f"指定したYAMLファイルがない、またはファイルの中よりユーザー・パスワードが取得できませんでした。{e}"
-            )
-            raise CloseSpider() from e
-        else:
-            user = yaml_file[self.allowed_domains[0]]["user"]
-            password = yaml_file[self.allowed_domains[0]]["password"]
-
-        try:
-            # elem: WebElement = driver.find_element_by_css_selector('#mypage')  # ログイン前なら存在
-            elem: WebElement = driver.find_element(By.CSS_SELECTOR, "#mypage")  # ログイン前なら存在
-        except NoSuchElementException:  # 既にログイン中ならpass
-            pass
-        else:
-            # ログインウインドウを開く
-            elem.click()
-            # iframeから出る
-            driver.switch_to.default_content()
-
-            # ログインフォームのiframに入る
-            iframe2: WebElement = WebDriverWait(driver, 60).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "#modal-COMMON-content > p > iframe"))
-            )
-            driver.switch_to.frame(iframe2)
-
-            # ユーザー名（email）入力
-            elem: WebElement = WebDriverWait(driver, 60).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "#ymkemail"))
-            )
-            elem.send_keys(user)
-            # パスワード入力
-            elem: WebElement = driver.find_element(By.CSS_SELECTOR, "#ymkpassword")
-            # elem: WebElement = driver.find_element_by_css_selector(
-            #     '#ymkpassword')
-            elem.send_keys(password)
-            # ログインボタン押下
-            elem: WebElement = driver.find_element(By.CSS_SELECTOR, "#ymk-login-btn")
-            # elem: WebElement = driver.find_element_by_css_selector(
-            #     '#ymk-login-btn')
-            elem.click()
-
-            # iframeから出る
-            driver.switch_to.default_content()
-            # ログイン前後でiframの入れ替えが発生する。element名も同じであるため
-            # 仕方なく強制スリープでiframeが入れ替わるのを待つ。
-            sleep(2)
-
-        # ログイン済みであることを最終チェック
-        try:
-            iframe3: WebElement = WebDriverWait(driver, 60).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "#login_wrapper > iframe"))
-            )
-            driver.switch_to.frame(iframe3)
-            WebDriverWait(driver, 60).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "#ep_user_name"))
-            )  # ログイン後なら存在
-            driver.switch_to.default_content()
-        except NoSuchElementException:
-            self.logger.error(f"=== ログインできなかったため中止 ({driver.current_url})")
-
-        # 指定ページをループしてクロール対象のurlを収集
-        while self.page <= self.page_to:
-            self.logger.info(f"=== parse_start_response 現在解析中のURL = {driver.current_url}")
-
-            next_page_url = f"{self.start_urls[0]}/{self.page + 1}"
-            next_page_element = f'.main_content > .left_col > .pagination > a[href="{next_page_url}"]'
-            WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.CSS_SELECTOR, next_page_element)))
-
-            # ページ内の対象urlを抽出
-            _ = driver.find_elements(
-                By.CSS_SELECTOR,
-                ".main_content > .left_col > .posts_list .post_title > a[href]",
-            )
-            # _ = driver.find_elements_by_css_selector(
-            #     f'.main_content > .left_col > .posts_list .post_title > a[href]')
-            links: list = [link.get_attribute("href") for link in _]
-            self.logger.info(f"=== ページ内の記事件数 = {len(links)}")
-            # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
-            if not len(links) == 30:
-                self.logger.warning(
-                    "=== parse_start_response "
-                    f"1ページ内で取得できた件数が想定の30件と異なる。確認要。 ( {len(links)} 件)"
-                )
-
-            for link in links:
-                # 相対パスの場合絶対パスへ変換。また%エスケープされたものはUTF-8へ変換
-                url: str = urllib.parse.unquote(response.urljoin(link))
-                self.all_urls_list.append({debug_file__LOC: url, debug_file__LASTMOD: ""})
-                # 前回からの続きの指定がある場合、前回取得したurlが確認できたらそれ以降のurlは対象外
-                # urlパターンの指定がある場合、パターンに合わないurlは対象外
-                if self.url_continued.skip_check(url):
-                    pass
-                elif url_pattern_skip_check(url, self.news_crawl_input.url_pattern):
-                    pass
-                else:
-                    # クロール対象のURL情報を保存
-                    self.crawl_urls_list.append(
-                        {
-                            self.CRAWL_URLS_LIST__LOC: url,
-                            self.CRAWL_URLS_LIST__LASTMOD: "",
-                            self.CRAWL_URLS_LIST__SOURCE_URL: driver.current_url,
-                        }
-                    )
-                    # self.crawl_target_urls.append(url)
-
-            # debug指定がある場合、現ページの３０件をデバック用ファイルに保存
-            #   末尾から３０件と指定しているが、最後のページまで行った場合、前ページ分が混ざるかも、、、どこかで直そう。
-            start_request_debug_file_generate(
-                self.name,
-                driver.current_url,
-                self.all_urls_list[-30:],
-                self.news_crawl_input.debug,
-            )
-
-            # 前回の10件のURLをすべて確認したら、前回以降の記事は取得済みとする。
-            if self.url_continued.skip_flg:
-                self.logger.info(
-                    f"=== parse_start_response 前回の続きまで再取得完了 ({driver.current_url})",
-                )
-                self.page = self.page_to + 1
-                break
-
-            # 次のページを読み込む
+        if continued and not self.url_continued.skip_flg:
             self.page += 1
-            if self.page <= self.page_to:
-                # 要素を表示するようスクロールしてクリック
-                elem: WebElement = driver.find_element(By.CSS_SELECTOR, next_page_element)
-                # elem: WebElement = driver.find_element_by_css_selector(
-                #     next_page_element)
-                elem.send_keys(Keys.END)  # endキーを押下して画面最下部へ移動
-                elem.click()  # 画面に表示された対象のボタンを押下(表示されていないと押下できない)
+            yield scrapy.Request(
+                f"{self.start_urls[0]}/{self.page}",
+                callback=cast(Callable, self.parse_start_response_continued_crawl_mode),
+                meta={
+                    "playwright": True,
+                    "playwright_page_goto_kwargs": {"wait_until": "domcontentloaded", "timeout": 60_000},
+                },
+            )
+            return
 
-        # リスト(self.urls_list)に溜めたクロール対象urlよりリクエストを発行
-        for _ in self.crawl_urls_list:
-            yield SeleniumRequest(url=response.urljoin(_[self.CRAWL_POINT__LOC]), callback=self.parse_news)
-        # 次回向けに1ページ目の10件をcontrollerへ保存する
-        self._crawl_point[self.start_urls[0]] = {
-            self.CRAWL_POINT__URLS: self.all_urls_list[0 : self.url_continued.check_count],
+        for crawl_url in self.crawl_urls_list:
+            if continued:
+                yield scrapy.Request(crawl_url[self.CRAWL_POINT__LOC], callback=cast(Callable, self.parse_news))
+        self._crawl_point[base_start_url] = {
+            self.CRAWL_POINT__URLS: self.all_urls_list[: self.url_continued.check_count],
             self.CRAWL_POINT__CRAWLING_START_TIME: self.news_crawl_input.crawling_start_time,
         }
