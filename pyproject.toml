@@ -38,7 +38,7 @@ dev = [
     "pyrefly",
     "types-python-dateutil",
     "sphinx",
-    "jupyter",
+    "marimo>=0.24.0",
 ]
 
 [tool.uv]

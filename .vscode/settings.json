@@ -1,6 +1,5 @@
 {
     "terminal.integrated.cwd": "app",
-    "jupyter.notebookFileRoot": "app",
     "python.autoComplete.extraPaths": [
 
     ],
