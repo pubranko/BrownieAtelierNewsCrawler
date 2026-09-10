@@ -2,10 +2,18 @@
 # 通常のソース・Python ライブラリー更新は、このイメージを再利用して dockerfile で行う。
 # OS/Python/uv の更新、OS のセキュリティー更新、追加の OS 依存が必要な場合は、
 # このベースを再ビルドして BASE_TAG を更新し、続いてアプリ側もビルドする。
-# CI が BASE_TAG をキーにベースを再利用する場合、ファイル変更だけでは更新されない点に注意。
+# CI はベース定義のハッシュもキャッシュキーに含めるため、このファイルの変更で再構築する。
 # Ubuntu 26.04 と Python 3.14 を使う、ニュースクローラー用のベースイメージ
 # `UBUNTU_TAG` を変えることで、同じ Dockerfile のまま Ubuntu の更新を可能にする。
+# FROM で使う ARG は、最初の FROM より前のグローバルスコープに定義する。
 ARG UBUNTU_TAG=26.04
+# uv バイナリーの版。再現可能なイメージ作成のため、latest ではなく固定する。
+ARG UV_VERSION=0.12.10
+
+# COPY --from は変数展開できないため、版指定は FROM で解決してステージ名を付ける。
+# このステージはバイナリー取得専用。OS とアプリを構築する従来の2段階運用は維持する。
+FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv_binary
+
 FROM ubuntu:${UBUNTU_TAG}
 
 # コンテナ内で実行する一般ユーザー名。ホスト側の bind mount と所有者を合わせるために使う。
@@ -13,8 +21,6 @@ ARG CONTAINER_USER
 # イメージ作成時に clone するリモートリポジトリーとブランチ。
 ARG GIT_REMOTE_REPOSITORY
 ARG GIT_BRANCH
-# uv バイナリーの版。再現可能なイメージ作成のため、latest ではなく固定する。
-ARG UV_VERSION=0.12.10
 
 # イメージの用途を識別するメタデータ。
 LABEL maintainer="BrownieAtelierNewsCrawlerBase"
@@ -51,7 +57,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # pip 経由ではなく、公式コンテナイメージから固定版の uv バイナリーを導入する。
-COPY --from=ghcr.io/astral-sh/uv:${UV_VERSION} /uv /uvx /bin/
+COPY --from=uv_binary /uv /uvx /bin/
 
 # アプリの初期導入・派生イメージでの更新・コンテナ実行に使う一般ユーザーを作成する。
 # GID は 1000、UID は useradd による自動割り当て。bind mount の所有権はホスト側と
