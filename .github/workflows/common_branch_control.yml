@@ -1,0 +1,52 @@
+name: Common Branch Control
+on:
+  workflow_call:
+    inputs:
+      branch:
+        description: 判定対象ブランチ。空欄なら実行時に選択したブランチ
+        type: string
+        default: ''
+      environment_override:
+        description: 空欄なら master=PRODUCT、その他=TEST。テスト専用呼び出しはTESTを指定
+        type: string
+        default: ''
+    outputs:
+      env_name:
+        description: 選択したGitHub Environment
+        value: ${{ jobs.Branch-Controll.outputs.env_name }}
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 判定対象ブランチ。空欄なら実行時に選択したブランチ
+        type: string
+        default: ''
+      environment_override:
+        description: 空欄なら master=PRODUCT、その他=TEST。テスト専用呼び出しはTESTを指定
+        type: string
+        default: ''
+
+# 単体の手動実行でも同じ判定を使い、結果を Summary に表示する。
+jobs:
+  Branch-Controll:
+    runs-on: ubuntu-22.04
+    outputs:
+      env_name: ${{ steps.select.outputs.env_name }}
+    steps:
+      - name: ブランチから環境を選択
+        id: select
+        env:
+          TARGET_BRANCH: ${{ inputs.branch || github.ref_name }}
+          ENV_OVERRIDE: ${{ inputs.environment_override }}
+        run: |
+          case "$ENV_OVERRIDE" in
+            TEST|PRODUCT) selected_env="$ENV_OVERRIDE" ;;
+            '')
+              if [ "$TARGET_BRANCH" = master ]; then
+                selected_env=PRODUCT
+              else
+                selected_env=TEST
+              fi ;;
+            *) echo 'environment_override must be TEST or PRODUCT' >&2; exit 1 ;;
+          esac
+          echo "env_name=$selected_env" >> "$GITHUB_OUTPUT"
+          printf 'Branch: `%s`\n\nEnvironment: `%s`\n' "$TARGET_BRANCH" "$selected_env" >> "$GITHUB_STEP_SUMMARY"
