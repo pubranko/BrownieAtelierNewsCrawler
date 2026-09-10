@@ -1,109 +1,101 @@
-# ベースとなるイメージ
-ARG UBUNTU_TAG
+# 第1段階: OS・Python・ブラウザーの依存と、アプリの初期インストールを行う。
+# 通常のソース・Python ライブラリー更新は、このイメージを再利用して dockerfile で行う。
+# OS/Python/uv の更新、OS のセキュリティー更新、追加の OS 依存が必要な場合は、
+# このベースを再ビルドして BASE_TAG を更新し、続いてアプリ側もビルドする。
+# CI が BASE_TAG をキーにベースを再利用する場合、ファイル変更だけでは更新されない点に注意。
+# Ubuntu 26.04 と Python 3.14 を使う、ニュースクローラー用のベースイメージ
+# `UBUNTU_TAG` を変えることで、同じ Dockerfile のまま Ubuntu の更新を可能にする。
+ARG UBUNTU_TAG=26.04
 FROM ubuntu:${UBUNTU_TAG}
 
-############################################
-# .envまたはdockerコマンドより受け取る環境変数
-############################################
+# コンテナ内で実行する一般ユーザー名。ホスト側の bind mount と所有者を合わせるために使う。
 ARG CONTAINER_USER
-ARG CONTAINER_USER_PASS
-ARG CONTAINER_ROOT_PASS
+# イメージ作成時に clone するリモートリポジトリーとブランチ。
 ARG GIT_REMOTE_REPOSITORY
 ARG GIT_BRANCH
-ARG GECKO_DRIVER
+# uv バイナリーの版。再現可能なイメージ作成のため、latest ではなく固定する。
+ARG UV_VERSION=0.12.10
 
-#LABELでメタ情報を入れることができる
+# イメージの用途を識別するメタデータ。
 LABEL maintainer="BrownieAtelierNewsCrawlerBase"
 
-###################
-# タイムゾーン設定
-###################
-ENV TZ Asia/Tokyo
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+# コンテナ内の日時・ログを日本時間にする。tzdata パッケージがタイムゾーン情報を提供する。
+# Python が .pyc を作らないため、bind mount 配下に __pycache__ を残さない。
+# Python の標準出力・標準エラー出力をバッファリングせず、Docker のログへ即座に出力する。
+# uv のファイル配置をコピー方式にし、異なるファイルシステム間でのハードリンク失敗を防ぐ。
+# uv が使用する Python を Ubuntu に導入する Python 3.14 に固定する。
+# uv による別バージョンの Python 自動ダウンロードを禁止し、実行環境との差異を防ぐ。
+# Playwright の Chromium を共通パスへ置き、派生イメージ・実行ユーザーから同じ場所を参照する。
+ENV TZ=Asia/Tokyo \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON=python3.14 \
+    UV_PYTHON_DOWNLOADS=never \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
-############################################################
-# インストール
-############################################################
-# リポジトリ一覧を更新、インストール済みのパッケージ更新
-# 必要なアプリをインストール
-RUN apt update
-RUN apt -y install build-essential libssl-dev wget sudo git software-properties-common
+# ubuntu:26.04 は最小 OS イメージで Python を含まないため、Python 3.14 本体と venv 機能を導入する。
+# ca-certificates は HTTPS 通信、git はリポジトリー取得、
+# tzdata は上記 TZ 設定のために必要となる。
+# Dockerfile は非対話スクリプトなので、対話用の apt ではなく apt-get を使用する。
+# update と install を同じレイヤーに置き、古いパッケージ一覧が Docker キャッシュされる問題を防ぐ。
+# --no-install-recommends と apt リスト削除で、不要な推奨パッケージとイメージサイズを抑える。
+# Playwright の OS 依存は、下の `playwright install --with-deps` が追加で導入する。
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends \
+        ca-certificates \
+        git \
+        python3.14 \
+        python3.14-venv \
+        tzdata \
+    && rm -rf /var/lib/apt/lists/*
 
-# deb版firefoxをインストールするための設定
-RUN add-apt-repository ppa:mozillateam/ppa
-RUN echo 'Package: firefox* \nPin: release o=LP-PPA-mozillateam \nPin-Priority: 1001 ' | sudo tee /etc/apt/preferences.d/mozillateamppa
-RUN apt update && apt -y install firefox libdbus-glib-1-2
-RUN apt show firefox
+# pip 経由ではなく、公式コンテナイメージから固定版の uv バイナリーを導入する。
+COPY --from=ghcr.io/astral-sh/uv:${UV_VERSION} /uv /uvx /bin/
 
-# Selenium用にgeckodriverを取得して配置。不要になったダウンロードファイル削除
-# RUN wget -P /usr/local/bin/ "https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz"
-RUN wget -P /usr/local/bin/ ${GECKO_DRIVER}
-RUN tar -zxvf /usr/local/bin/geckodriver-v0.33.0-linux64.tar.gz -C /usr/local/bin
-RUN rm /usr/local/bin/geckodriver-v0.33.0-linux64.tar.gz
+# アプリの初期導入・派生イメージでの更新・コンテナ実行に使う一般ユーザーを作成する。
+# GID は 1000、UID は useradd による自動割り当て。bind mount の所有権はホスト側と
+# 数値の UID/GID で照合されるため、運用先で実際の ID と保存先の書き込み権限を確認する。
+# Docker の USER 指定による実行にはログインパスワードは不要なので設定しない。
+# sudo 権限も付与しない。OS の管理操作はビルド中に USER root で行い、最後に戻す。
+RUN groupadd --gid 1000 "${CONTAINER_USER}" \
+    && useradd --create-home --gid "${CONTAINER_USER}" --shell /bin/bash "${CONTAINER_USER}"
 
-# pythonまわりのインストール
-# RUN apt -y install python3.9 pipenv
-RUN apt -y install python3.10-venv
-RUN apt -y install python3-pip
-RUN apt -y install python3-selenium
-RUN pip install --upgrade pip
-# RUN pip install uv
-
-# 更新時に使われたが、その後不要となったものの一括削除
-# キャッシュされているがインストールされていないdebファイルを削除
-# 不要なアプリを削除
-RUN apt autoremove
-RUN apt autoclean
-RUN apt -y remove build-essential libssl-dev
-
-#####################################
-# ユーザー設定(root、一般)
-#####################################
-# rootユーザパスワード
-RUN echo 'root:'${CONTAINER_ROOT_PASS} | chpasswd
-# 新規グループ・一般ユーザーを作成。
-RUN groupadd -g 1000 ${CONTAINER_USER}
-RUN useradd  -g      ${CONTAINER_USER} -G sudo -m -s /bin/bash ${CONTAINER_USER}
-# 一般ユーザパスワード
-RUN echo ${CONTAINER_USER}':'${CONTAINER_USER_PASS} | chpasswd
-# 一般ユーザーにsudo権限付与
-RUN echo 'Defaults visiblepw' >> /etc/sudoers
-RUN echo ${CONTAINER_USER}' ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-
-##########################################
-# BrownieAtelierNewsCrawlerインストール
-##########################################
-# アプリ用ディレクトリ作成
+# clone 先の親ディレクトリーを作業ディレクトリーにし、以降は一般ユーザーとして処理する。
 WORKDIR /home/${CONTAINER_USER}
-
-###############################
-# 以下一般ユーザーでの操作
-###############################
 USER ${CONTAINER_USER}
-RUN whoami
 
-# git仮ユーザー登録
-RUN git config --global user.email "kari@example.com"
-RUN git config --global user.name "kari Name"
+# イメージ作成時の Git 操作に使う仮の利用者情報を設定する。
+# 指定ブランチと submodule を含めて clone し、Git の所有者チェック対象として clone 先を登録する。
+RUN git config --global user.email "kari@example.com" \
+    && git config --global user.name "kari Name" \
+    # git clone (サブモジュールごとクローンする)
+    && git clone --recursive --branch "${GIT_BRANCH}" "${GIT_REMOTE_REPOSITORY}" BrownieAtelierNewsCrawler \
+    # リポジトリの所有権でエラーが出ないように例外をコンフィグに登録
+    && git config --global --add safe.directory "/home/${CONTAINER_USER}/BrownieAtelierNewsCrawler"
 
-# git clone (サブモジュールごとクローンする)
-RUN git clone --recursive ${GIT_REMOTE_REPOSITORY} -b "${GIT_BRANCH}"
-# リポジトリの所有権でエラーが出ないように例外をコンフィグに登録
-RUN git config --global --add safe.directory /home/${CONTAINER_USER}/BrownieAtelierNewsCrawler
-
-# 仮想環境作成ディレクトリ
+# clone したプロジェクトを以降の uv と Playwright の実行場所にする。
 WORKDIR /home/${CONTAINER_USER}/BrownieAtelierNewsCrawler
-# 仮想環境を作成
-RUN python3.10 -m venv .venv
-# 仮想環境内にuvをインストール
-RUN .venv/bin/pip install uv
 
-# uv.lockから依存パッケージをインストール
-RUN .venv/bin/uv sync --frozen
-RUN .venv/bin/pip list
+# pyproject.toml と uv.lock の不整合があれば失敗させ、ロック済みの実行時依存だけを .venv へ導入する。
+# --no-dev により、コンテナ実行に不要な marimo・Ruff・Pyrefly などの開発依存を除外する。
+RUN uv sync --locked --no-dev
 
-# mongoDB接続用ca/pemファイルの格納ディレクトリ作成
+# Playwright は OS パッケージの導入を伴うため、この処理だけ root で実行する。
+# Chromium 本体と依存ライブラリーを導入し、一般ユーザーが派生イメージでブラウザー更新できるよう所有者を戻す。
+USER root
+RUN .venv/bin/playwright install --with-deps chromium \
+    && chown --recursive "${CONTAINER_USER}:${CONTAINER_USER}" "${PLAYWRIGHT_BROWSERS_PATH}"
+
+# クローラー実行用の一般ユーザーへ戻し、Python・uv・Chromium が利用可能かビルド時に確認する。
+USER ${CONTAINER_USER}
+RUN .venv/bin/python --version \
+    && uv --version \
+    && .venv/bin/playwright install --list
+
+# docker-compose から bind mount する MongoDB 接続用の CA/PEM ファイルの配置先を作成する。
 RUN mkdir /home/${CONTAINER_USER}/mongo-key
 
+# ベースイメージ単体では実行コマンドを固定せず、派生イメージや docker-compose 側で指定できるようにする。
 ENTRYPOINT []
 CMD []

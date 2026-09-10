@@ -37,23 +37,17 @@ jobs:
         ## mongoDB用コンテナーで参照するイメージのタグ
         MONGO_TAG: 7.0.1-jammy
         ## dockerfile_baseで参照するubuntuイメージのタグ
-        UBUNTU_TAG: 22.04
+        UBUNTU_TAG: "26.04"
         ## dockerfileで参照するbaseイメージのタグ
         BASE_TAG: ${{ vars.BASE_TAG }}
         # docker-composeで参照するnew_crawlerイメージのタグ
         # NEWS_CRAWLER_TAG: test-0.15
-        # コンテナー内rootユーザーパスワード
-        CONTAINER_ROOT_USER: root_user
-        CONTAINER_ROOT_PASS: password
-        # コンテナ内の一般ユーザー、パスワード
+        # コンテナ内の一般ユーザー。Docker の USER で実行するためパスワードは不要。
         CONTAINER_USER: common_user
-        CONTAINER_USER_PASS: password
         # ブラウニー工房のgitリモートリポジトリー
         GIT_REMOTE_REPOSITORY: https://github.com/pubranko/BrownieAtelierNewsCrawler.git
         # 上記リポジトリーのgitブランチ
         GIT_BRANCH: ${{github.ref_name}}
-        # Firefox の gecko driver
-        GECKO_DRIVER: https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz
 
         # ホスト（ローカル）側のmongoDB接続用のcrtやpemファイルの保管ディレクトリ
         LOCAL_MONGO_KEY_DIR: /tmp
@@ -102,12 +96,14 @@ jobs:
       #################################################
 
       - name: baseイメージ用キャッシュの定義 & 復元
-        # キャッシュID の定義
+        # ベース定義が変わったらキャッシュを更新する。通常の Python ソース・依存更新では再利用する。
+        # OS 更新など同じ定義で再構築したい場合は GitHub Environment の BASE_TAG を更新する。
+        # uv の版は Compose の既定値を使用し、その変更もハッシュに含める。
         id: base_image_cache
         uses: actions/cache@v4
         with:
           path: ${{ env.PATH_CACHE }}
-          key: ${{ runner.os }}-brownie-atelier-news-crawler-base-${{ env.BASE_TAG }}
+          key: ${{ runner.os }}-${{ runner.arch }}-brownie-atelier-news-crawler-base-${{ env.BASE_TAG }}-${{ env.UBUNTU_TAG }}-${{ env.CONTAINER_USER }}-${{ hashFiles('dockerfile_base', 'docker-compose__base-image-build.yml') }}
 
       # キャッシュがある場合は tar をdockerにロードしてイメージに追加
       - name: base用キャッシュがある場合は tar をロードしてイメージ一覧に追加
@@ -121,7 +117,7 @@ jobs:
         if: steps.base_image_cache.outputs.cache-hit != 'true'
         # git branchにはdevelopを固定で割り当てとする。 new_crawlerイメージ作成側で修正中のブランチやmaster等を適用する運用とする。 
         run: |
-          mkdir ${{ env.PATH_CACHE }}
+          mkdir -p "${PATH_CACHE}"
           export GIT_BRANCH=develop
           docker compose -f docker-compose__base-image-build.yml build
           docker save brownie-atelier-news-crawler-base:${{ env.BASE_TAG }} -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie-atelier-news-crawler-base-${{ env.BASE_TAG }}.tar
@@ -141,7 +137,9 @@ jobs:
         run: |
           export NEWS_CRAWLER_TAG=${{ env.NEWS_CRAWLER_TAG }}
           export DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
-          docker compose -f docker-compose__news-crawler-image-build.yml build
+          # Git の更新を確実に取得するため、アプリ側の RUN キャッシュだけを使わずにビルドする。
+          # FROM のベースは上でロード・作成したイメージを再利用し、OS の再導入は行わない。
+          docker compose -f docker-compose__news-crawler-image-build.yml build --no-cache
           docker tag brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }} ${{ secrets.DOCKER_HUB_USERNAME }}/brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}
           docker images
 

@@ -4,17 +4,13 @@ services:
             context: .
             dockerfile: dockerfile_base
             args:
-                ## dockerfile_baseで参照するubuntuイメージのタグ
-                UBUNTU_TAG: ${UBUNTU_TAG}
-                # コンテナー内rootユーザーパスワード
-                CONTAINER_ROOT_PASS: ${CONTAINER_ROOT_PASS}
-                # コンテナ内の一般ユーザー、パスワード
+                # dockerfile_base で参照する Ubuntu イメージと uv の版
+                UBUNTU_TAG: ${UBUNTU_TAG:-26.04}
+                UV_VERSION: ${UV_VERSION:-0.12.10}
+                # コンテナ内の一般ユーザー
                 CONTAINER_USER: ${CONTAINER_USER}
-                CONTAINER_USER_PASS: ${CONTAINER_USER_PASS}
                 # ブラウニー工房のgitリモートリポジトリー
                 GIT_REMOTE_REPOSITORY: ${GIT_REMOTE_REPOSITORY}
                 # 上記リポジトリーのgitブランチ
                 GIT_BRANCH: ${GIT_BRANCH}
-                # Firefox の gecko driver
-                GECKO_DRIVER: ${GECKO_DRIVER}
         image: brownie-atelier-news-crawler-base:${BASE_TAG}
