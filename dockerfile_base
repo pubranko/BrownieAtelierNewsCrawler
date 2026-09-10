@@ -59,13 +59,27 @@ RUN apt-get update \
 # pip 経由ではなく、公式コンテナイメージから固定版の uv バイナリーを導入する。
 COPY --from=uv_binary /uv /uvx /bin/
 
-# アプリの初期導入・派生イメージでの更新・コンテナ実行に使う一般ユーザーを作成する。
-# GID は 1000、UID は useradd による自動割り当て。bind mount の所有権はホスト側と
-# 数値の UID/GID で照合されるため、運用先で実際の ID と保存先の書き込み権限を確認する。
-# Docker の USER 指定による実行にはログインパスワードは不要なので設定しない。
-# sudo 権限も付与しない。OS の管理操作はビルド中に USER root で行い、最後に戻す。
-RUN groupadd --gid 1000 "${CONTAINER_USER}" \
-    && useradd --create-home --gid "${CONTAINER_USER}" --shell /bin/bash "${CONTAINER_USER}"
+# アプリの初期導入・派生イメージでの更新・コンテナ実行に使う一般ユーザーを用意する。
+# Ubuntu 26.04 には ubuntu ユーザー・グループ（UID/GID 1000）があるため、
+# 新規作成すると衝突する。既存 ubuntu を指定名へ変更し、ホームも移動して再利用する。
+# ubuntu がないベースでは UID/GID 1000 で新規作成する。別ユーザーとの衝突はエラーにする。
+# UID/GID は 1000 に固定。bind mount の所有権は名前ではなく数値で照合されるため、
+# ホスト側でも保存先をこの UID/GID で書き込めるよう設定する。
+# 既存 ubuntu の sudo・adm などの補助グループ所属をすべて外し、パスワードをロックする。
+# Docker の USER による実行にはログインパスワードは不要。OS 管理はビルド中の root で行う。
+RUN if id ubuntu >/dev/null 2>&1; then \
+        test "$(id -u ubuntu)" = 1000 && test "$(id -g ubuntu)" = 1000 \
+        && if [ "${CONTAINER_USER}" != ubuntu ]; then \
+            groupmod --new-name "${CONTAINER_USER}" ubuntu \
+            && usermod --login "${CONTAINER_USER}" --home "/home/${CONTAINER_USER}" --move-home ubuntu; \
+        fi; \
+    else \
+        groupadd --gid 1000 "${CONTAINER_USER}" \
+        && useradd --uid 1000 --create-home --gid "${CONTAINER_USER}" --shell /bin/bash "${CONTAINER_USER}"; \
+    fi \
+    && usermod --groups "" --lock "${CONTAINER_USER}" \
+    && test "$(id -u "${CONTAINER_USER}")" = 1000 \
+    && test "$(id -G "${CONTAINER_USER}")" = 1000
 
 # clone 先の親ディレクトリーを作業ディレクトリーにし、以降は一般ユーザーとして処理する。
 WORKDIR /home/${CONTAINER_USER}
