@@ -60,28 +60,37 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
     async def _parse_listing(self, response: TextResponse, *, continued: bool) -> AsyncIterator[scrapy.Request]:
         page: Page = response.meta["playwright_page"]
         try:
-            max_page = 1 if continued else self.page_to
+            # 部分完了時の再開位置は2ページ目以降にもなり得るため、前回の目印まで読み進める。
+            max_page = self.settings.getint("CONTINUED_MAX_LISTING_PAGES", 100) if continued else self.page_to
             for page_number in range(1, max_page + 1):
                 await self._load_until(page, 20 * page_number)
+                extracts = await self._extract(page)
+                if continued or page_number >= self.page_from:
+                    # 追加表示された一覧を 20 件単位で記録し、未取得記事より古い再開の目印を選べるようにする。
+                    self._crawl_progress.record_listing(base_start_url, page_number, [
+                        {"loc": urllib.parse.unquote(response.urljoin(row["link"])), "lastmod": row["lastmod"]}
+                        for row in extracts[20 * (page_number - 1) : 20 * page_number]
+                    ])
+                    for extract in extracts[20 * (page_number - 1) : 20 * page_number]:
+                        url = urllib.parse.unquote(response.urljoin(extract["link"]))
+                        self.all_urls_list.append({debug_file__LOC: url, debug_file__LASTMOD: extract["lastmod"]})
+                        if continued and self.url_continued.skip_check(url):
+                            continue
+                        if url_pattern_skip_check(url, self.news_crawl_input.url_pattern):
+                            continue
+                        self.crawl_urls_list.append({
+                            self.CRAWL_URLS_LIST__LOC: url,
+                            self.CRAWL_URLS_LIST__LASTMOD: extract["lastmod"],
+                            self.CRAWL_URLS_LIST__SOURCE_URL: page.url,
+                        })
+                        self.crawl_target_urls.append(url)
+                        yield scrapy.Request(url, callback=cast(Callable, self.parse_news))
+                if continued and self.url_continued.skip_flg:
+                    break
                 if page_number < max_page:
                     await page.locator("div.main-contents span.link-more").click()
-            extracts = await self._extract(page)
-            start = 0 if continued else 20 * (self.page_from - 1)
-            end = None if continued else 20 * self.page_to
-            for extract in extracts[start:end]:
-                url = urllib.parse.unquote(response.urljoin(extract["link"]))
-                self.all_urls_list.append({debug_file__LOC: url, debug_file__LASTMOD: extract["lastmod"]})
-                if url_pattern_skip_check(url, self.news_crawl_input.url_pattern):
-                    continue
-                if continued and self.url_continued.skip_check(url):
-                    continue
-                self.crawl_urls_list.append({
-                    self.CRAWL_URLS_LIST__LOC: url,
-                    self.CRAWL_URLS_LIST__LASTMOD: extract["lastmod"],
-                    self.CRAWL_URLS_LIST__SOURCE_URL: page.url,
-                })
-                self.crawl_target_urls.append(url)
-                yield scrapy.Request(url, callback=cast(Callable, self.parse_news))
+            if continued and not self.url_continued.skip_flg:
+                raise RuntimeError("前回のクロールポイントに到達できませんでした。再開位置を維持します。")
             self._crawl_point[base_start_url] = {
                 self.CRAWL_POINT__URLS: self.all_urls_list[: self.url_continued.check_count],
                 self.CRAWL_POINT__CRAWLING_START_TIME: self.news_crawl_input.crawling_start_time,

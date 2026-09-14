@@ -42,6 +42,8 @@ CONCURRENT_REQUESTS = 32
 # See also autothrottle settings and docs
 # DOWNLOAD_DELAY = 3
 DOWNLOAD_DELAY = 3
+# 基準間隔を下回るランダムな短縮を避ける（AutoThrottle による延長は別途行う）。
+RANDOMIZE_DOWNLOAD_DELAY = False
 
 # The download delay setting will honor only one of:
 # webサイトのドメインごとに、同時平行処理するリクエストの最大値
@@ -73,6 +75,8 @@ TELNETCONSOLE_ENABLED = False
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 # スパイダーのミドルウェアを作る場合に使用する。
 SPIDER_MIDDLEWARES = {
+    # 要求・解析・保存の結果を共通で集計し、終了時の安全なクロールポイント算出に使う。
+    "news_crawl.spiders.common.crawl_progress.CrawlProgressMiddleware": 50,
     # 'news_crawl.middlewares.NewsCrawlSpiderMiddleware': 543,
 }
 
@@ -80,6 +84,8 @@ SPIDER_MIDDLEWARES = {
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 # ダウンロードのミドルウェアを自作のものを使いたい場合、以下の設定を変える。
 DOWNLOADER_MIDDLEWARES = {
+    "scrapy.downloadermiddlewares.retry.RetryMiddleware": None,
+    "news_crawl.adaptive_throttle.RateLimitRetryMiddleware": 550,
     #'news_crawl.middlewares.NewsCrawlDownloaderMiddleware': 543,
     # defalt_settings.pyより
     # Engine side
@@ -119,16 +125,35 @@ ITEM_PIPELINES = {
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
-# AUTOTHROTTLE_ENABLED = True
+AUTOTHROTTLE_ENABLED = True
 # The initial download delay
-# AUTOTHROTTLE_START_DELAY = 5
+AUTOTHROTTLE_START_DELAY = 3
 # The maximum download delay to be set in case of high latencies
-# AUTOTHROTTLE_MAX_DELAY = 60
+AUTOTHROTTLE_MAX_DELAY = 60
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-# AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
+AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
 # Enable showing throttling stats for every response received:
-# AUTOTHROTTLE_DEBUG = False
+# AUTOTHROTTLE_DEBUG は下の LOG_LEVEL 定義後に同じログ設定から決定する。
+
+# 標準 AutoThrottle を拡張し、controller の基準間隔を調整の下限にする。
+EXTENSIONS = {
+    "scrapy.extensions.throttle.AutoThrottle": None,
+    "news_crawl.adaptive_throttle.AdaptiveThrottle": 0,
+}
+DOWNLOADER = "news_crawl.adaptive_throttle.ThrottledDownloader"
+
+# 429 は同じ実行内で待機し、基準間隔を3秒ずつ延ばす。倍増はしない。
+# Retry-After の指定が60秒より長ければ、その時刻まで待機する。
+RATE_LIMIT_COOLDOWN = 60
+RATE_LIMIT_DELAY_STEP = 2
+RATE_LIMIT_MAX_DELAY = 60
+# 1リクエストの再試行上限と、1回のクロール全体で許容する待機時間（秒）。
+# 上限を超えた場合は、保存成功が確認できた安全な地点まで controller を更新する。
+RATE_LIMIT_MAX_RETRIES = 5
+RATE_LIMIT_MAX_WAIT = 900
+# URL方式で前回の目印が見つからない場合の一覧探索上限。未到達なら再開位置を進めない。
+CONTINUED_MAX_LISTING_PAGES = 100
 
 # Enable and configure HTTP caching (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
@@ -168,6 +193,7 @@ TIMEZONE = timezone(timedelta(hours=9), "JST")
 # LOGのレベル(CRITICAL > ERROR > WARNING > INFO > DEBUG)
 # 環境変数にSCRAPY__LOG_LEVELがあればそれをログレベルとする。
 LOG_LEVEL: str = str(config("SCRAPY__LOG_LEVEL", default="INFO"))
+AUTOTHROTTLE_DEBUG = LOG_LEVEL.upper() == "DEBUG"
 
 # 基本的にSCRAPY__LOG_FILEに指定されたprefect側のログファイルを使用する。
 LOG_FILE = str(config("SCRAPY__LOG_FILE", default="./scrapy.log"))

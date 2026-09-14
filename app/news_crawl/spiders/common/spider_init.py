@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, Union
 from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from news_crawl.news_crawl_input import NewsCrawlInput
+from news_crawl.spiders.common.crawl_progress import CrawlProgress
 from news_crawl.spiders.common.crawling_domain_duplicate_check import CrawlingDomainDuplicatePrevention
 from news_crawl.spiders.common.lastmod_continued_skip_check import LastmodContinuedSkipCheck
 from news_crawl.spiders.common.lastmod_term_skip_check import LastmodTermSkipCheck
@@ -32,8 +33,12 @@ def spider_init(spider: Union[ExtensionsSitemapSpider, ExtensionsCrawlSpider], *
     )  # MongoModelではLoggerAdapterではなくLoggerで定義している。そのためとりあえずLoggerを渡すよう対応中
     # コントローラーモデルを生成
     controller = ControllerModel(spider.mongo)
+    spider._controller = controller
     # コントローラーよりクロールポイントを取得し、各スパイダーのクラス変数へ保存
     spider._crawl_point = controller.crawl_point_get(domain_name, spider.name)
+    # 前回位置をコピーして保持し、今回の要求・解析・保存結果を集計する。
+    # 終了時はこの集計から、未完了の記事を飛び越えない再開位置を求める。
+    spider._crawl_progress = CrawlProgress(spider._crawl_point)
 
     # 引数の保存＆チェックを行う
     spider.news_crawl_input = NewsCrawlInput(**kwargs)
@@ -48,6 +53,8 @@ def spider_init(spider: Union[ExtensionsSitemapSpider, ExtensionsCrawlSpider], *
     duplicate_check = crawling_domain_control.execution(domain_name)
     if not duplicate_check:
         raise CloseSpider("同一ドメインへの多重クローリングとなるため中止")
+    # ロックオブジェクトを終了まで保持し、共通終了処理で解放する。
+    spider._crawling_domain_control = crawling_domain_control
 
     resource: dict = resource_check(spider.logger)
     # CPUチェック

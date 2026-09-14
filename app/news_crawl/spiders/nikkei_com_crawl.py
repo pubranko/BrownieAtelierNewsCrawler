@@ -77,6 +77,10 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
         # ページ内の対象urlを抽出
         # ※1ページ目と２ページ目以降でリンクを抽出するcssセレクターが異なるため以下のように操作
         links: list[str] = response.css(self.ARTICLE_LINK_SELECTOR).getall()
+        # スキップ判定前の並びを保持し、途中失敗時に未取得記事より古い URL を再開の目印にする。
+        self._crawl_progress.record_listing(base_start_url, self.page, [
+            {"loc": urllib.parse.unquote(response.urljoin(link)), "lastmod": ""} for link in links
+        ])
         self.logger.info(f"=== ページ内の記事件数 = {len(links)}")
         # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
         if not len(links) == self.ITEMS_ON_PAGE_COUNT:
@@ -128,6 +132,8 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
             start_request_debug_file_generate(self.name, response.url, self.all_urls_list, self.news_crawl_input.debug)
         else:
             # 次のページのURLを生成しリクエスト
+            if not links or self.page >= self.settings.getint("CONTINUED_MAX_LISTING_PAGES", 100):
+                raise RuntimeError("前回のクロールポイントに到達できませんでした。再開位置を維持します。")
             self.page += 1
             next_page_url = f"{self.start_urls[0]}?page={self.page}"
             yield scrapy.Request(
@@ -145,6 +151,12 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
         # ページ内の対象urlを抽出
         # ※1ページ目と２ページ目以降でリンクを抽出するcssセレクターが異なるため以下のように操作
         links: list[str] = response.css(self.ARTICLE_LINK_SELECTOR).getall()
+        original_url = response.meta.get("progress_url", response.url)
+        page_number = int(urllib.parse.parse_qs(urllib.parse.urlparse(original_url).query).get("page", ["1"])[0])
+        # 応答の到着順ではなくページ番号で一覧を復元し、安全な再開用 URL 群を選べるようにする。
+        self._crawl_progress.record_listing(base_start_url, page_number, [
+            {"loc": urllib.parse.unquote(response.urljoin(link)), "lastmod": ""} for link in links
+        ])
         self.logger.info(f"=== ページ内の記事件数 = {len(links)}")
         # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
         if not len(links) == self.ITEMS_ON_PAGE_COUNT:

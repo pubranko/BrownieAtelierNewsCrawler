@@ -22,11 +22,16 @@ class UrlsContinuedSkipCheck(object):
         """
         前回の続きの指定がある場合、前回のクロールポイントの5件のurlをクラス変数へ保存する。
         """
-        # 前回からの続きの指定がある場合、前回の１ページ目の５件のURLを取得する。
+        # 途中完了で保存した10件も、通常のクロールポイントと同じように照合する。
+        # クラス属性のリストを変更すると他のインスタンスへ影響するため、毎回初期化する。
+        self.last_time_urls = []
+        self.skip_flg = False
         self.continued = continued
         if self.continued:
             if base_url in crawl_point:
                 self.last_time_urls = [_[ControllerModel.LOC] for _ in crawl_point[base_url][ControllerModel.URLS]]
+        self.remaining_threshold = len(self.last_time_urls) // 2
+        self.has_checkpoint = bool(self.last_time_urls)
 
     def skip_check(self, url: str) -> bool:
         """
@@ -37,8 +42,8 @@ class UrlsContinuedSkipCheck(object):
         ※前回のクロールポイントには10件のurlがあるが、url取得中に更新されトップページへ移動している可能性がある。
           無限ループに陥らないように5/10件で完了とさせる。
         """
-        if self.continued:
-            if len(self.last_time_urls) <= self.check_count / 2:
+        if self.continued and self.has_checkpoint:
+            if len(self.last_time_urls) <= self.remaining_threshold:
                 self.skip_flg = True
 
             if url in self.last_time_urls:

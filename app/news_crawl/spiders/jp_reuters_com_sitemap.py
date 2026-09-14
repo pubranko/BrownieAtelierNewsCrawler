@@ -1,5 +1,4 @@
 from collections.abc import Sequence
-from typing import Any
 
 from news_crawl.spiders.extensions_class.extensions_sitemap import ExtensionsSitemapSpider
 
@@ -17,7 +16,4 @@ class JpReutersComSitemapSpider(ExtensionsSitemapSpider):
     _domain_name: str = "jp_reuters_com"  # 各種処理で使用するドメイン名の一元管理
     _spider_version: float = 1.0
 
-    custom_settings: dict[str, Any] | None = {
-        # ディレイ間隔を0.5倍～1.5倍の遅延が発生するようになる。
-        "RANDOMIZE_DOWNLOAD_DELAY": True,
-    }
+    # 送信間隔は全サイト共通の AutoThrottle / controller 設定を使う。

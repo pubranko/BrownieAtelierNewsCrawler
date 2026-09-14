@@ -45,6 +45,13 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
     def _parse_listing(self, response: TextResponse, *, continued: bool) -> Iterable[scrapy.Request]:
         self.logger.info("=== parse_start_response 現在解析中のURL = %s", response.url)
         links = response.css(".main_content > .left_col > .posts_list .post_title > a[href]::attr(href)").getall()
+        original_url = response.meta.get("progress_url", response.url)
+        page_segment = urllib.parse.urlparse(original_url).path.rstrip("/").rsplit("/", 1)[-1]
+        page_number = self.page if continued else (int(page_segment) if page_segment.isdigit() else self.page_from)
+        # スキップ判定前の一覧をページ番号付きで保持し、途中失敗時の再開用 URL 群の選択に使う。
+        self._crawl_progress.record_listing(base_start_url, page_number, [
+            {"loc": urllib.parse.unquote(response.urljoin(link)), "lastmod": ""} for link in links
+        ])
         self.logger.info("=== ページ内の記事件数 = %s", len(links))
         if len(links) != self.ITEMS_ON_PAGE_COUNT:
             self.logger.warning("=== 1ページ内で取得できた件数が想定の30件と異なる。確認要。 (%s 件)", len(links))
@@ -70,6 +77,8 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
             self.name, response.url, self.all_urls_list[-self.ITEMS_ON_PAGE_COUNT :], self.news_crawl_input.debug
         )
         if continued and not self.url_continued.skip_flg:
+            if not links or self.page >= self.settings.getint("CONTINUED_MAX_LISTING_PAGES", 100):
+                raise RuntimeError("前回のクロールポイントに到達できませんでした。再開位置を維持します。")
             self.page += 1
             yield scrapy.Request(
                 f"{self.start_urls[0]}/{self.page}",

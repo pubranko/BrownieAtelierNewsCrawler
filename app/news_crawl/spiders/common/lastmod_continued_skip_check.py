@@ -1,6 +1,6 @@
 import os
 import sys
-from datetime import datetime
+from datetime import UTC, datetime
 from logging import LoggerAdapter
 from typing import Any, Optional
 
@@ -43,6 +43,8 @@ class LastmodContinuedSkipCheck(object):
         self.domain_name = domain_name
         self.controller = controller  # コントローラーコレクションを保存
         self.logger = logger
+        # 初回クロールでは前回日時がない。属性未定義でサイトマップ解析が失敗しないよう初期化する。
+        self.latest_lastmod = datetime.min.replace(tzinfo=UTC)
 
         # 前回からの続き指定がある場合
         if self.continued:

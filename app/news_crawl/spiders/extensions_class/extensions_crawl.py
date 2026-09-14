@@ -13,6 +13,8 @@ from BrownieAtelierMongo.collection_models.crawler_response_model import Crawler
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from news_crawl.items import NewsCrawlItem
 from news_crawl.news_crawl_input import NewsCrawlInput
+from news_crawl.spiders.common.crawl_progress import CrawlProgress
+from news_crawl.spiders.common.crawling_domain_duplicate_check import CrawlingDomainDuplicatePrevention
 from news_crawl.spiders.common.lastmod_continued_skip_check import LastmodContinuedSkipCheck
 from news_crawl.spiders.common.lastmod_term_skip_check import LastmodTermSkipCheck
 from news_crawl.spiders.common.pagination_check import PaginationCheck
@@ -44,6 +46,10 @@ class ExtensionsCrawlSpider(CrawlSpider):
 
     # MongoDB関連
     mongo: MongoModel  # MongoDBへの接続を行うインスタンスをspider内に保持。pipelinesで使用。
+    _controller: ControllerModel
+    # 起動時に生成する実行単位の進捗。ミドルウェアの保存結果と一覧の並びを集約する。
+    _crawl_progress: CrawlProgress
+    _crawling_domain_control: CrawlingDomainDuplicatePrevention
     # スパイダーの挙動制御関連、固有の情報など
     _domain_name = "sample_com"  # 各種処理で使用するドメイン名の一元管理。継承先で上書き要。
 
@@ -137,6 +143,9 @@ class ExtensionsCrawlSpider(CrawlSpider):
             callback: Callable = self.parse_start_response_page_crawl_mode
             playwright_mode = self.playwright_mode__start_request
 
+        if not self.news_crawl_input.direct_crawl_urls:
+            # 要求生成前に一覧の起点を登録し、起点が未解析のまま終了した場合の位置更新を防ぐ。
+            self._crawl_progress.expect_discovery(start_urls)
         for url in start_urls:
             if playwright_mode:
                 yield scrapy.Request(
@@ -185,7 +194,15 @@ class ExtensionsCrawlSpider(CrawlSpider):
                 urls.add(link_url)
 
         for url in urls:
-            req.append(scrapy.Request(url=url, callback=self.parse))
+            req.append(scrapy.Request(
+                url=url, callback=self.parse_news,
+                meta={
+                    # 後続ページの未保存も元記事の未完了として判定できるよう、親 URL を引き継ぐ。
+                    "checkpoint_root": response.meta.get(
+                        "checkpoint_root", response.meta.get("progress_url", response.url)
+                    )
+                },
+            ))
         yield from req
 
         # クロール時のスパイダーのバージョン情報を記録 ( ex: 'jp_reuters_com_crawl:1.0 / extensions_crawl:1.0' )

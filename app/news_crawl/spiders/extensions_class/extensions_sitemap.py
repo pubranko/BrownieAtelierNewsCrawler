@@ -15,6 +15,8 @@ from dateutil import parser
 from lxml.etree import _Element
 from news_crawl.items import NewsCrawlItem
 from news_crawl.news_crawl_input import NewsCrawlInput
+from news_crawl.spiders.common.crawl_progress import CrawlProgress
+from news_crawl.spiders.common.crawling_domain_duplicate_check import CrawlingDomainDuplicatePrevention
 from news_crawl.spiders.common.custom_sitemap import CustomSitemap
 from news_crawl.spiders.common.lastmod_continued_skip_check import LastmodContinuedSkipCheck
 from news_crawl.spiders.common.lastmod_term_skip_check import LastmodTermSkipCheck
@@ -58,6 +60,10 @@ class ExtensionsSitemapSpider(SitemapSpider):
 
     # 次回クロールポイント情報
     _crawl_point: dict = {}
+    _controller: ControllerModel
+    # 起動時に生成する実行単位の進捗。サイトマップ解析と記事保存の完了を別々に集計する。
+    _crawl_progress: CrawlProgress
+    _crawling_domain_control: CrawlingDomainDuplicatePrevention
     # 複数のサイトマップを指定した場合、処理中のサイトマップを判別するためのカウント。
     _sitemap_urls_count: int = 0
     # sitemapのリンク先urlをカスタマイズしたい場合、継承先のクラスでTrueにする。
@@ -169,6 +175,8 @@ class ExtensionsSitemapSpider(SitemapSpider):
                     yield scrapy.Request(url=loc, callback=cast(Callable, self.parse))
 
         else:
+            # 要求生成前に全起点を登録し、未解析のサイトマップが残った場合は前回位置を維持する。
+            self._crawl_progress.expect_discovery(self.sitemap_urls)
             for url in self.sitemap_urls:
                 yield scrapy.Request(url=url, callback=self.custom_parse_sitemap, priority=10)
 
@@ -183,6 +191,8 @@ class ExtensionsSitemapSpider(SitemapSpider):
         else:
             body = self._get_sitemap_body(response)
             if body is None:
+                # 例外を投げず終了する経路でも、記事発見の失敗を記録して lastmod の更新を防ぐ。
+                self._crawl_progress.failed_response(response)
                 self.logger.warning(
                     "Ignoring invalid sitemap: %(response)s",
                     {"response": response},
@@ -338,7 +348,15 @@ class ExtensionsSitemapSpider(SitemapSpider):
                 urls.add(link_url)
 
         for url in urls:
-            req.append(scrapy.Request(url=url, callback=cast(Callable, self.parse)))
+            req.append(scrapy.Request(
+                url=url, callback=cast(Callable, self.parse),
+                meta={
+                    # 後続ページの未保存も元記事の未完了として判定できるよう、親 URL を引き継ぐ。
+                    "checkpoint_root": response.meta.get(
+                        "checkpoint_root", response.meta.get("progress_url", response.url)
+                    )
+                },
+            ))
         yield from req
 
         # クロール時のスパイダーのバージョン情報を記録 ( ex: 'sankei_com_sitemap:1.0 / extensions_sitemap:1.0' )
