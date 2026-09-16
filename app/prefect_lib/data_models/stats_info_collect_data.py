@@ -1,7 +1,6 @@
 import itertools
-from copy import deepcopy
 from datetime import datetime
-from typing import Any, Final
+from typing import Final
 
 import pandas as pd
 
@@ -16,8 +15,10 @@ class StatsInfoCollectData:
 
     # ログ１件より生成するmondoDBへ保存するデータイメージ。基準日とスパイダー名がkeyになる。
     # データフレームの列イメージ
-    # 開始時間    スパイダー名、ログレベルカウント            ,処理時間           ,メモリ使用量 リクエスト数              レスポンス数
-    # start_time,spider_name,log_count/CRITICAL,ERROR,WARNING,elapsed_time_seconds,memusage/max,downloader/request_count,downloader/response_count,
+    # 開始時間    スパイダー名、ログレベルカウント            ,処理時間
+    # ,メモリ使用量 リクエスト数              レスポンス数
+    # start_time,spider_name,log_count/CRITICAL,ERROR,WARNING,elapsed_time_seconds,memusage/max,downloader/req
+    # uest_count,downloader/response_count,
     # レスポンスのエラー件数
     # robotstxt/response_status_count/＊、downloader/response_status_count/＊
     # リクエストの深さ(最大)  レスポンスのバイト数       ,リトライ件数   ,保存した件数       ,終了理由
@@ -289,10 +290,13 @@ class StatsInfoCollectData:
                     # 'log_count/WARNING': stats['log_count/WARNING'] if 'log_count/WARNING' in stats else 0,
                     # 'elapsed_time_seconds': stats['elapsed_time_seconds'] if 'elapsed_time_seconds' in stats else 0,
                     # 'memusage/max': stats['memusage/max'] if 'memusage/max' in stats else 0,
-                    # 'downloader/request_count': stats['downloader/request_count'] if 'downloader/request_count' in stats else 0,
-                    # 'downloader/response_count': stats['downloader/response_count'] if 'downloader/response_count' in stats else 0,
+                    # 'downloader/request_count': stats['downloader/request_count'] if
+                    # 'downloader/request_count' in stats else 0,
+                    # 'downloader/response_count': stats['downloader/response_count'] if
+                    # 'downloader/response_count' in stats else 0,
                     # 'request_depth_max': stats['request_depth_max'] if 'request_depth_max' in stats else 0,
-                    # 'downloader/response_bytes': stats['downloader/response_bytes'] if 'downloader/response_bytes' in stats else 0,
+                    # 'downloader/response_bytes': stats['downloader/response_bytes'] if
+                    # 'downloader/response_bytes' in stats else 0,
                     # 'retry/count': stats['retry/count'] if 'retry/count' in stats else 0,
                     # 'item_scraped_count': stats['item_scraped_count'] if 'item_scraped_count' in stats else 0,
                     # 'finish_reason': stats['finish_reason'] if 'finish_reason' in stats else 0,
@@ -355,7 +359,7 @@ class StatsInfoCollectData:
         #     self.spider_df = self.spider_df.append(
         #         stats_info_collect_record, ignore_index=True)
 
-    def date_time_set_index(self, columns: str, df: pd.DataFrame):
+    def date_time_set_index(self, columns: str, df: pd.DataFrame) -> pd.DataFrame:
         """
         引数で指定されたデータフレームに対し、引数で指定したカラムの
         インデックスを追加したデータフレームを返す。
@@ -378,8 +382,11 @@ class StatsInfoCollectData:
             date_from = calc_date_from.strftime("%Y-%m-%d %H:%M:%S.%f")
             date_to = calc_date_to.strftime("%Y-%m-%d %H:%M:%S.%f")
             robots_select_df = robots_df_index[date_from:date_to]
+            assert isinstance(robots_select_df, pd.DataFrame)
             downloader_select_df = downloader_df_index[date_from:date_to]
+            assert isinstance(downloader_select_df, pd.DataFrame)
             spider_select_df = spider_df_index[date_from:date_to]
+            assert isinstance(spider_select_df, pd.DataFrame)
 
             date_from = calc_date_from.strftime("%Y-%m-%d")
             # 上記の期間抽出されたデータフレームより集計結果を求める。
@@ -401,7 +408,9 @@ class StatsInfoCollectData:
             date_list.append(date_from)
 
         # 日付別のスパイダー一覧を作成する。
-        self.spider_list: pd.Series = self.spider_df[self.SPIDER_NAME].drop_duplicates().sort_values()
+        spider_names = self.spider_df[self.SPIDER_NAME]
+        assert isinstance(spider_names, pd.Series)
+        self.spider_list: pd.Series = spider_names.drop_duplicates().sort_values()
         spider_by_date: list = [[date, spider] for date, spider in itertools.product(date_list, self.spider_list)]
         spider_by_date_df = pd.DataFrame(spider_by_date, columns=[self.AGGREGATE_BASE_TERM, self.SPIDER_NAME])
 
@@ -465,22 +474,27 @@ class StatsInfoCollectData:
         result_df: dict[str, pd.DataFrame],
     ):
         """"""
+        # as_index=False の集計結果は DataFrame。型と実データの前提を確認する。
         # result_df = {'sum': df, 'mean': df, 'min': df, 'max': df}
-        _ = select_df.groupby(by=groupby, as_index=False).sum()
-        _[self.AGGREGATE_BASE_TERM] = aggregate_base_term
-        result_df[self.AGGREGATE_TYPE__SUM] = pd.concat([result_df[self.AGGREGATE_TYPE__SUM], _]).round(2)
+        aggregate_df = select_df.groupby(by=groupby, as_index=False).sum()
+        assert isinstance(aggregate_df, pd.DataFrame)
+        aggregate_df[self.AGGREGATE_BASE_TERM] = aggregate_base_term
+        result_df[self.AGGREGATE_TYPE__SUM] = pd.concat([result_df[self.AGGREGATE_TYPE__SUM], aggregate_df]).round(2)
 
-        _ = select_df.groupby(by=groupby, as_index=False).mean(numeric_only=True)
-        _[self.AGGREGATE_BASE_TERM] = aggregate_base_term
-        result_df[self.AGGREGATE_TYPE__MEAN] = pd.concat([result_df[self.AGGREGATE_TYPE__MEAN], _]).round(2)
+        aggregate_df = select_df.groupby(by=groupby, as_index=False).mean(numeric_only=True)
+        assert isinstance(aggregate_df, pd.DataFrame)
+        aggregate_df[self.AGGREGATE_BASE_TERM] = aggregate_base_term
+        result_df[self.AGGREGATE_TYPE__MEAN] = pd.concat([result_df[self.AGGREGATE_TYPE__MEAN], aggregate_df]).round(2)
 
-        _ = select_df.groupby(by=groupby, as_index=False).min()
-        _[self.AGGREGATE_BASE_TERM] = aggregate_base_term
-        result_df[self.AGGREGATE_TYPE__MIN] = pd.concat([result_df[self.AGGREGATE_TYPE__MIN], _]).round(2)
+        aggregate_df = select_df.groupby(by=groupby, as_index=False).min()
+        assert isinstance(aggregate_df, pd.DataFrame)
+        aggregate_df[self.AGGREGATE_BASE_TERM] = aggregate_base_term
+        result_df[self.AGGREGATE_TYPE__MIN] = pd.concat([result_df[self.AGGREGATE_TYPE__MIN], aggregate_df]).round(2)
 
-        _ = select_df.groupby(by=groupby, as_index=False).max()
-        _[self.AGGREGATE_BASE_TERM] = aggregate_base_term
-        result_df[self.AGGREGATE_TYPE__MAX] = pd.concat([result_df[self.AGGREGATE_TYPE__MAX], _]).round(2)
+        aggregate_df = select_df.groupby(by=groupby, as_index=False).max()
+        assert isinstance(aggregate_df, pd.DataFrame)
+        aggregate_df[self.AGGREGATE_BASE_TERM] = aggregate_base_term
+        result_df[self.AGGREGATE_TYPE__MAX] = pd.concat([result_df[self.AGGREGATE_TYPE__MAX], aggregate_df]).round(2)
 
     stats_image = {
         #     # ログレベル件数

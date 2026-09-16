@@ -1,4 +1,4 @@
-from typing import Any, Union
+from typing import Any
 
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from BrownieAtelierMongo.collection_models.stats_info_collect_model import StatsInfoCollectModel
@@ -13,7 +13,7 @@ from pymongo.cursor import Cursor
 @task(cache_policy=NO_CACHE)
 def stats_analysis_report_data_frame_task(
     mongo: MongoModel, stats_analysis_report_input: StatsAnalysisReportInput
-) -> Union[StatsInfoCollectData, None]:
+) -> StatsInfoCollectData | None:
     """
     mongoDBより指定期間内の統計情報集計レコードを取得しデータフレームを生成する。
     生成したデータフレームを返す。

@@ -2,7 +2,6 @@ from datetime import date
 
 # from prefect.testing.utilities import prefect_test_harness
 from prefect_lib.flows.stats_info_collect_flow import stats_info_collect_flow
-from shared.settings import TIMEZONE
 
 
 def test_exec():

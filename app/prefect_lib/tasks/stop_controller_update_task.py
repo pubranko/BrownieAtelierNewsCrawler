@@ -18,7 +18,7 @@ def stop_controller_update_task(stop_controller_update_input: StopControllerUpda
     command: str = stop_controller_update_input.command
     destination: str = stop_controller_update_input.destination
 
-    logger.info(f"=== stop_controller_update_task 引数: {str(domain)} / {str(command)} / {str(destination)}")
+    logger.info(f"=== stop_controller_update_task 引数: {domain} / {command} / {destination}")
 
     record: list = []
     controller = ControllerModel(mongo)

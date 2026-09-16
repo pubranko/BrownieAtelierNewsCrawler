@@ -11,7 +11,6 @@ from BrownieAtelierMongo.collection_models.scraped_from_response_model import Sc
 from BrownieAtelierMongo.collection_models.stats_info_collect_model import StatsInfoCollectModel
 from prefect import get_run_logger, task
 from prefect.cache_policies import NO_CACHE
-from pymongo.command_cursor import CommandCursor, RawBatchCommandCursor
 
 
 @task(cache_policy=NO_CACHE)
@@ -20,7 +19,8 @@ def mongo_delete_task(
     period_from: datetime,  # 月次エクスポートを行うデータの基準年月
     period_to: datetime,  # 月次エクスポートを行うデータの基準年月
     collections_name: list[str],
-    # crawler_responseの場合、登録済みになったレコードのみ削除する場合True、登録済み以外のレコードも含めて削除する場合False。その他のコレクションの場合は無視される。
+    # crawler_responseの場合、登録済みになったレコードのみ削除する場合True、
+    # 登録済み以外のレコードも含めて削除する場合False。その他のコレクションの場合は無視される。
     crawler_response__registered: bool,
 ):
     """ """
@@ -50,13 +50,17 @@ def mongo_delete_task(
                 conditions_complete = copy.deepcopy(conditions)
                 conditions_complete.append(
                     {
-                        CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER: CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER__COMPLETE
+                        CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER: (
+                            CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER__COMPLETE
+                        )
                     }
                 )
                 conditions_skip = copy.deepcopy(conditions)
                 conditions_skip.append(
                     {
-                        CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER: CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER__SKIP
+                        CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER: (
+                            CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER__SKIP
+                        )
                     }
                 )
 
@@ -103,7 +107,9 @@ def mongo_delete_task(
                     delete_count_skip: int = collection.count(filter=filter_skip)
 
                     logger.info(
-                        f"=== ({collection_name}) 削除予定件数: {str(delete_count)} = 登録完了分: {str(delete_count_complete)} , 登録内容に差異なしのため不要: {str(delete_count_skip)}"
+                        f"=== ({collection_name}) 削除予定件数: {str(delete_count)} = "
+                        f"登録完了分: {str(delete_count_complete)} ,"
+                        f"登録内容に差異なしのため不要: {str(delete_count_skip)}"
                     )
 
             before_count = collection.count()
@@ -111,11 +117,18 @@ def mongo_delete_task(
             after_count = collection.count()
 
             logger.info(
-                f"=== ({collection_name}) 削除前の総件数: {str(before_count)} -> 削除件数: {str(delete_count)} -> 削除後の総件数: {str(after_count)}"
+                f"=== ({collection_name}) 削除前の総件数: {str(before_count)} -> "
+                f"削除件数: {str(delete_count)} -> 削除後の総件数: {str(after_count)}"
             )
 
             # aaa = list(collection.aggregate(aggregate_key='domain'))
             # print(f'==={aaa}')
             """
-            [{'_id': 'sankei.com', 'count': 133}, {'_id': 'mainichi.jp', 'count': 38}, {'_id': 'nikkei.com', 'count': 46}, {'_id': 'epochtimes.jp', 'count': 48}, {'_id': 'jp.reuters.com', 'count': 20}, {'_id': 'yomiuri.co.jp', 'count': 27}, {'_id': 'asahi.com', 'count': 1}]
+            [{'_id': 'sankei.com', 'count': 133}, {'_id':
+            'mainichi.jp', 'count': 38}, {'_id':
+            'nikkei.com', 'count': 46}, {'_id':
+            'epochtimes.jp', 'count': 48}, {'_id':
+            'jp.reuters.com', 'count': 20}, {'_id':
+            'yomiuri.co.jp', 'count': 27}, {'_id':
+            'asahi.com', 'count': 1}]
             """

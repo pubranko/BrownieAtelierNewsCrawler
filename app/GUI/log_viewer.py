@@ -15,13 +15,14 @@ from pydantic import ValidationError
 from pymongo import DESCENDING
 from pymongo.cursor import Cursor
 
-path = os.getcwd()
-sys.path.append(path)
+sys.path.append(os.getcwd())
 from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from GUI.log_viewer_validator import LogViewerValidator
 from shared.directory_search_task import directory_search_task
 from shared.timezone_recovery import timezone_recovery
+
+path = os.getcwd()
 
 
 class LogViewer(tkinter.Frame):
@@ -62,7 +63,7 @@ class LogViewer(tkinter.Frame):
         try:
             input_string = self.clipboard_get()
             self.clipboard_value.set(input_string)
-        except:
+        except Exception:
             print(sys.exc_info()[1])
 
     def set_data(self, event=None):
@@ -247,7 +248,7 @@ class LogViewer(tkinter.Frame):
                 record_type=[self.record_type.get(i, i)[0] for i in self.record_type.curselection()],
                 log_level_value=self.log_level_value.get(),
             )
-            print("検索条件 : ", condition_items.dict())
+            print("検索条件 : ", condition_items.model_dump())
         except ValidationError as e:
             # print(e.json())  # エラー結果をjson形式で見れる。
             print("エラー内容 : ", e.errors())  # エラー結果をlist形式で見れる。
@@ -512,7 +513,7 @@ class LogViewer(tkinter.Frame):
             if record_key == "logs":
                 # 項目名、コピーボタン
                 copy_button.grid(row=row_pointer + 1, column=0, sticky=tkinter.NW, ipadx=30)
-                copy_button["command"] = lambda: pyperclip.copy(str(record_value))
+                copy_button["command"] = lambda value=record_value: pyperclip.copy(str(value))
                 # 項目値
                 item_value = scrolledtext.ScrolledText(log_window, wrap=tkinter.WORD, width=200)
                 item_value.insert(tkinter.END, str(record_value))

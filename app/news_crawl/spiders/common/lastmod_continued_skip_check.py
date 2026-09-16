@@ -2,23 +2,23 @@ import os
 import sys
 from datetime import UTC, datetime
 from logging import LoggerAdapter
-from typing import Any, Optional
 
 from scrapy.exceptions import CloseSpider
 
-path = os.getcwd()
-sys.path.append(path)
+sys.path.append(os.getcwd())
 from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 from shared.timezone_recovery import timezone_recovery
 
+path = os.getcwd()
 
-class LastmodContinuedSkipCheck(object):
+
+class LastmodContinuedSkipCheck:
     """
     前回の続きからクロールに関する機能を
     """
 
     # 引数保存エリア
-    continued: Optional[bool]  # spider起動時の引数の値
+    continued: bool | None  # spider起動時の引数の値
     spider_name: str
     domain_name: str
     controller: ControllerModel
@@ -30,7 +30,7 @@ class LastmodContinuedSkipCheck(object):
 
     def __init__(
         self,
-        continued: Optional[bool],
+        continued: bool | None,
         spider_name: str,
         domain_name: str,
         controller: ControllerModel,
@@ -54,7 +54,8 @@ class LastmodContinuedSkipCheck(object):
             # 前回のクロールポイントが空の場合、エラー処理を実施
             if not self.crawl_point:
                 self.logger.critical(
-                    f'引数エラー：domain = {domain_name} は前回のクロール情報がありません。初回から"continued"の使用は不可です。'
+                    f"引数エラー：domain = {domain_name} は前回のクロール情報がありません。"
+                    f'初回から"continued"の使用は不可です。'
                 )
                 raise CloseSpider()
 

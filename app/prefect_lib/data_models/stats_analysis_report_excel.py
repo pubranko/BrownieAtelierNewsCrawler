@@ -6,8 +6,7 @@ from typing import Any, Final
 import pandas as pd
 from openpyxl import Workbook
 from openpyxl.cell import Cell
-from openpyxl.chart.bar_chart import BarChart
-from openpyxl.styles import Alignment, Border, Font, PatternFill, Protection, Side
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
 from prefect_lib.data_models.stats_info_collect_data import StatsInfoCollectData
@@ -41,7 +40,8 @@ class StatsAnalysisReportExcel:
     robots_analysis_columns_info: list = [
         # head1                     : 必須 : 見出し１行目
         # col                       : 必須 : データフレーム列名
-        # equivalent_color          : 任意 : 上のセルと同値の場合の文字色。上と同値の場合、文字色を薄くするなどに使用する。
+        # equivalent_color          : 任意 :
+        # 上のセルと同値の場合の文字色。上と同値の場合、文字色を薄くするなどに使用する。
         # warning_value             : 任意 : ワーニングとする値を入れる配列
         # warning_background_color  : 任意 : ワーンングとなったセルの背景色
         {HEAD1: "集計日〜", COL: "aggregate_base_term"},
@@ -58,7 +58,8 @@ class StatsAnalysisReportExcel:
     downloader_analysis_columns_info: list = [
         # head1                     : 必須 : 見出し１行目
         # col                       : 必須 : データフレーム列名
-        # equivalent_color          : 任意 : 上のセルと同値の場合の文字色。上と同値の場合、文字色を薄くするなどに使用する。
+        # equivalent_color          : 任意 :
+        # 上のセルと同値の場合の文字色。上と同値の場合、文字色を薄くするなどに使用する。
         # warning_value             : 任意 : ワーニングとする値を入れる配列
         # warning_background_color  : 任意 : ワーンングとなったセルの背景色
         {HEAD1: "集計日〜", COL: "aggregate_base_term"},
@@ -78,7 +79,8 @@ class StatsAnalysisReportExcel:
         # col                       : 必須 : データフレーム列名
         # digit_adjustment          : 任意 : 単位の調整。1000とした場合、'value/1000'となる。
         # number_format             : 任意 : 小数点以下の桁数。省略した場合'#,##0'
-        # equivalent_color          : 任意 : 上のセルと同値の場合の文字色。上と同値の場合、文字色を薄くするなどに使用する。
+        # equivalent_color          : 任意 :
+        # 上のセルと同値の場合の文字色。上と同値の場合、文字色を薄くするなどに使用する。
         # warning_value             : 任意 : ワーニングとする値を入れる配列
         # warning_value_over        : 任意 : 超過したらワーニングとする値
         # warning_background_color  : 任意 : ワーンングとなったセルの背景色
@@ -304,7 +306,6 @@ class StatsAnalysisReportExcel:
         border = Border(top=side, bottom=side, left=side, right=side)
 
         # 集計期間の数を確認
-        aggregate_base_term_list_count = len(spider_result_all_df["aggregate_base_term"].drop_duplicates())
 
         # ワーニング有無フラグ(初期値：無し)
         warning_flg: bool = False
@@ -316,9 +317,6 @@ class StatsAnalysisReportExcel:
             columns_info_by_spider = deepcopy(self.stats_analysis_columns_info)
             # スパイダー別のデータフレームを作成
             by_spider_df = spider_result_all_df.query(f'spider_name == "{spider}"')
-            # データ無しの件数を確認 ※スパイダーの可動前はデータ無しとなる。
-            data_none_count: int = len(by_spider_df.query(f'elapsed_time_seconds == ""'))
-            nomal_count: int = aggregate_base_term_list_count - data_none_count
 
             # 列ごとにエクセルに編集
             for col_idx, col_info in enumerate(columns_info_by_spider):
@@ -391,12 +389,12 @@ class StatsAnalysisReportExcel:
         # 最大幅を確認
         # それに合わせた幅を設定する。
         # for col in ws.columns:
-        for col in self.worksheet_1.iter_cols():
+        for column_index, col in enumerate(self.worksheet_1.iter_cols(), start=1):
             max_length = 0
-            column = col[0].column_letter  # 列名A,Bなどを取得
-            for cell in col:
-                if len(str(cell.value)) > max_length:
-                    max_length = len(str(cell.value))
+            column = get_column_letter(column_index)  # 列名A,Bなどを取得
+            for column_cell in col:
+                if len(str(column_cell.value)) > max_length:
+                    max_length = len(str(column_cell.value))
             # 型ヒントでcolumn_dimensionsが存在しないものとみなされエラーが出るため、動的メソッドの実行形式で記述
             # getattr(ws, 'column_dimensions')()[column].width = (max_length + 2.07)
             self.worksheet_1.column_dimensions[column].width = max_length + 2.07
@@ -467,7 +465,9 @@ class StatsAnalysisReportExcel:
 
             # ステータス別の一覧を作成し、
             # ステータス別の出現件数が集計期間数と一致するか確認
-            status_list_sr: pd.Series = by_spider_df[check_col].drop_duplicates()
+            status_column = by_spider_df[check_col]
+            assert isinstance(status_column, pd.Series)
+            status_list_sr = status_column.drop_duplicates()
             for status in status_list_sr:
                 # データ無しは除く
                 if status:

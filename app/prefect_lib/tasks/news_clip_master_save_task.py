@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from BrownieAtelierMongo.collection_models.crawler_response_model import CrawlerResponseModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
@@ -7,7 +7,6 @@ from BrownieAtelierMongo.collection_models.news_clip_master_model import NewsCli
 from BrownieAtelierMongo.collection_models.scraped_from_response_model import ScrapedFromResponseModel
 from prefect import get_run_logger, task
 from prefect.cache_policies import NO_CACHE
-from prefect_lib.common_module.scraped_record_error_check import scraped_record_error_check
 from prefect_lib.flows import START_TIME
 from pymongo import ASCENDING
 from pymongo.cursor import Cursor
@@ -16,9 +15,9 @@ from pymongo.cursor import Cursor
 @task(cache_policy=NO_CACHE)
 def news_clip_master_save_task(
     mongo: MongoModel,
-    domain: Optional[str],
-    target_start_time_from: Optional[datetime],
-    target_start_time_to: Optional[datetime],
+    domain: str | None,
+    target_start_time_from: datetime | None,
+    target_start_time_to: datetime | None,
 ):
     """
     scrapyによるクロールを実行する。
@@ -102,7 +101,8 @@ def news_clip_master_save_task(
                         == record[ScrapedFromResponseModel.RESPONSE_TIME]
                     ):
                         logger.info(
-                            f"=== news_clip_master への登録処理済みデータのためスキップ : {record[ScrapedFromResponseModel.URL]}"
+                            f"=== news_clip_master への登録処理済みデータのためスキップ : "
+                            f"{record[ScrapedFromResponseModel.URL]}"
                         )
                     else:
                         news_clip_master_register: str = (
@@ -114,5 +114,6 @@ def news_clip_master_save_task(
                             news_clip_master_register,
                         )
                         logger.info(
-                            f"=== news_clip_master の登録内容に変更がないためスキップ : {record[ScrapedFromResponseModel.URL]}"
+                            f"=== news_clip_master の登録内容に変更がないためスキップ : "
+                            f"{record[ScrapedFromResponseModel.URL]}"
                         )

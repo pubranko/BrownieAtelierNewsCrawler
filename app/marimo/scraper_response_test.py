@@ -29,8 +29,6 @@ def _():
 def _():
     import logging
     import pickle
-    from logging import Logger
-    from typing import Any
 
     from BrownieAtelierMongo.collection_models.crawler_response_model import CrawlerResponseModel
     from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
@@ -41,10 +39,8 @@ def _():
 
     return (
         ASCENDING,
-        Any,
         CrawlerResponseModel,
         DATA__DEBUG_FILE_DIR,
-        Logger,
         MongoModel,
         artcle_scraper,
         bs4,
@@ -55,16 +51,14 @@ def _():
 
 @app.cell
 def _(
-    Any,
     CrawlerResponseModel,
-    Logger,
     MongoModel,
     logging,
 ):
-    logger: Logger = logging.getLogger("prefect.run.scrapying_deco")
+    logger = logging.getLogger("prefect.run.scrapying_deco")
 
-    mongo: MongoModel = MongoModel()
-    crawler_response: CrawlerResponseModel = CrawlerResponseModel(mongo)
+    mongo = MongoModel()
+    crawler_response = CrawlerResponseModel(mongo)
 
     conditions: list = []
     urls: list[str] = [
@@ -79,7 +73,7 @@ def _(
 
     conditions.append({"url": {"$in": urls}})
     if conditions:
-        filter: Any = {"$and": conditions}
+        filter = {"$and": conditions}
     else:
         filter = None
     logger.info(f"=== crawler_responseへのfilter: {str(filter)}")

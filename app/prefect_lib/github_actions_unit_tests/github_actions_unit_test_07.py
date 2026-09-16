@@ -8,8 +8,7 @@ def test_exec():
     if current_directory:
         sys.path.append(current_directory)
 
-    from datetime import datetime, timedelta
-    from shared.settings import TIMEZONE
+    from datetime import datetime
 
     # <13>
     # mongoDBエクスポート
@@ -21,9 +20,9 @@ def test_exec():
     from BrownieAtelierMongo.collection_models.news_clip_master_model import NewsClipMasterModel
     from BrownieAtelierMongo.collection_models.scraped_from_response_model import ScrapedFromResponseModel
     from BrownieAtelierMongo.collection_models.stats_info_collect_model import StatsInfoCollectModel
-    from prefect_lib.flows.mongo_export_selector_flow import mongo_export_selector_flow
-
     from dateutil.relativedelta import relativedelta
+    from prefect_lib.flows.mongo_export_selector_flow import mongo_export_selector_flow
+    from shared.settings import TIMEZONE
 
     period_date_from = (datetime.now().astimezone(TIMEZONE) - relativedelta(months=1)).date()
     period_date_to = datetime.now().astimezone(TIMEZONE).date()
@@ -42,7 +41,9 @@ def test_exec():
         suffix="",
         period_date_from=period_date_from,
         period_date_to=period_date_to,
-        crawler_response__registered=True,  # crawler_responseの場合、登録済みになったレコードのみエクスポートする場合True、登録済み以外のレコードも含めてエクスポートする場合False
+        # crawler_responseの場合、登録済みになったレコードのみエクスポートする場合True、
+        # 登録済み以外のレコードも含めてエクスポートする場合False
+        crawler_response__registered=True,
     )
 
     # <14>

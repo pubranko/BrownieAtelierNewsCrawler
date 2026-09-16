@@ -1,17 +1,15 @@
-import os
 import re
-import io
 from logging import Logger, LoggerAdapter
-from typing import Any, Union
+from typing import Any
 
 from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierNotice.slack.slack_notice import slack_notice
 from BrownieAtelierNotice import settings
+from BrownieAtelierNotice.slack.slack_notice import slack_notice
 from prefect import get_run_logger, task
+from prefect.cache_policies import NO_CACHE
 from prefect.context import FlowRunContext
 from prefect_lib.flows import LOG_FILE_PATH, START_TIME
-from prefect.cache_policies import NO_CACHE
 from shared.resource_check import resource_check
 
 """
@@ -26,7 +24,7 @@ mongoDBのインポートを行う。
 def end_task(mongo: MongoModel):
     """Flow共通終了処理"""
 
-    def log_check(log_record: str, logger: Union[Logger, LoggerAdapter]):
+    def log_check(log_record: str, logger: Logger | LoggerAdapter):
         """クリティカル、エラー、ワーニングがあったらメールで通知"""
 
         # CRITICAL > ERROR > WARNING > INFO > DEBUG

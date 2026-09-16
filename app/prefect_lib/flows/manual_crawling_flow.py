@@ -1,5 +1,3 @@
-from typing import Any
-
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from news_crawl.news_crawl_input import NewsCrawlInput
 from prefect import flow, get_run_logger
@@ -24,7 +22,8 @@ def manual_crawling_flow(spider_names: list[str], spider_kwargs: dict, following
     # 初期処理
     init_task_instance: PrefectFuture = init_task.submit()
     # 実行結果が返ってくるまで待機し、戻り値を保存。
-    #   ※タスクのステータスをresultを受け取る前に判定してもPendingとなる。インスタンスのステータスはリアルタイムで更新されているので注意。
+    # ※タスクのステータスをresultを受け取る前に判定してもPendingとなる。
+    # インスタンスのステータスはリアルタイムで更新されているので注意。
     init_task_result = init_task_instance.result()
 
     if init_task_instance.state.is_completed():
@@ -50,7 +49,7 @@ def manual_crawling_flow(spider_names: list[str], spider_kwargs: dict, following
             end_task(mongo)
 
     else:
-        logger.error(f"=== init_taskが正常に完了しなかったため、後続タスクの実行を中止しました。")
+        logger.error("=== init_taskが正常に完了しなかったため、後続タスクの実行を中止しました。")
 
 
 def main(**kwargs):

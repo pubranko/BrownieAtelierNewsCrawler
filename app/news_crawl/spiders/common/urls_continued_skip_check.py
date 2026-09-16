@@ -1,24 +1,24 @@
 import os
 import sys
-from typing import Optional
 
-path = os.getcwd()
-sys.path.append(path)
+sys.path.append(os.getcwd())
 from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 
+path = os.getcwd()
 
-class UrlsContinuedSkipCheck(object):
+
+class UrlsContinuedSkipCheck:
     """
     前回の続きからクロールさせるためのチェックを行う。
     """
 
     crawl_point_save: dict = {}
     last_time_urls: list = []
-    continued: Optional[bool]
+    continued: bool | None
     skip_flg: bool = False
     check_count: int = 10
 
-    def __init__(self, crawl_point: dict, base_url: str, continued: Optional[bool]) -> None:
+    def __init__(self, crawl_point: dict, base_url: str, continued: bool | None) -> None:
         """
         前回の続きの指定がある場合、前回のクロールポイントの5件のurlをクラス変数へ保存する。
         """

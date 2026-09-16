@@ -5,13 +5,6 @@ from news_crawl.spiders.extensions_class.extensions_sitemap import ExtensionsSit
 
 class YomiuriCoJpSitemapSpider(ExtensionsSitemapSpider):
     name: str = "yomiuri_co_jp_sitemap"
-    # テスト用に読売だけ初期の基準間隔を 2 秒にする。共通の設定は引き継ぐ。
-    # controller に保存された長い間隔や AutoThrottle による減速は引き続き優先する。
-    custom_settings = {
-        **(ExtensionsSitemapSpider.custom_settings or {}),
-        "DOWNLOAD_DELAY": 1.5,
-        "AUTOTHROTTLE_START_DELAY": 2,
-    }
     allowed_domains: list = ["yomiuri.co.jp"]
     sitemap_urls: Sequence[str] = [
         "https://www.yomiuri.co.jp/sitemap-news-latest.xml",

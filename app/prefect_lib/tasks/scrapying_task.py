@@ -1,7 +1,7 @@
 import pickle
 from datetime import datetime
 from importlib import import_module
-from typing import Any, Optional
+from typing import Any
 
 from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 from BrownieAtelierMongo.collection_models.crawler_response_model import CrawlerResponseModel
@@ -25,10 +25,10 @@ from shared.timezone_recovery import timezone_recovery
 @task(cache_policy=NO_CACHE)
 def scrapying_task(
     mongo: MongoModel,
-    domain: Optional[str],
-    urls: Optional[list],
-    target_start_time_from: Optional[datetime],
-    target_start_time_to: Optional[datetime],
+    domain: str | None,
+    urls: list | None,
+    target_start_time_from: datetime | None,
+    target_start_time_to: datetime | None,
 ):
     """
     scrapyによるクロールを実行する。
@@ -38,7 +38,9 @@ def scrapying_task(
     """
     logger = get_run_logger()  # PrefectLogAdapter
     logger.info(
-        f"=== 引数 : domain = {domain}, urls = {urls}, target_start_time_from = {target_start_time_from}, target_start_time_to = {target_start_time_to}"
+        f"=== 引数 : domain = {domain}, urls = {urls}, "
+        f"target_start_time_from = {target_start_time_from}, "
+        f"target_start_time_to = {target_start_time_to}"
     )
 
     crawler_response: CrawlerResponseModel = CrawlerResponseModel(mongo)
@@ -121,9 +123,9 @@ def scrapying_task(
 
             scraper_info_by_domain_data = scraper_info_by_domain_data_list[0]  # ドメイン単位で取得しているため常に１件
             for scraper, pattern_list in scraper_info_by_domain_data.scrape_item_get():
-                if not scraper in scraper_mod:
+                if scraper not in scraper_mod:
                     scraper_mod[scraper] = import_module("prefect_lib.scraper." + scraper)
-                scraped_result, scraped_pattern = getattr(scraper_mod[scraper], "scraper")(
+                scraped_result, scraped_pattern = scraper_mod[scraper].scraper(
                     soup=soup,
                     scraper=scraper,
                     scrape_parm=pattern_list,
@@ -132,12 +134,13 @@ def scrapying_task(
                 scraped[ScrapedFromResponseModel.PATTERN].update(scraped_pattern)
 
             # データチェック
-            warning_flg: bool = scraped_record_error_check(scraped)
+            scraped_record_error_check(scraped)
             # if not warning_flg:
             #     scraped_from_response.insert_one(scraped)
             #     logger.info(
             #         f'=== scrapying_run run  処理対象url : {record[CrawlerResponseModel.URL]}')
-            # タイトルしか無い記事も稀に存在する。有料会員にしか本文を見せていないニュースサイトもあるため、データが欠損していても保存はするよう見直し。
+            # タイトルしか無い記事も稀に存在する。有料会員にしか本文を見せていないニュースサイトもあるため
+            # 、データが欠損していても保存はするよう見直し。
             scraped_from_response.insert_one(scraped)
             logger.info(f"=== 処理対象url : {record[CrawlerResponseModel.URL]}")
 

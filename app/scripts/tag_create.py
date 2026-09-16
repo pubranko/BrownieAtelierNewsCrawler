@@ -1,9 +1,9 @@
-import os
-import requests
 import json
+import os
 import re
 import sys
-from typing import Union
+
+import requests
 
 """
 当スクリプトの呼び出し元へタグを文字列として返す。
@@ -36,31 +36,34 @@ baseイメージのtagのナンバリングについて
 """
 
 
-def init_check(args: list[str], docker_hub_username: Union[str, None], base_tag: Union[str, None]) -> str:
+def init_check(args: list[str], docker_hub_username: str | None, base_tag: str | None) -> str:
     """引数チェック"""
     if len(args) != 3:
-        raise ValueError(f"引数が指定されていません。「--mode TEST」等のようにモードを指定してください。")
+        raise ValueError("引数が指定されていません。「--mode TEST」等のようにモードを指定してください。")
     if not args[1]:
-        raise ValueError(f"第一引数に--modeが指定されていません。")
+        raise ValueError("第一引数に--modeが指定されていません。")
     if args[1] not in ["--mode", "-m"]:
-        raise ValueError(f"第一引数のモード引数に誤りがあります。「--mode or -m」を指定してください。")
+        raise ValueError("第一引数のモード引数に誤りがあります。「--mode or -m」を指定してください。")
     if args[2] not in ["PRODUCT", "TEST"]:
-        raise ValueError(f"第二引数の環境指定に誤りがあります。「PRODUCT or TEST」を指定してください。")
+        raise ValueError("第二引数の環境指定に誤りがあります。「PRODUCT or TEST」を指定してください。")
 
     if not docker_hub_username:
         raise ValueError(
-            f"必要な環境変数(DOCKER_HUB_USERNAME)がありません。「DOCKER_HUB_USERNAME」にdockerhubのリポジトリのユーザー名を指定してください。"
+            "必要な環境変数(DOCKER_HUB_USERNAME)がありません。"
+            "「DOCKER_HUB_USERNAME」にdockerhubのリポジトリのユーザー名を指定してください。"
         )
 
     if not base_tag:
         raise ValueError(
-            f"必要な環境変数(BASE_TAG)がありません。「BASE_TAG」に現在のメジャーバージョン、マイナーバージョンを指定してください。(例: 1.15)"
+            "必要な環境変数(BASE_TAG)がありません。「BASE_TAG」に現在の"
+            "メジャーバージョン、マイナーバージョンを指定してください。(例: 1.15)"
         )
 
     pattern = r"^[test-]*\d*\.\d*$"  # nn.nn の形式
-    if not re.match(pattern, str(base_tag)):
+    if not re.match(pattern, base_tag):
         raise ValueError(
-            f"環境変数(BASE_TAG:{base_tag})の形式が不正です。「BASE_TAG」に現在のメジャーバージョン、マイナーバージョンを指定してください。(例: test-1.15、1.15)"
+            f"環境変数(BASE_TAG:{base_tag})の形式が不正です。"
+            f"「BASE_TAG」に現在のメジャーバージョン、マイナーバージョンを指定してください。(例: test-1.15、1.15)"
         )
 
     return args[2]

@@ -1,16 +1,14 @@
-import logging
-import sys
 from logging import Logger, LoggerAdapter
-from typing import Union
 
 import psutil
 
 
-def resource_check(logger: Union[Logger, LoggerAdapter]) -> dict:
+def resource_check(logger: Logger | LoggerAdapter) -> dict:
     """
     CPU、メモリースワップメモリーの使用状況をチェックする。
     psutilで取得した値をログへ出力しdictで返す。
-    cpu_percent, memory_used, memory_total, memory_available, memory_percent, swap_memory_used, swap_memory_total, swap_memory_percent
+    cpu_percent, memory_used, memory_total, memory_available, memory_percent, swap_memory_used,
+    swap_memory_total, swap_memory_percent
     """
 
     memory = psutil.virtual_memory()

@@ -1,9 +1,10 @@
-import os
-import bson
 import gzip
+import os
 from typing import Any
-from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
+
+import bson
 from BrownieAtelierMongo.collection_models.asynchronous_report_model import AsynchronousReportModel
+from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
 from BrownieAtelierMongo.collection_models.crawler_response_model import CrawlerResponseModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
@@ -66,6 +67,8 @@ def mongo_import_task(
             collection = ControllerModel(mongo)
             # コントローラー内のドキュメント全削除（コントローラーはデータを追加するにではなく差し替える）
             collection.delete_many(filter={})
+        else:
+            raise ValueError(f"インポート未対応のコレクション名です: {collection_name}")
 
         before_count: int = collection.count()
 
@@ -73,7 +76,9 @@ def mongo_import_task(
         collection_records: list = []
 
         with gzip.open(file_path, "rb") as bson_file:
-            bson_file: Any  # データの型=<class 'gzip.GzipFile'>となる。 後続のbson.decode_file_iterでエラーとなるため型をAnyとしている。
+            # データの型=<class 'gzip.GzipFile'>となる。
+            # 後続のbson.decode_file_iterでエラーとなるため型をAnyとしている。
+            bson_file: Any
 
             documents: list = []
             write_count: int = 0
@@ -93,7 +98,8 @@ def mongo_import_task(
 
         after_count: int = collection.count()
         logger.info(
-            f"=== コレクション({collection_name})  追加前の総件数: {str(before_count)} -> 追加件数: {str(len(collection_records))} -> 追加後の総件数: {str(after_count)}"
+            f"=== コレクション({collection_name})  追加前の総件数: {str(before_count)} -> "
+            f"追加件数: {str(len(collection_records))} -> 追加後の総件数: {str(after_count)}"
         )
 
 

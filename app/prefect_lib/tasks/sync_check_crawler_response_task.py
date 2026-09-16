@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from BrownieAtelierMongo.collection_models.asynchronous_report_model import AsynchronousReportModel
 from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
@@ -14,9 +14,9 @@ from shared.timezone_recovery import timezone_recovery
 @task(cache_policy=NO_CACHE)
 def sync_check_crawler_response_task(
     mongo: MongoModel,
-    domain: Optional[str],
-    start_time_from: Optional[datetime],
-    start_time_to: Optional[datetime],
+    domain: str | None,
+    start_time_from: datetime | None,
+    start_time_to: datetime | None,
 ):
     """crawl対象のurlとcrawler_responseの同期チェック"""
 
@@ -67,7 +67,7 @@ def sync_check_crawler_response_task(
         projection={CrawlerLogsModel.CRAWL_URLS_LIST: 1, CrawlerLogsModel.DOMAIN: 1},
     ):
         # domain別の集計エリアを初期設定
-        if not log_record[CrawlerLogsModel.DOMAIN] in response_async_domain_aggregate:
+        if log_record[CrawlerLogsModel.DOMAIN] not in response_async_domain_aggregate:
             response_async_domain_aggregate[log_record[CrawlerLogsModel.DOMAIN]] = 0
 
         # crawl_urls_listからをクロール対象となったurlを抽出

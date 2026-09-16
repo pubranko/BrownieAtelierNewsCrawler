@@ -3,8 +3,7 @@ from typing import Any, Final
 import pandas as pd
 from openpyxl import Workbook
 from openpyxl.cell import Cell
-from openpyxl.chart.bar_chart import BarChart
-from openpyxl.styles import Alignment, Border, Font, PatternFill, Protection, Side
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
 from prefect_lib.data_models.scraper_pattern_report_data import ScraperPatternReportData
@@ -28,7 +27,8 @@ class ScraperPatternReportExcel:
         # digit_adjustment          : 任意 : 単位の調整。1000とした場合、'value/1000'となる。
         # number_format             : 任意 : 小数点以下の桁数。省略した場合'#,##0'
         # number_format             : 任意 : 小数点以下の桁数。省略した場合'#,##0'
-        # equivalent_color          : 任意 : 上のセルと同値の場合の文字色。上と同値の場合、文字色を薄くするなどに使用する。
+        # equivalent_color          : 任意 :
+        # 上のセルと同値の場合の文字色。上と同値の場合、文字色を薄くするなどに使用する。
         # warning_value             : 任意 : ワーニングとする値を入れる配列
         # warning_value_over        : 任意 : 超過したらワーニングとする値
         # warning_background_color  : 任意 : ワーンングとなったセルの背景色
@@ -139,12 +139,12 @@ class ScraperPatternReportExcel:
         # 列ごとに次の処理を行う。
         # 最大幅を確認
         # それに合わせた幅を設定する。
-        for col in self.worksheet.iter_cols():
+        for column_index, col in enumerate(self.worksheet.iter_cols(), start=1):
             max_length = 0
-            column = col[0].column_letter  # 列名A,Bなどを取得
-            for cell in col:
-                if len(str(cell.value)) > max_length:
-                    max_length = len(str(cell.value))
+            column = get_column_letter(column_index)  # 列名A,Bなどを取得
+            for column_cell in col:
+                if len(str(column_cell.value)) > max_length:
+                    max_length = len(str(column_cell.value))
 
             # 型ヒントでcolumn_dimensionsが存在しないものとみなされエラーが出るため、動的メソッドの実行形式で記述
             # getattr(worksheet, 'column_dimensions')()[column].width = (max_length + 2.2)

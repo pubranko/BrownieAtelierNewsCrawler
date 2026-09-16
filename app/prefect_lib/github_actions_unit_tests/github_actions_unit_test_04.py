@@ -12,6 +12,7 @@ def test_exec():
     # 手動スクレイピング
     #   manual_scrapying_flow.py
     from datetime import datetime, timedelta
+
     from prefect_lib.flows.manual_scrapying_flow import manual_scrapying_flow
     from shared.settings import TIMEZONE
 

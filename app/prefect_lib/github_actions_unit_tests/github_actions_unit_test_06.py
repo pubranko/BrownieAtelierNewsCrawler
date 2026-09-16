@@ -12,8 +12,9 @@ def test_exec():
     # スクレイピング使用パターンレポート
     #   scraper_pattern_report_flow.py
     from datetime import datetime, timedelta
-    from prefect_lib.flows.scraper_pattern_report_flow import scraper_pattern_report_flow
+
     from prefect_lib.data_models.scraper_pattern_report_input import ScraperPatternReportConst
+    from prefect_lib.flows.scraper_pattern_report_flow import scraper_pattern_report_flow
     from shared.settings import TIMEZONE
 
     # 基準日を翌日にずらしてから一週間分の情報を収集

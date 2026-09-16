@@ -20,8 +20,9 @@ from news_crawl.adaptive_throttle import (
 from news_crawl.spiders.common.crawl_progress import CrawlProgress
 from scrapy import Request, Spider
 from scrapy.core.downloader import Slot
-from scrapy.crawler import AsyncCrawlerRunner
+from scrapy.crawler import AsyncCrawlerRunner, Crawler
 from scrapy.http import HtmlResponse, Response
+from scrapy.statscollectors import StatsCollector
 
 TEST_MONGO_ENV = {
     f"BROWNIE_ATELIER_MONGO__MONGO_{key}": "test"
@@ -134,10 +135,13 @@ class HeaderTests(unittest.TestCase):
     def test_notice_uses_existing_sender_and_normal_channel(self):
         sender = Mock()
         settings = SimpleNamespace(BROWNIE_ATELIER_NOTICE__SLACK_CHANNEL_ID__NOMAL="test-normal")
-        with patch.dict("sys.modules", {
-            "BrownieAtelierNotice": SimpleNamespace(settings=settings),
-            "BrownieAtelierNotice.slack.slack_notice": SimpleNamespace(slack_notice=sender),
-        }):
+        with patch.dict(
+            "sys.modules",
+            {
+                "BrownieAtelierNotice": SimpleNamespace(settings=settings),
+                "BrownieAtelierNotice.slack.slack_notice": SimpleNamespace(slack_notice=sender),
+            },
+        ):
             _send_rate_limit_notice("test message")
         self.assertEqual(sender.call_args.kwargs["channel_id"], "test-normal")
         self.assertEqual(sender.call_args.kwargs["message"], "test message")
@@ -173,10 +177,48 @@ class HeaderTests(unittest.TestCase):
         )
 
     @patch.dict(os.environ, TEST_MONGO_ENV)
+    def test_parse_news_rejects_non_text_response(self):
+        from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
+
+        spider = Mock(spec=ExtensionsCrawlSpider)
+        with self.assertRaisesRegex(TypeError, "requires a TextResponse"):
+            list(ExtensionsCrawlSpider.parse_news(spider, Response(article(0))))
+
+    @patch.dict(os.environ, TEST_MONGO_ENV)
+    def test_parse_news_preserves_pagination_and_article(self):
+        from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
+
+        spider = Mock(
+            spec=ExtensionsCrawlSpider,
+            name="test",
+            allowed_domains=["example.test"],
+            crawl_urls_list=[],
+            crawl_target_urls=[article(0)],
+            pagination_check=Mock(),
+            settings={"TIMEZONE": UTC},
+            news_crawl_input=SimpleNamespace(crawling_start_time=stamp(0)),
+        )
+        spider.pagination_check.check.return_value = True
+        response = HtmlResponse(
+            article(0),
+            body=b'<a href="/1">Next</a>',
+            encoding="utf-8",
+            request=Request(article(0), meta={"checkpoint_root": article(9)}),
+        )
+        request, item = list(ExtensionsCrawlSpider.parse_news(spider, response))
+        self.assertIsInstance(request, Request)
+        self.assertEqual(request.url, article(1))
+        self.assertEqual(request.meta["checkpoint_root"], article(9))
+        self.assertEqual(item["url"], article(0))
+        self.assertEqual(item["crawling_start_time"], stamp(0))
+
+    @patch.dict(os.environ, TEST_MONGO_ENV)
     def test_test_flag_and_cleanup_when_checkpoint_save_fails(self):
         from news_crawl.spiders.common import spider_closed as module
+        from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
 
-        spider = SimpleNamespace(
+        spider = Mock(
+            spec=ExtensionsCrawlSpider,
             news_crawl_input=SimpleNamespace(crawl_point_non_update=True, crawling_start_time=stamp(0)),
             mongo=Mock(),
             _crawling_domain_control=Mock(),
@@ -231,7 +273,7 @@ class FakeHandler:
         return cls(crawler)
 
     async def download_request(self, request):
-        spider = self.crawler.spider
+        spider = control_spider(self.crawler)
         spider.sent.append((request.url, monotonic()))
         results = spider.responses.setdefault(request.url, [200])
         result = results.pop(0) if len(results) > 1 else results[0]
@@ -268,13 +310,32 @@ class ControlSpider(Spider):
 
     async def start(self):
         for row in self.crawl_urls_list:
-            yield Request(row["loc"], callback=self.parse)
+            yield Request(row["loc"], callback=self.parse_article)
 
-    def parse(self, response):
+    def parse_article(self, response: Response):
         yield {"url": response.url, "fail_save": response.url == self.fail_save}
 
     def closed(self, reason):
         self.safe_point = self._crawl_progress.safe_point(self)
+
+
+def control_spider(crawler: Crawler) -> ControlSpider:
+    """Scrapy が生成したスパイダーがテスト用の型であることを確認する。"""
+    spider = crawler.spider
+    assert isinstance(spider, ControlSpider), "ControlSpider が生成されていません"
+    return spider
+
+
+def crawler_stats(crawler: Crawler) -> StatsCollector:
+    stats = crawler.stats
+    assert stats is not None, "統計情報が初期化されていません"
+    return stats
+
+
+def adaptive_throttle(crawler: Crawler) -> AdaptiveThrottle:
+    throttle = crawler.get_extension(AdaptiveThrottle)
+    assert isinstance(throttle, AdaptiveThrottle), "AdaptiveThrottle が登録されていません"
+    return throttle
 
 
 class IntegrationTests(unittest.IsolatedAsyncioTestCase):
@@ -301,10 +362,10 @@ class IntegrationTests(unittest.IsolatedAsyncioTestCase):
         self.notice.side_effect = RuntimeError("mock Slack failure")
         crawler = await self.run_crawl(responses={article(0): [429, 200]})
         self.notice.assert_called_once()
-        self.assertEqual(crawler.spider.safe_point["latest_lastmod"], stamp(10))
-        self.assertFalse(crawler.get_extension(AdaptiveThrottle).stopped)
+        self.assertEqual(control_spider(crawler).safe_point["latest_lastmod"], stamp(10))
+        self.assertFalse(adaptive_throttle(crawler).stopped)
 
-    async def run_crawl(self, *, settings=None, **kwargs):
+    async def run_crawl(self, *, settings=None, **kwargs) -> Crawler:
         # 外部通信と実DBを使わず、Scrapyのキュー・ミドルウェア・シグナルは実装本体を動かす。
         config = {
             "TWISTED_REACTOR_ENABLED": False,
@@ -343,19 +404,19 @@ class IntegrationTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_429_pauses_already_queued_requests_and_retries(self):
         crawler = await self.run_crawl(responses={article(0): [429, 429, 200]})
-        spider = crawler.spider
+        spider = control_spider(crawler)
         self.assertEqual(spider.safe_point["latest_lastmod"], stamp(10))
         self.assertEqual([round(state["download_delay"], 2) for state in spider._controller.history], [0.02, 0.03])
         for index, (url, sent_at) in enumerate(spider.sent[:-1]):
             if url == article(0) and index < 3:
                 self.assertGreaterEqual(spider.sent[index + 1][1] - sent_at, 0.039)
-        self.assertEqual(crawler.stats.get_value("rate_limit/retries"), 2)
+        self.assertEqual(crawler_stats(crawler).get_value("rate_limit/retries"), 2)
 
     async def test_retry_exhaustion_does_not_send_queued_requests(self):
         crawler = await self.run_crawl(responses={article(1): [429]})
-        self.assertIn(crawler.stats.get_value("finish_reason"), ("rate_limit_retry_exhausted",))
-        self.assertEqual(crawler.spider.safe_point["latest_lastmod"], stamp(0))
-        self.assertEqual(sum(url == article(1) for url, _ in crawler.spider.sent), 3)
+        self.assertIn(crawler_stats(crawler).get_value("finish_reason"), ("rate_limit_retry_exhausted",))
+        self.assertEqual(control_spider(crawler).safe_point["latest_lastmod"], stamp(0))
+        self.assertEqual(sum(url == article(1) for url, _ in control_spider(crawler).sent), 3)
 
     async def test_persisted_delay_and_deadline_are_loaded(self):
         controller = MemoryController(
@@ -363,42 +424,42 @@ class IntegrationTests(unittest.IsolatedAsyncioTestCase):
         )
         start = monotonic()
         crawler = await self.run_crawl(controller=controller)
-        sent = crawler.spider.sent
+        sent = control_spider(crawler).sent
         self.assertGreaterEqual(sent[0][1] - start, 0.07)
         self.assertTrue(all(b[1] - a[1] >= 0.034 for a, b in zip(sent, sent[1:], strict=False)))
         self.assertEqual(controller.history, [])  # 応答遅延による一時的な調整値は永続化しない。
 
     async def test_503_retry_after_waits_without_increasing_floor(self):
         crawler = await self.run_crawl(responses={article(0): [(503, {"Retry-After": "0"}), 200]})
-        self.assertEqual(crawler.spider._controller.state["download_delay"], 0.01)
-        self.assertEqual(crawler.stats.get_value("rate_limit/retries"), 1)
+        self.assertEqual(control_spider(crawler)._controller.state["download_delay"], 0.01)
+        self.assertEqual(crawler_stats(crawler).get_value("rate_limit/retries"), 1)
 
     async def test_503_without_retry_after_uses_standard_retry(self):
         crawler = await self.run_crawl(responses={article(0): [503, 200]})
-        self.assertEqual(crawler.spider._controller.history, [])
-        self.assertEqual(crawler.stats.get_value("retry/count"), 1)
-        self.assertEqual(crawler.spider.safe_point["latest_lastmod"], stamp(10))
+        self.assertEqual(control_spider(crawler)._controller.history, [])
+        self.assertEqual(crawler_stats(crawler).get_value("retry/count"), 1)
+        self.assertEqual(control_spider(crawler).safe_point["latest_lastmod"], stamp(10))
 
     async def test_site_cooldown_does_not_stop_another_crawler(self):
         waiting, normal = await asyncio.gather(
             self.run_crawl(responses={article(0): [429, 200]}, settings={"RATE_LIMIT_COOLDOWN": 0.2}),
             self.run_crawl(),
         )
-        self.assertLess(normal.spider.sent[-1][1], waiting.spider.sent[1][1])
+        self.assertLess(control_spider(normal).sent[-1][1], control_spider(waiting).sent[1][1])
 
     async def test_database_failure_during_backoff_stops_sending(self):
         controller = MemoryController()
         controller.download_control_update = Mock(side_effect=RuntimeError("simulated DB failure"))
         crawler = await self.run_crawl(controller=controller, responses={article(0): [429]})
-        self.assertEqual(crawler.stats.get_value("finish_reason"), "rate_limit_persistence_failed")
-        self.assertEqual(len(crawler.spider.sent), 1)
+        self.assertEqual(crawler_stats(crawler).get_value("finish_reason"), "rate_limit_persistence_failed")
+        self.assertEqual(len(control_spider(crawler).sent), 1)
 
     async def test_persisted_cooldown_beyond_budget_sends_nothing(self):
         controller = MemoryController(
             {"download_delay": 0.01, "retry_after_until": datetime.now(UTC) + timedelta(hours=1)}
         )
         crawler = await self.run_crawl(controller=controller)
-        self.assertEqual(crawler.spider.sent, [])
+        self.assertEqual(control_spider(crawler).sent, [])
 
     async def test_playwright_page_is_closed_before_retry(self):
         crawler = await self.run_crawl()
@@ -412,6 +473,7 @@ class IntegrationTests(unittest.IsolatedAsyncioTestCase):
 
     @patch.dict(os.environ, TEST_MONGO_ENV)
     async def test_mainichi_reads_until_checkpoint_beyond_first_page(self):
+        from news_crawl.news_crawl_input import NewsCrawlInput
         from news_crawl.spiders.common.urls_continued_skip_check import UrlsContinuedSkipCheck
         from news_crawl.spiders.mainichi_jp_crawl import MainichiJpCrawlSpider, base_start_url
         from scrapy.settings import Settings
@@ -423,7 +485,7 @@ class IntegrationTests(unittest.IsolatedAsyncioTestCase):
         spider._crawl_progress = CrawlProgress(previous)
         spider._crawl_point = copy.deepcopy(previous)
         spider.url_continued = UrlsContinuedSkipCheck(previous, base_start_url, True)
-        spider.news_crawl_input = SimpleNamespace(url_pattern=None, crawling_start_time=stamp(0), debug=False)
+        spider.news_crawl_input = NewsCrawlInput(url_pattern=None, crawling_start_time=stamp(0), debug=False)
         spider.all_urls_list = []
         spider.crawl_urls_list = []
         spider.crawl_target_urls = []
@@ -441,21 +503,21 @@ class IntegrationTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_403_and_mongo_save_error_leave_safe_frontier(self):
         crawler = await self.run_crawl(responses={article(1): [403]})
-        self.assertEqual(crawler.spider.safe_point["latest_lastmod"], stamp(0))
-        self.assertEqual(crawler.spider._controller.history, [])
+        self.assertEqual(control_spider(crawler).safe_point["latest_lastmod"], stamp(0))
+        self.assertEqual(control_spider(crawler)._controller.history, [])
         crawler = await self.run_crawl(fail_save=article(1))
-        self.assertEqual(crawler.spider.safe_point["latest_lastmod"], stamp(0))
+        self.assertEqual(control_spider(crawler).safe_point["latest_lastmod"], stamp(0))
 
     async def test_long_retry_after_stops_without_shortening_server_deadline(self):
         crawler = await self.run_crawl(responses={article(0): [(429, {"Retry-After": "3600"})]})
-        self.assertEqual(len(crawler.spider.sent), 1)
+        self.assertEqual(len(control_spider(crawler).sent), 1)
         self.assertGreater(
-            crawler.spider._controller.state["retry_after_until"], datetime.now(UTC) + timedelta(minutes=59)
+            control_spider(crawler)._controller.state["retry_after_until"], datetime.now(UTC) + timedelta(minutes=59)
         )
 
     async def test_autothrottle_floor_changes_by_three_seconds(self):
         crawler = await self.run_crawl()
-        throttle = crawler.get_extension(AdaptiveThrottle)
+        throttle = adaptive_throttle(crawler)
         throttle.base_delay = 9
         slot = Slot(1, 12, False)
         for _ in range(10):
@@ -466,7 +528,9 @@ class IntegrationTests(unittest.IsolatedAsyncioTestCase):
         throttle.base_delay = 3
         throttle.step = 3
         for expected in (6, 9, 12):
-            throttle._response_downloaded(Response(article(0), status=429), Request(article(0)), crawler.spider)
+            throttle._response_downloaded(
+                Response(article(0), status=429), Request(article(0)), control_spider(crawler)
+            )
             self.assertEqual(throttle.base_delay, expected)
 
 

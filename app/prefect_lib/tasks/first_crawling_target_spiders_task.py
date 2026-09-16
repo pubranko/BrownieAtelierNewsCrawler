@@ -31,7 +31,7 @@ def first_crawling_target_spiders_task(mongo: MongoModel) -> list[dict[str, Any]
             spider_name,
         )
 
-        if not spider_name in regular_observation_spider_name_set:
+        if spider_name not in regular_observation_spider_name_set:
             logger.info(f"=== 定期観測に登録がないスパイダーは対象外 : {spider_name}")
         elif len(crawl_point_record):
             logger.info(f"=== クロールポイントがある（既にクロール実績がある）スパイダーは対象外 : {spider_name}")

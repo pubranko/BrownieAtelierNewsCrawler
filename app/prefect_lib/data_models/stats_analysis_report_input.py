@@ -1,10 +1,10 @@
 from copy import deepcopy
 from datetime import date, datetime, time
-from typing import Any, Final, Literal, Optional, Tuple
+from typing import Any, Final
 
 from dateutil.relativedelta import relativedelta
 from prefect_lib.flows import START_TIME
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from shared.settings import TIMEZONE
 
 
@@ -33,7 +33,7 @@ class StatsAnalysisReportConst:
 class StatsAnalysisReportInput(BaseModel):
     report_term: str = Field(..., title="レポート期間")
     totalling_term: str = Field(..., title="集計期間")
-    base_date: Optional[date] = None
+    base_date: date | None = None
 
     def __init__(self, **data: Any):
         """あとで"""
@@ -47,8 +47,9 @@ class StatsAnalysisReportInput(BaseModel):
     ##################################
     # 単項目チェック、省略時の値設定
     ##################################
-    @validator(StatsAnalysisReportConst.REPORT_TERM)
-    def report_term_check(cls, value: str, values: dict) -> str:
+    @field_validator(StatsAnalysisReportConst.REPORT_TERM)
+    @classmethod
+    def report_term_check(cls, value: str) -> str:
         if value:
             assert isinstance(value, str), "文字列型以外がエラー"
             # 本番には3ヶ月以上のデータ残さないからyearlyはいらないかも、、、
@@ -62,8 +63,9 @@ class StatsAnalysisReportInput(BaseModel):
                 raise ValueError("レポート期間の指定ミス。daily, weekly, monthly, yearlyで入力してください。")
         return value
 
-    @validator(StatsAnalysisReportConst.TOTALLING_TERM)
-    def totalling_term_check(cls, value: str, values: dict) -> str:
+    @field_validator(StatsAnalysisReportConst.TOTALLING_TERM)
+    @classmethod
+    def totalling_term_check(cls, value: str) -> str:
         if value:
             assert isinstance(value, str), "文字列型以外がエラー"
             # 本番には3ヶ月以上のデータ残さないからyearlyはいらないかも、、、
@@ -84,7 +86,7 @@ class StatsAnalysisReportInput(BaseModel):
     #####################################
     # カスタマイズデータ
     #####################################
-    def base_date_get(self, start_time: datetime) -> Tuple[datetime, datetime]:
+    def base_date_get(self, start_time: datetime) -> tuple[datetime, datetime]:
         """
         レポート期間(report_term)と基準日(base_date)を基に基準期間(base_date_from, base_date_to)を取得する。
         ※基準日(base_date)=基準期間to(base_date_to)となる。

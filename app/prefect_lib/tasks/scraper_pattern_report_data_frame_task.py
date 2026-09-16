@@ -71,7 +71,7 @@ def scraper_pattern_report_data_frame_task(
 
     # 集計対象のnews_clip_masterが1件もない場合処理を中止する。
     if len(scraper_pattern_report_data.scraper_pattern_counter_df) == 0:
-        logger.warning(f"=== レポート対象のレコードがないため処理をスキップします。")
+        logger.warning("=== レポート対象のレコードがないため処理をスキップします。")
         raise ValueError
 
     # データフレーム（カウント用）とデータフレーム（マスター）を使用し、

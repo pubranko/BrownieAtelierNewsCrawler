@@ -1,8 +1,9 @@
 from datetime import datetime
 
+from prefect_lib.data_models.scraper_pattern_report_input import ScraperPatternReportConst
+
 # from prefect.testing.utilities import prefect_test_harness
 from prefect_lib.flows.scraper_pattern_report_flow import scraper_pattern_report_flow
-from prefect_lib.data_models.scraper_pattern_report_input import ScraperPatternReportConst
 from shared.settings import TIMEZONE
 
 

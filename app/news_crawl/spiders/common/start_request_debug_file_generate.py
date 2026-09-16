@@ -3,9 +3,10 @@ import sys
 from collections.abc import Iterable
 from typing import Final
 
-path = os.getcwd()
-sys.path.append(path)
+sys.path.append(os.getcwd())
 from shared.settings import DATA__DEBUG_FILE_DIR
+
+path = os.getcwd()
 
 LASTMOD: Final[str] = "lastmod"
 LOC: Final[str] = "loc"

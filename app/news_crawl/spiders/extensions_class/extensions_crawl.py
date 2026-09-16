@@ -21,7 +21,7 @@ from news_crawl.spiders.common.pagination_check import PaginationCheck
 from news_crawl.spiders.common.spider_closed import spider_closed
 from news_crawl.spiders.common.spider_init import spider_init
 from news_crawl.spiders.common.urls_continued_skip_check import UrlsContinuedSkipCheck
-from scrapy.http import TextResponse
+from scrapy.http import Response, TextResponse
 from scrapy.spiders import CrawlSpider
 
 
@@ -179,10 +179,13 @@ class ExtensionsCrawlSpider(CrawlSpider):
         """
         return ()
 
-    def parse_news(self, response: TextResponse):
+    def parse_news(self, response: Response):
         """(拡張メソッド)
         取得したレスポンスよりDBへ書き込み
         """
+        if not isinstance(response, TextResponse):
+            raise TypeError(f"parse_news requires a TextResponse: {response.url}")
+
         urls: set = set()
         req: list = []
         # ページ内の全リンクを抽出（重複分はsetで削除）
@@ -194,15 +197,18 @@ class ExtensionsCrawlSpider(CrawlSpider):
                 urls.add(link_url)
 
         for url in urls:
-            req.append(scrapy.Request(
-                url=url, callback=self.parse_news,
-                meta={
-                    # 後続ページの未保存も元記事の未完了として判定できるよう、親 URL を引き継ぐ。
-                    "checkpoint_root": response.meta.get(
-                        "checkpoint_root", response.meta.get("progress_url", response.url)
-                    )
-                },
-            ))
+            req.append(
+                scrapy.Request(
+                    url=url,
+                    callback=self.parse_news,
+                    meta={
+                        # 後続ページの未保存も元記事の未完了として判定できるよう、親 URL を引き継ぐ。
+                        "checkpoint_root": response.meta.get(
+                            "checkpoint_root", response.meta.get("progress_url", response.url)
+                        )
+                    },
+                )
+            )
         yield from req
 
         # クロール時のスパイダーのバージョン情報を記録 ( ex: 'jp_reuters_com_crawl:1.0 / extensions_crawl:1.0' )

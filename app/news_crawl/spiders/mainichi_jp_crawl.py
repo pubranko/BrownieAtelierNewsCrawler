@@ -39,8 +39,7 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
             "#article-list > ul > li > a > div > div.articlelist-detail > div > span.articletag-date"
         ).all_inner_texts()
         return [
-            {"link": link, "lastmod": parser.parse(lastmod)}
-            for link, lastmod in zip(links, lastmods, strict=False)
+            {"link": link, "lastmod": parser.parse(lastmod)} for link, lastmod in zip(links, lastmods, strict=False)
         ]
 
     async def _load_until(self, page: Page, item_count: int) -> None:
@@ -67,10 +66,14 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
                 extracts = await self._extract(page)
                 if continued or page_number >= self.page_from:
                     # 追加表示された一覧を 20 件単位で記録し、未取得記事より古い再開の目印を選べるようにする。
-                    self._crawl_progress.record_listing(base_start_url, page_number, [
-                        {"loc": urllib.parse.unquote(response.urljoin(row["link"])), "lastmod": row["lastmod"]}
-                        for row in extracts[20 * (page_number - 1) : 20 * page_number]
-                    ])
+                    self._crawl_progress.record_listing(
+                        base_start_url,
+                        page_number,
+                        [
+                            {"loc": urllib.parse.unquote(response.urljoin(row["link"])), "lastmod": row["lastmod"]}
+                            for row in extracts[20 * (page_number - 1) : 20 * page_number]
+                        ],
+                    )
                     for extract in extracts[20 * (page_number - 1) : 20 * page_number]:
                         url = urllib.parse.unquote(response.urljoin(extract["link"]))
                         self.all_urls_list.append({debug_file__LOC: url, debug_file__LASTMOD: extract["lastmod"]})
@@ -78,11 +81,13 @@ class MainichiJpCrawlSpider(ExtensionsCrawlSpider):
                             continue
                         if url_pattern_skip_check(url, self.news_crawl_input.url_pattern):
                             continue
-                        self.crawl_urls_list.append({
-                            self.CRAWL_URLS_LIST__LOC: url,
-                            self.CRAWL_URLS_LIST__LASTMOD: extract["lastmod"],
-                            self.CRAWL_URLS_LIST__SOURCE_URL: page.url,
-                        })
+                        self.crawl_urls_list.append(
+                            {
+                                self.CRAWL_URLS_LIST__LOC: url,
+                                self.CRAWL_URLS_LIST__LASTMOD: extract["lastmod"],
+                                self.CRAWL_URLS_LIST__SOURCE_URL: page.url,
+                            }
+                        )
                         self.crawl_target_urls.append(url)
                         yield scrapy.Request(url, callback=cast(Callable, self.parse_news))
                 if continued and self.url_continued.skip_flg:

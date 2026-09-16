@@ -348,22 +348,22 @@ class ExtensionsSitemapSpider(SitemapSpider):
                 urls.add(link_url)
 
         for url in urls:
-            req.append(scrapy.Request(
-                url=url, callback=cast(Callable, self.parse),
-                meta={
-                    # 後続ページの未保存も元記事の未完了として判定できるよう、親 URL を引き継ぐ。
-                    "checkpoint_root": response.meta.get(
-                        "checkpoint_root", response.meta.get("progress_url", response.url)
-                    )
-                },
-            ))
+            req.append(
+                scrapy.Request(
+                    url=url,
+                    callback=cast(Callable, self.parse),
+                    meta={
+                        # 後続ページの未保存も元記事の未完了として判定できるよう、親 URL を引き継ぐ。
+                        "checkpoint_root": response.meta.get(
+                            "checkpoint_root", response.meta.get("progress_url", response.url)
+                        )
+                    },
+                )
+            )
         yield from req
 
         # クロール時のスパイダーのバージョン情報を記録 ( ex: 'sankei_com_sitemap:1.0 / extensions_sitemap:1.0' )
-        _info = (
-            f"{self.name}:{self._spider_version} / "
-            f"{self.EXTENSIONS_SITEMAP}:{self._extensions_sitemap_version}"
-        )
+        _info = f"{self.name}:{self._spider_version} / {self.EXTENSIONS_SITEMAP}:{self._extensions_sitemap_version}"
 
         source_of_information: dict = {}
         for record in self.crawl_urls_list:

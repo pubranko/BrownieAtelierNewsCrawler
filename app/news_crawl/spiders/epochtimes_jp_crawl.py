@@ -49,9 +49,11 @@ class EpochtimesJpCrawlSpider(ExtensionsCrawlSpider):
         page_segment = urllib.parse.urlparse(original_url).path.rstrip("/").rsplit("/", 1)[-1]
         page_number = self.page if continued else (int(page_segment) if page_segment.isdigit() else self.page_from)
         # スキップ判定前の一覧をページ番号付きで保持し、途中失敗時の再開用 URL 群の選択に使う。
-        self._crawl_progress.record_listing(base_start_url, page_number, [
-            {"loc": urllib.parse.unquote(response.urljoin(link)), "lastmod": ""} for link in links
-        ])
+        self._crawl_progress.record_listing(
+            base_start_url,
+            page_number,
+            [{"loc": urllib.parse.unquote(response.urljoin(link)), "lastmod": ""} for link in links],
+        )
         self.logger.info("=== ページ内の記事件数 = %s", len(links))
         if len(links) != self.ITEMS_ON_PAGE_COUNT:
             self.logger.warning("=== 1ページ内で取得できた件数が想定の30件と異なる。確認要。 (%s 件)", len(links))

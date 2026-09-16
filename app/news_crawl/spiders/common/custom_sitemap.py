@@ -27,7 +27,6 @@ class CustomSitemap:
         self.spider = spider
 
     def __iter__(self):
-        self._root
         for elem in self._root.getchildren():
             d = {}
             for el in elem.getchildren():
@@ -55,7 +54,7 @@ class CustomSitemap:
                             "news:publication_date",
                             namespaces={"news": "http://www.google.com/schemas/sitemap-news/0.9"},
                         )
-                        if publication_date == None:
+                        if publication_date is None:
                             publication_date: _Element = el.find(
                                 "news:publication_date",
                                 namespaces={"news": "https://www.google.com/schemas/sitemap-news/0.9"},

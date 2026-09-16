@@ -34,11 +34,12 @@ def regular_observation_task(mongo: MongoModel) -> list[dict[str, Any]]:
         domain = spider_info[directory_search_spiders.DOMAIN]
         if domain in stop_domain:
             logger.info(f"=== Stop domainの指定によりクロール中止 : ドメイン({domain}) : spider_name({spider_name})")
-        elif not spider_name in spider_name_set:
+        elif spider_name not in spider_name_set:
             logger.info(f"=== 定期観測に登録がないスパイダーは対象外 : ドメイン({domain}) : spider_name({spider_name})")
         elif len(crawl_point_record) == 0:
             logger.info(
-                f"=== クロールポイントがない（初回未実行）スパイダーは対象外 : ドメイン({domain}) : spider_name({spider_name})"
+                f"=== クロールポイントがない（初回未実行）スパイダーは対象外 : ドメイン"
+                f"({domain}) : spider_name({spider_name})"
             )
         else:
             crawling_target_spiders.append(spider_info)

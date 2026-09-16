@@ -1,5 +1,5 @@
 import re
-from logging import Logger, LoggerAdapter
+from logging import LoggerAdapter
 from urllib.parse import ParseResult, parse_qs, urlparse
 
 
@@ -39,7 +39,7 @@ class PaginationCheck:
             # netloc（hostnameだけでなくportも含む）が一致すること
             if crawl_target_parse.netloc == link_parse.netloc:
                 # まだ同一ページの追加リクエストされていない場合（path部分で判定）
-                if not link_parse.path in pagination_selected_pathes:
+                if link_parse.path not in pagination_selected_pathes:
                     # パスの末尾にページが付与されているケースの場合、追加リクエストの対象とする。
                     # 例）https://www.sankei.com/article/20210321-VW5B7JJG7JKCBG5J6REEW6ZTBM/
                     #     https://www.sankei.com/article/20210321-VW5B7JJG7JKCBG5J6REEW6ZTBM/2/

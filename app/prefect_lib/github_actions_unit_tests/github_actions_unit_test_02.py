@@ -25,13 +25,13 @@ def test_exec():
             "mainichi_jp_crawl",
             "nikkei_com_crawl",
         ],
-        spider_kwargs=dict(
-            debug=True,
-            page_span_from=2,
-            page_span_to=2,
-            lastmod_term_minutes_from=120,
-            lastmod_term_minutes_to=60,
-        ),
+        spider_kwargs={
+            "debug": True,
+            "page_span_from": 2,
+            "page_span_to": 2,
+            "lastmod_term_minutes_from": 120,
+            "lastmod_term_minutes_to": 60,
+        },
         following_processing_execution=True,  # 後続処理実行(scrapying,news_clip_masterへの登録,solrへの登録)
     )
 

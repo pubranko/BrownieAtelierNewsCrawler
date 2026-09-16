@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from BrownieAtelierMongo.collection_models.asynchronous_report_model import AsynchronousReportModel
 from BrownieAtelierMongo.collection_models.crawler_response_model import CrawlerResponseModel
@@ -13,9 +13,9 @@ from prefect_lib.flows import START_TIME
 @task(cache_policy=NO_CACHE)
 def sync_check_news_clip_master_task(
     mongo: MongoModel,
-    domain: Optional[str],
-    start_time_from: Optional[datetime],
-    start_time_to: Optional[datetime],
+    domain: str | None,
+    start_time_from: datetime | None,
+    start_time_to: datetime | None,
     response_sync_list: list,
 ):
     """crawler_responseの結果news_clip_masterとの同期チェック"""
@@ -45,7 +45,7 @@ def sync_check_news_clip_master_task(
 
         # news_clip_master側に存在しないcrawler_responseがある場合
         if news_clip_master.count(filter=master_filter) == 0:
-            if not CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER in response_sync:
+            if CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER not in response_sync:
                 master_async_list.append(response_sync[CrawlerResponseModel.URL])
 
                 # 非同期ドメイン集計カウントアップ

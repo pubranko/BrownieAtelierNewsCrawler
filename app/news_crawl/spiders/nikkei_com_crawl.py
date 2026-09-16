@@ -78,9 +78,11 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
         # ※1ページ目と２ページ目以降でリンクを抽出するcssセレクターが異なるため以下のように操作
         links: list[str] = response.css(self.ARTICLE_LINK_SELECTOR).getall()
         # スキップ判定前の並びを保持し、途中失敗時に未取得記事より古い URL を再開の目印にする。
-        self._crawl_progress.record_listing(base_start_url, self.page, [
-            {"loc": urllib.parse.unquote(response.urljoin(link)), "lastmod": ""} for link in links
-        ])
+        self._crawl_progress.record_listing(
+            base_start_url,
+            self.page,
+            [{"loc": urllib.parse.unquote(response.urljoin(link)), "lastmod": ""} for link in links],
+        )
         self.logger.info(f"=== ページ内の記事件数 = {len(links)}")
         # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
         if not len(links) == self.ITEMS_ON_PAGE_COUNT:
@@ -154,9 +156,11 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
         original_url = response.meta.get("progress_url", response.url)
         page_number = int(urllib.parse.parse_qs(urllib.parse.urlparse(original_url).query).get("page", ["1"])[0])
         # 応答の到着順ではなくページ番号で一覧を復元し、安全な再開用 URL 群を選べるようにする。
-        self._crawl_progress.record_listing(base_start_url, page_number, [
-            {"loc": urllib.parse.unquote(response.urljoin(link)), "lastmod": ""} for link in links
-        ])
+        self._crawl_progress.record_listing(
+            base_start_url,
+            page_number,
+            [{"loc": urllib.parse.unquote(response.urljoin(link)), "lastmod": ""} for link in links],
+        )
         self.logger.info(f"=== ページ内の記事件数 = {len(links)}")
         # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
         if not len(links) == self.ITEMS_ON_PAGE_COUNT:

@@ -1,8 +1,5 @@
-from datetime import datetime
-
 # from prefect.testing.utilities import prefect_test_harness
 # from prefect_lib.flow.solr_news_clip_save_flow import flow
-from shared.settings import TIMEZONE
 
 
 def test_exec():

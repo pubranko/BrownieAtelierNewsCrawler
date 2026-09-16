@@ -84,7 +84,7 @@ def _(pprint, publish_date_scraper, scrape_parm, soup: bs4):
     #     scraper='article_scraper',
     #     scrape_parm=scrape_parm,
     # )
-    pprint(f'=== result === \n{result}')
+    pprint(f"=== result === \n{result}")
     return
 
 

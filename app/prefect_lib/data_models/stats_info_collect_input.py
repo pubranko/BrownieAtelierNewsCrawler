@@ -1,5 +1,5 @@
 from datetime import date, datetime, time
-from typing import Any, Final, Literal, Optional, Tuple
+from typing import Any, Final
 
 from dateutil.relativedelta import relativedelta
 from pydantic import BaseModel
@@ -10,7 +10,7 @@ CONST__BASE_DATE: Final[str] = "base_date"
 
 
 class StatsInfoCollectInput(BaseModel):
-    base_date: Optional[date] = None
+    base_date: date | None = None
 
     def __init__(self, **data: Any):
         """あとで"""
@@ -31,7 +31,7 @@ class StatsInfoCollectInput(BaseModel):
     #####################################
     # カスタマイズデータ
     #####################################
-    def base_date_get(self, start_time) -> Tuple[datetime, datetime]:
+    def base_date_get(self, start_time) -> tuple[datetime, datetime]:
         """
         レポート期間(report_term)と基準日(base_date)を基に基準期間(base_date_from, base_date_to)を取得する。
         ※基準日(base_date)=基準期間to(base_date_to)となる。

@@ -12,9 +12,9 @@ def login_info_get(path: str = settings.DATA__LOGIN_INFO, file: str = settings.D
     """
     full_path = os.path.join(path, file)
     try:
-        with open(full_path, "r") as yml:
+        with open(full_path) as yml:
             config: Any = yaml.safe_load(yml)
-    except Exception as e:
+    except Exception:
         # raise Exception(f'指定したYAMLファイルがありません。path = {path}, file = {file}')
         pass
     else:

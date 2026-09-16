@@ -1,9 +1,7 @@
 import os
 from datetime import date, datetime, time
 
-from dateutil.relativedelta import relativedelta
 from prefect import get_run_logger, task
-from prefect_lib.flows import START_TIME
 from shared.settings import DATA__BACKUP_BASE_DIR, TIMEZONE
 
 
@@ -16,7 +14,8 @@ def mongo_common_task(
 ) -> tuple[str, datetime, datetime]:
     """
     mongoDBのコレクションよりimport/exportを行うための前処理を実行する。
-    ①import/export先のフォルダ名の生成  ex) prefix_yyyy-mm_yyyy-mm_suffix, prefix_yyyy-mm_yyyy-mm, yyyy-mm_yyyy-mm_suffix, yyyy-mm_yyyy-mm
+    ①import/export先のフォルダ名の生成  ex) prefix_yyyy-mm_yyyy-mm_suffix, prefix_yyyy-mm_yyyy-mm,
+    yyyy-mm_yyyy-mm_suffix, yyyy-mm_yyyy-mm
     ②exportを行う範囲の日時を生成
     """
     logger = get_run_logger()  # PrefectLogAdapter

@@ -1,8 +1,8 @@
 from datetime import datetime
-from typing import Any, Final, Literal, Optional, Tuple
+from typing import Any, Final
 
 from dateutil.relativedelta import relativedelta
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 
 ############################################
@@ -27,7 +27,7 @@ class ScraperPatternReportInput(BaseModel):
 
     start_time: datetime = Field(..., title="開始時間")
     report_term: str = Field(..., title="レポート期間")
-    base_date: Optional[datetime] = None
+    base_date: datetime | None = None
 
     def __init__(self, **data: Any):
         """
@@ -43,14 +43,16 @@ class ScraperPatternReportInput(BaseModel):
     ##################################
     # 単項目チェック、省略時の値設定
     ##################################
-    @validator(ScraperPatternReportConst.START_TIME)
-    def start_time_check(cls, value: datetime, values: dict) -> datetime:
+    @field_validator(ScraperPatternReportConst.START_TIME)
+    @classmethod
+    def start_time_check(cls, value: datetime) -> datetime:
         if value:
             assert isinstance(value, datetime), "日付型以外がエラー"
         return value
 
-    @validator(ScraperPatternReportConst.REPORT_TERM)
-    def report_term_check(cls, value: str, values: dict) -> str:
+    @field_validator(ScraperPatternReportConst.REPORT_TERM)
+    @classmethod
+    def report_term_check(cls, value: str) -> str:
         if value:
             assert isinstance(value, str), "文字列型以外がエラー"
             # 本番には3ヶ月以上のデータ残さないからyearlyはいらないかも、、、
@@ -61,12 +63,16 @@ class ScraperPatternReportInput(BaseModel):
                 ScraperPatternReportConst.REPORT_TERM__YEARLY,
             ]:
                 raise ValueError(
-                    f"レポート期間の指定ミス。{ScraperPatternReportConst.REPORT_TERM__DAILY}, {ScraperPatternReportConst.REPORT_TERM__WEEKLY}, {ScraperPatternReportConst.REPORT_TERM__MONTHLY}, {ScraperPatternReportConst.REPORT_TERM__YEARLY}で入力してください。"
+                    f"レポート期間の指定ミス。{ScraperPatternReportConst.REPORT_TERM__DAILY}, "
+                    f"{ScraperPatternReportConst.REPORT_TERM__WEEKLY}, "
+                    f"{ScraperPatternReportConst.REPORT_TERM__MONTHLY}, "
+                    f"{ScraperPatternReportConst.REPORT_TERM__YEARLY}で入力してください。"
                 )
         return value
 
-    @validator(ScraperPatternReportConst.BASE_DATE)
-    def base_date_check(cls, value: Optional[datetime], values: dict) -> Optional[datetime]:
+    @field_validator(ScraperPatternReportConst.BASE_DATE)
+    @classmethod
+    def base_date_check(cls, value: datetime | None) -> datetime | None:
         if value:
             assert isinstance(value, datetime), "日時型以外がエラー"
         return value
@@ -78,7 +84,7 @@ class ScraperPatternReportInput(BaseModel):
     #####################################
     # カスタマイズデータ
     #####################################
-    def base_date_get(self) -> Tuple[datetime, datetime]:
+    def base_date_get(self) -> tuple[datetime, datetime]:
         """
         レポート期間(report_term)と基準日(base_date)を基に基準期間(base_date_from, base_date_to)を取得する。
         ※基準日(base_date)=基準期間to(base_date_to)となる。

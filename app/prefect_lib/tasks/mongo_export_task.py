@@ -1,10 +1,9 @@
-import os
 import gzip
-import shutil
+import os
 from datetime import datetime
 from typing import Any
-import bson
 
+import bson
 from BrownieAtelierMongo.collection_models.asynchronous_report_model import AsynchronousReportModel
 from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
@@ -17,7 +16,6 @@ from prefect import get_run_logger, task
 from prefect.cache_policies import NO_CACHE
 from prefect_lib.flows import START_TIME
 from pymongo import ASCENDING
-from pymongo.cursor import Cursor
 
 
 @task(cache_policy=NO_CACHE)
@@ -32,7 +30,8 @@ def mongo_export_task(
     """ """
     logger = get_run_logger()  # PrefectLogAdapter
     logger.info(
-        f"=== 引数 : dir_path={dir_path} collections_name= {collections_name} period_from~to= {period_from} ~ {period_to}"
+        f"=== 引数 : dir_path = {dir_path} collections_name = {collections_name} "
+        f"period_from~to= {period_from} ~ {period_to}"
     )
 
     # バックアップフォルダ直下に基準年月ごとのフォルダを作る。
@@ -44,7 +43,7 @@ def mongo_export_task(
         os.mkdir(dir_path)
 
     # タイムスタンプをファイル名にした空ファイルを作成。
-    with open(f"{os.path.join(dir_path, START_TIME.isoformat())}", "w") as f:
+    with open(f"{os.path.join(dir_path, START_TIME.isoformat())}", "w"):
         pass
 
     for collection_name in collections_name:
@@ -63,7 +62,9 @@ def mongo_export_task(
             if crawler_response__registered:
                 conditions.append(
                     {
-                        CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER: CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER__COMPLETE
+                        CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER: (
+                            CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER__COMPLETE
+                        )
                     }
                 )  # crawler_responseの場合、登録完了のレコードのみ保存する。
 

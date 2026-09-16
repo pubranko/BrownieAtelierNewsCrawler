@@ -27,7 +27,7 @@ def manual_crawling_target_spiders_task(
     # 引数より渡されたスパイダーの一覧が、spidersディレクトリより取得した一覧に存在するかチェック
     args_spiders_name = set(spider_names)
     for args_spider_name in args_spiders_name:
-        if not args_spider_name in spiders_name_list:
+        if args_spider_name not in spiders_name_list:
             error_spider_names.append(args_spider_name)
     # 引数で渡されたスパイダーが存在しなかった場合、エラー情報をログに出力して停止させる
     if len(error_spider_names):

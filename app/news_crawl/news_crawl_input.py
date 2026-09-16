@@ -1,9 +1,9 @@
 from datetime import datetime
-from typing import Any, Final, Optional, Tuple
+from typing import Any, Final
 from urllib.parse import urlparse
 
 from news_crawl.settings import TIMEZONE
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 #####################################################################################
 # 定数 (news_crawlの引数)
@@ -41,29 +41,30 @@ class NewsCrawlInput(BaseModel):
     crawling_start_time: datetime = Field(datetime.now().astimezone(TIMEZONE), title="クロール開始時間")
 
     # クロール対象・範囲を指定する任意引数
-    lastmod_term_minutes_from: Optional[int] = Field(None, title="最終更新期間(分)From")
-    lastmod_term_minutes_to: Optional[int] = Field(None, title="最終更新期間(分)To")
-    page_span_from: Optional[int] = Field(None, title="ページ範囲")
-    page_span_to: Optional[int] = Field(None, title="ページ範囲")
-    continued: Optional[bool] = Field(None, title="続きから再開")
-    direct_crawl_urls: Optional[list[str]] = Field(None, title="直接クロールするURLリスト")
-    url_pattern: Optional[str] = Field(None, title="URLパターンによる絞り込み")
+    lastmod_term_minutes_from: int | None = Field(None, title="最終更新期間(分)From")
+    lastmod_term_minutes_to: int | None = Field(None, title="最終更新期間(分)To")
+    page_span_from: int | None = Field(None, title="ページ範囲")
+    page_span_to: int | None = Field(None, title="ページ範囲", validate_default=True)
+    continued: bool | None = Field(None, title="続きから再開")
+    direct_crawl_urls: list[str] | None = Field(None, title="直接クロールするURLリスト")
+    url_pattern: str | None = Field(None, title="URLパターンによる絞り込み")
 
     def __init__(self, **data: Any):
         super().__init__(**data)
 
     """
     クラス変数側の定義順にチェックされる。
-    valuesにはチェック済みの値のみが入るため順序は重要。(単項目チェック、関連項目チェックの順で定義するのが良さそう。)
-    値がNoneの場合、以下のチェックは動かない。Noneでも動かす場合、「always=True」指定で動かすことができる。例）@validator('aaa', always=True)
-    通常上記の型チェックが先に動く。型チェックの前に動かすには「pre=True」指定で動かすことができる。例）@validator('aaa', pre=True, always=True)
+    info.data には先に検証済みのフィールドが入るため、定義順に注意する。
+    省略されたデフォルト値も検証する場合は Field(validate_default=True) を指定する。
+    型変換前に検証する場合は field_validator(..., mode="before") を使う。
     """
 
     ##################################
     # 単項目チェック
     ##################################continued
-    @validator(NewsCrawlInputConst.DIRECT_CRAWL_URLS)
-    def start_time_check(cls, value: list[str], values: dict) -> list[str]:
+    @field_validator(NewsCrawlInputConst.DIRECT_CRAWL_URLS)
+    @classmethod
+    def start_time_check(cls, value: list[str]) -> list[str] | None:
         if value:
             for url in value:
                 parsed_url = urlparse(url)
@@ -72,25 +73,32 @@ class NewsCrawlInput(BaseModel):
                 )
         return value
 
-    @validator(NewsCrawlInputConst.LASTMOD_TERM_MINUTES_TO)
-    def lastmod_term_minutes_to_check(cls, value: int, values: dict) -> int:
-        if value and values[NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM]:
-            assert value <= values[NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM], (
-                f"引数エラー : {NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM} と {NewsCrawlInputConst.LASTMOD_TERM_MINUTES_TO} は、from > toで指定してください。from({values[NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM]}) : to({value})）"
+    @field_validator(NewsCrawlInputConst.LASTMOD_TERM_MINUTES_TO)
+    @classmethod
+    def lastmod_term_minutes_to_check(cls, value: int | None, info: ValidationInfo) -> int | None:
+        if value and info.data[NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM]:
+            assert value <= info.data[NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM], (
+                f"引数エラー : {NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM} と "
+                f"{NewsCrawlInputConst.LASTMOD_TERM_MINUTES_TO} は、from > toで指定してください。"
+                f"from({info.data[NewsCrawlInputConst.LASTMOD_TERM_MINUTES_FROM]}) : to({value})）"
             )
         return value
 
-    @validator(NewsCrawlInputConst.PAGE_SPAN_TO, always=True)
-    def page_span_to_check(cls, value: int, values: dict) -> int:
-        assert (values[NewsCrawlInputConst.PAGE_SPAN_FROM] and value) or (
-            not values[NewsCrawlInputConst.PAGE_SPAN_FROM] and not value
+    @field_validator(NewsCrawlInputConst.PAGE_SPAN_TO)
+    @classmethod
+    def page_span_to_check(cls, value: int | None, info: ValidationInfo) -> int | None:
+        assert (info.data[NewsCrawlInputConst.PAGE_SPAN_FROM] and value) or (
+            not info.data[NewsCrawlInputConst.PAGE_SPAN_FROM] and not value
         ), (
-            f"引数エラー : {NewsCrawlInputConst.PAGE_SPAN_FROM} と {NewsCrawlInputConst.PAGE_SPAN_TO} は同時に指定してください。"
+            f"引数エラー : {NewsCrawlInputConst.PAGE_SPAN_FROM} と "
+            f"{NewsCrawlInputConst.PAGE_SPAN_TO} は同時に指定してください。"
         )
 
-        if value and values[NewsCrawlInputConst.PAGE_SPAN_FROM]:
-            assert value >= values[NewsCrawlInputConst.PAGE_SPAN_FROM], (
-                f"引数エラー : {NewsCrawlInputConst.PAGE_SPAN_FROM}と{NewsCrawlInputConst.PAGE_SPAN_TO}はfrom ≦ toで指定してください。from({values[NewsCrawlInputConst.PAGE_SPAN_FROM]}) : to({value})）"
+        if value and info.data[NewsCrawlInputConst.PAGE_SPAN_FROM]:
+            assert value >= info.data[NewsCrawlInputConst.PAGE_SPAN_FROM], (
+                f"引数エラー : {NewsCrawlInputConst.PAGE_SPAN_FROM}と"
+                f"{NewsCrawlInputConst.PAGE_SPAN_TO}はfrom ≦ toで指定してください。"
+                f"from({info.data[NewsCrawlInputConst.PAGE_SPAN_FROM]}) : to({value})）"
             )
 
         return value
@@ -101,20 +109,20 @@ class NewsCrawlInput(BaseModel):
 
 
 if __name__ == "__main__":
-    params = dict(
-        crawling_start_time=datetime(2022, 10, 1, 0, 0, 10),
-        debug=True,
-        crawl_point_non_update=False,
-        lastmod_term_minutes_from=60,
-        lastmod_term_minutes_to=0,
-        page_span_from=2,
-        page_span_to=3,
-        continued=False,
-        direct_crawl_urls=["https://yahoo.co.jp"],
-        url_pattern="topic",
-        aaaaa="bbbbb",  # 関係無い項目は無視される。
+    params = {
+        "crawling_start_time": datetime(2022, 10, 1, 0, 0, 10),
+        "debug": True,
+        "crawl_point_non_update": False,
+        "lastmod_term_minutes_from": 60,
+        "lastmod_term_minutes_to": 0,
+        "page_span_from": 2,
+        "page_span_to": 3,
+        "continued": False,
+        "direct_crawl_urls": ["https://yahoo.co.jp"],
+        "url_pattern": "topic",
+        "aaaaa": "bbbbb",  # 関係無い項目は無視される。
         # CONST_CRAWLING_START_TIME='jko;jkl;jkl;'
-    )
+    }
     a = NewsCrawlInput(**params)
 
     print(a.debug)

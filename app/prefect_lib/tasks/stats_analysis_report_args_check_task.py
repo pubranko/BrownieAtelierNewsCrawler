@@ -1,5 +1,4 @@
 from datetime import date
-from typing import Optional
 
 from prefect import get_run_logger, task
 from prefect_lib.data_models.stats_analysis_report_input import StatsAnalysisReportInput
@@ -9,7 +8,7 @@ from pydantic import ValidationError
 
 @task
 def stats_analysis_report_args_check_task(
-    report_term: str, totalling_term: str, base_date: Optional[date] = None
+    report_term: str, totalling_term: str, base_date: date | None = None
 ) -> StatsAnalysisReportInput:
     """
     ・入力（Flowの引数）のバリデーションチェック。
@@ -28,7 +27,7 @@ def stats_analysis_report_args_check_task(
         )
     except ValidationError as e:
         logger.error(f"=== バリデーションエラー: {e.errors()}")
-        raise ValueError()
+        raise ValueError() from e
 
     logger.info(f"=== 基準日from ~ to : {stats_analysis_report_input.base_date_get(START_TIME)}")
 

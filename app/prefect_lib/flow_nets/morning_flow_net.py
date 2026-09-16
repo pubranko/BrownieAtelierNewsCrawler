@@ -1,31 +1,29 @@
-from typing import Optional
 from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
-from prefect import flow, get_run_logger
 
-from shared.settings import TIMEZONE
-from prefect_lib.flows.crawl_sync_check_flow import crawl_sync_check_flow
-from prefect_lib.flows.mongo_delete_selector_flow import mongo_delete_selector_flow
-from prefect_lib.flows.stats_info_collect_flow import stats_info_collect_flow
-from prefect_lib.flows.stats_analysis_report_flow import stats_analysis_report_flow
-from prefect_lib.flows.scraper_pattern_report_flow import scraper_pattern_report_flow
-from prefect_lib.flows.mongo_export_selector_flow import mongo_export_selector_flow
-from prefect_lib.data_models.scraper_pattern_report_input import ScraperPatternReportConst
-from prefect_lib.data_models.stats_analysis_report_input import StatsAnalysisReportConst
-from prefect_lib.tasks.container_end_task import container_end_task
-
-from BrownieAtelierMongo.collection_models.scraped_from_response_model import ScrapedFromResponseModel
 from BrownieAtelierMongo.collection_models.asynchronous_report_model import AsynchronousReportModel
 from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
 from BrownieAtelierMongo.collection_models.crawler_response_model import CrawlerResponseModel
 from BrownieAtelierMongo.collection_models.news_clip_master_model import NewsClipMasterModel
+from BrownieAtelierMongo.collection_models.scraped_from_response_model import ScrapedFromResponseModel
 from BrownieAtelierMongo.collection_models.stats_info_collect_model import StatsInfoCollectModel
+from dateutil.relativedelta import relativedelta
+from prefect import flow, get_run_logger
+from prefect_lib.data_models.scraper_pattern_report_input import ScraperPatternReportConst
+from prefect_lib.data_models.stats_analysis_report_input import StatsAnalysisReportConst
+from prefect_lib.flows.crawl_sync_check_flow import crawl_sync_check_flow
+from prefect_lib.flows.mongo_delete_selector_flow import mongo_delete_selector_flow
+from prefect_lib.flows.mongo_export_selector_flow import mongo_export_selector_flow
+from prefect_lib.flows.scraper_pattern_report_flow import scraper_pattern_report_flow
+from prefect_lib.flows.stats_analysis_report_flow import stats_analysis_report_flow
+from prefect_lib.flows.stats_info_collect_flow import stats_info_collect_flow
+from prefect_lib.tasks.container_end_task import container_end_task
+from shared.settings import TIMEZONE
 
 
 @flow(name="Morning Flow Net")
 def morning_flow_net(
-    base_datetime: Optional[datetime] = None,  # 基準日
+    base_datetime: datetime | None = None,  # 基準日
 ):
     logger = get_run_logger()  # PrefectLogAdapter
 
@@ -76,7 +74,9 @@ def morning_flow_net(
         suffix="",
         period_date_from=yestaday.date(),  # 1日前
         period_date_to=yestaday.date(),  # １日前
-        crawler_response__registered=True,  # crawler_responseの場合、登録済みになったレコードのみエクスポートする場合True、登録済み以外のレコードも含めてエクスポートする場合False
+        # crawler_responseの場合、登録済みになったレコードのみエクスポートする場合True
+        # 、登録済み以外のレコードも含めてエクスポートする場合False
+        crawler_response__registered=True,
     )
 
     # 週次・月次：フロー用に曜日、日付を定義

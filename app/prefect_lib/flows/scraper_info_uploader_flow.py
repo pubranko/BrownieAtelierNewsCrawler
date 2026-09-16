@@ -19,7 +19,9 @@ mongoDBのインポートを行う。
     flow_run_name="Scraper info uploader flow run",
 )
 # @common_flow
-def scraper_info_by_domain_flow(scraper_info_by_domain_files: list = []):
+def scraper_info_by_domain_flow(scraper_info_by_domain_files: list | None = None):
+    if scraper_info_by_domain_files is None:
+        scraper_info_by_domain_files = []
     init_flow()
 
     # ロガー取得
@@ -27,7 +29,8 @@ def scraper_info_by_domain_flow(scraper_info_by_domain_files: list = []):
     # 初期処理
     init_task_instance: PrefectFuture = init_task.submit()
     # 実行結果が返ってくるまで待機し、戻り値を保存。
-    #   ※タスクのステータスをresultを受け取る前に判定してもPendingとなる。インスタンスのステータスはリアルタイムで更新されているので注意。
+    # ※タスクのステータスをresultを受け取る前に判定してもPendingとなる。
+    # インスタンスのステータスはリアルタイムで更新されているので注意。
     init_task_result = init_task_instance.result()
 
     if init_task_instance.state.is_completed():
@@ -42,7 +45,7 @@ def scraper_info_by_domain_flow(scraper_info_by_domain_files: list = []):
             # 後続の処理を実行する
             end_task(mongo)
     else:
-        logger.error(f"=== init_taskが正常に完了しなかったため、後続タスクの実行を中止しました。")
+        logger.error("=== init_taskが正常に完了しなかったため、後続タスクの実行を中止しました。")
 
 
 def main(**kwargs):

@@ -1,3 +1,5 @@
+from collections.abc import Mapping, Sequence
+
 import requests
 from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import ScraperInfoByDomainConst
 from bs4 import BeautifulSoup as bs4
@@ -6,15 +8,17 @@ from dateutil.parser import parse
 from shared.settings import TIMEZONE
 
 
-def scraper(soup: bs4, scraper: str, scrape_parm: list[dict[str, str]]) -> tuple[dict, dict]:
+def scraper(soup: bs4, scraper: str, scrape_parm: Sequence[Mapping[str, str | int]]) -> tuple[dict, dict]:
     """ """
     scraped_result: dict = {}
     scraped_pattern: dict = {}
     scraped_item = None
-    scrape_info: dict = {}
     ### cssセレクターでスクレイプ対象を取得できるまで繰り返し ###
     for scrape_info in scrape_parm:
-        scraped_item = soup.select_one(scrape_info[ScraperInfoByDomainConst.ITEM__CSS_SELECTER])
+        selector = scrape_info[ScraperInfoByDomainConst.ITEM__CSS_SELECTER]
+        if not isinstance(selector, str):
+            raise TypeError("css_selecterは文字列で指定してください")
+        scraped_item = soup.select_one(selector)
         if type(scraped_item) is Tag:
             scraped_pattern = {scraper: scrape_info[ScraperInfoByDomainConst.ITEM__PATTERN]}
             if "content" in scraped_item.attrs:
@@ -22,7 +26,7 @@ def scraper(soup: bs4, scraper: str, scrape_parm: list[dict[str, str]]) -> tuple
                 _ = str(scraped_item["content"])
             else:
                 # content属性がないタイプの場合は、タグの文字列より日時を取得
-                _ = str(scraped_item.get_text().strip())
+                _ = scraped_item.get_text().strip()
             scraped_result["publish_date"] = parse(_).astimezone(TIMEZONE)
             break
 

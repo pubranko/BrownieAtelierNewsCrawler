@@ -19,6 +19,6 @@ def stop_controller_update_args_check_task(domain: str, command: str, destinatio
         )
     except ValidationError as e:
         logger.error(f"=== バリデーションエラー: {e.errors()}")
-        raise ValueError()
+        raise ValueError() from e
 
     return stop_controller_update_input

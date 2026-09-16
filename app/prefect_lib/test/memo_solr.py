@@ -1,7 +1,4 @@
-from datetime import datetime
-
 import pysolr
-import requests
 
 # c ='~/004_atelier/002_Brownie/solr-keystore.pem'
 # c ='~/004_atelier/002_Brownie/solr-keystore.pem'
@@ -16,21 +13,21 @@ solr = pysolr.Solr(
 print("=== 1 全件検索 ===")
 results = solr.search("*:*")
 
-print("    Saw {0} result(s).".format(len(results)))  # 結果の有無の調べ方
+print(f"    Saw {len(results)} result(s).")  # 結果の有無の調べ方
 
 for result in results:
-    print("    title '{0}'.".format(result["title"]))
+    print("    title '{}'.".format(result["title"]))
 
 # 個別のフィールドを検索。or,and,で結合することもできる。また、not で否定することも可能。
 print("=== 2 特定のフィールドで検索 ===")
 results = solr.search(["article:8984 or article:8983"])
 for result in results:  # 複数の検索結果を1つづつ処理
-    print("    title '{0}'.".format(result["title"]))
+    print("    title '{}'.".format(result["title"]))
 
 print("=== 3  === 検索結果のjsonを全て表示")
 results = solr.search("article:8984")  # 個別のフィールドを検索
 for result in results:  # 複数の検索結果を1つづつ処理
-    print("    all '{0}'.".format(result))
+    print(f"    all '{result}'.")
 
 print("=== 4  === ソートのやり方、取得するフィールドの絞り込みのやり方")
 results = solr.search(
@@ -42,7 +39,7 @@ results = solr.search(
 )
 
 for result in results:
-    print("    all '{0}'.".format(result))
+    print(f"    all '{result}'.")
 
 print("=== 5  === ハイライトのやり方、取得する開始件数／上限件数の指定のやり方")
 results = solr.search(
@@ -59,11 +56,11 @@ results = solr.search(
 )
 
 for result in results:
-    print("    all '{0}'.".format(result))
+    print(f"    all '{result}'.")
 
 print(results.highlighting)
 for result in results:
-    print("    HightLight '{0}'.".format(result))
+    print(f"    HightLight '{result}'.")
 
 print("=== 6  === 絞り込み検索のやり方")
 results = solr.search(
@@ -76,7 +73,7 @@ results = solr.search(
 )
 
 for result in results:
-    print("    all '{0}'.".format(result))
+    print(f"    all '{result}'.")
 
 print("=== 7  === ファセットの取得のやり方")
 results = solr.search(
@@ -87,12 +84,12 @@ results = solr.search(
     },
 )
 
-print("    Saw {0} result(s).".format(len(results.facets["facet_fields"]["article"])))
+print("    Saw {} result(s).".format(len(results.facets["facet_fields"]["article"])))
 # ファセットより、実際に取得された値が格納されているリストを指定。
 f = results.facets["facet_fields"]["article"]
-l = [f[i : i + 2] for i in range(0, len(f), 2)]  # 上記で取り出したリストを2こづつのリストに変換
-for result in l:  # 上記のリストを順に取り出す。
-    print("    facets article '{0}'.".format(result))
+facet_pairs = [f[i : i + 2] for i in range(0, len(f), 2)]  # 上記で取り出したリストを2こづつのリストに変換
+for result in facet_pairs:  # 上記のリストを順に取り出す。
+    print(f"    facets article '{result}'.")
 """
 results内のfacetsには以下の5つの要素（辞書型）がある。
     facet_queries, facet_fields, facet_ranges, facet_intervals, facet_heatmaps
@@ -102,8 +99,8 @@ results内のfacetsには以下の5つの要素（辞書型）がある。
 それを効率良く取り出す方法を検討した結果上記の例となった。
 """
 # 以下、同時に取得したtitle側のファセット
-print("    Saw {0} result(s).".format(len(results.facets["facet_fields"]["title"])))
+print("    Saw {} result(s).".format(len(results.facets["facet_fields"]["title"])))
 f = results.facets["facet_fields"]["title"]  # ファセットより、実際に取得された値が格納されているリストを指定。
-l = [f[i : i + 2] for i in range(0, len(f), 2)]  # 上記で取り出したリストを2こづつのリストに変換
-for result in l:  # 上記のリストを順に取り出す。
-    print("    facets title '{0}'.".format(result))
+facet_pairs = [f[i : i + 2] for i in range(0, len(f), 2)]  # 上記で取り出したリストを2こづつのリストに変換
+for result in facet_pairs:  # 上記のリストを順に取り出す。
+    print(f"    facets title '{result}'.")

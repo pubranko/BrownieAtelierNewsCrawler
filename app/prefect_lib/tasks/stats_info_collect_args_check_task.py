@@ -1,5 +1,4 @@
 from datetime import date
-from typing import Optional
 
 from prefect import get_run_logger, task
 from prefect_lib.data_models.stats_info_collect_input import StatsInfoCollectInput
@@ -9,7 +8,7 @@ from pydantic import ValidationError
 
 @task
 def stats_info_collect_args_check_task(
-    base_date: Optional[date] = None,
+    base_date: date | None = None,
 ) -> StatsInfoCollectInput:
     """ """
     logger = get_run_logger()  # PrefectLogAdapter
@@ -22,7 +21,7 @@ def stats_info_collect_args_check_task(
         # e.errors()エラー結果をdict形式で見れる。
         # str(e)エラー結果をlist形式で見れる。
         logger.error(f"=== エラー内容: {e.errors()}")
-        raise ValueError()
+        raise ValueError() from e
 
     logger.info(f"=== 基準日from ~ to : {stats_info_collect_input.base_date_get(START_TIME)}")
 

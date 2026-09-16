@@ -8,259 +8,217 @@
 ・Cloudの場合 → prefect config set PREFECT_API_URL="https://api.prefect.cloud/api/accounts/[ACCOUNT-ID]/workspaces/[WORKSPACE-ID]"
 """
 
+import asyncio
 import os
 import sys
 
-current_dir = os.getcwd()
-sys.path.append(current_dir)
 
-from BrownieAtelierMongo.collection_models.asynchronous_report_model import AsynchronousReportModel
-from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
-from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
-from BrownieAtelierMongo.collection_models.crawler_response_model import CrawlerResponseModel
-from BrownieAtelierMongo.collection_models.news_clip_master_model import NewsClipMasterModel
-from BrownieAtelierMongo.collection_models.scraped_from_response_model import ScrapedFromResponseModel
-from BrownieAtelierMongo.collection_models.stats_info_collect_model import StatsInfoCollectModel
-from decouple import AutoConfig, config
+async def main() -> None:
+    from decouple import config
 
-# from prefect.deployments.deployments import Deployment
-from prefect.flows import flow
-from prefect.server.schemas.schedules import CronSchedule, IntervalSchedule, RRuleSchedule
+    # from prefect.deployments.deployments import Deployment
+    # from prefect.settings import PREFECT_API_URL, PREFECT_HOME
+    from prefect.settings import get_current_settings
 
-# from prefect.settings import PREFECT_API_URL, PREFECT_HOME
-from prefect.settings import get_current_settings
-from prefect_lib.data_models.scraper_pattern_report_input import ScraperPatternReportConst
+    # flow_net系
+    from prefect_lib.flow_nets.morning_flow_net import morning_flow_net
 
-# 必要な引数定義
-from prefect_lib.data_models.stats_analysis_report_input import StatsAnalysisReportConst
+    # 必要な引数定義
+    # check系
+    from prefect_lib.flows.crawl_sync_check_flow import crawl_sync_check_flow
+    from prefect_lib.flows.first_observation_flow import first_observation_flow
 
-# check系
-from prefect_lib.flows.crawl_sync_check_flow import crawl_sync_check_flow
-from prefect_lib.flows.first_observation_flow import first_observation_flow
+    # crawl-scrape系
+    from prefect_lib.flows.manual_crawling_flow import manual_crawling_flow
+    from prefect_lib.flows.manual_news_clip_master_save_flow import manual_news_clip_master_save_flow
+    from prefect_lib.flows.manual_scrapying_flow import manual_scrapying_flow
 
-# crawl-scrape系
-from prefect_lib.flows.manual_crawling_flow import manual_crawling_flow
-from prefect_lib.flows.manual_news_clip_master_save_flow import manual_news_clip_master_save_flow
-from prefect_lib.flows.manual_scrapying_flow import manual_scrapying_flow
+    # mongodb系
+    from prefect_lib.flows.mongo_delete_selector_flow import mongo_delete_selector_flow
+    from prefect_lib.flows.mongo_export_selector_flow import mongo_export_selector_flow
+    from prefect_lib.flows.mongo_import_selector_flow import mongo_import_selector_flow
+    from prefect_lib.flows.regular_observation_controller_update_flow import regular_observation_controller_update_flow
+    from prefect_lib.flows.regular_observation_flow import regular_observation_flow
 
-# mongodb系
-from prefect_lib.flows.mongo_delete_selector_flow import mongo_delete_selector_flow
-from prefect_lib.flows.mongo_export_selector_flow import mongo_export_selector_flow
-from prefect_lib.flows.mongo_import_selector_flow import mongo_import_selector_flow
-from prefect_lib.flows.regular_observation_controller_update_flow import regular_observation_controller_update_flow
-from prefect_lib.flows.regular_observation_flow import regular_observation_flow
+    # register系
+    from prefect_lib.flows.scraper_info_uploader_flow import scraper_info_by_domain_flow
+    from prefect_lib.flows.scraper_pattern_report_flow import scraper_pattern_report_flow
+    from prefect_lib.flows.stats_analysis_report_flow import stats_analysis_report_flow
 
-# register系
-from prefect_lib.flows.scraper_info_uploader_flow import scraper_info_by_domain_flow
-from prefect_lib.flows.scraper_pattern_report_flow import scraper_pattern_report_flow
-from prefect_lib.flows.stats_analysis_report_flow import stats_analysis_report_flow
+    # report系
+    from prefect_lib.flows.stats_info_collect_flow import stats_info_collect_flow
+    from prefect_lib.flows.stop_controller_update_flow import stop_controller_update_flow
 
-# report系
-from prefect_lib.flows.stats_info_collect_flow import stats_info_collect_flow
-from prefect_lib.flows.stop_controller_update_flow import stop_controller_update_flow
+    settings = get_current_settings()
+    prefect_home = settings.home
+    print(f"=== {prefect_home = }")
+    prefect_api_url = settings.api.url
+    print(f"=== {prefect_api_url = }")
 
-# flow_net系
-from prefect_lib.flow_nets.morning_flow_net import morning_flow_net
+    if not (prefect_api_url):
+        raise ValueError("PREFECT_API_URLが設定されていないため、フロー登録を停止します。")
+    path = os.getcwd()
+    print(f"=== {path =}")
 
+    work_pool_name = str(config("PREFECT__WORK_POOL"))
+    print(f"=== {work_pool_name =}")
 
-_ = get_current_settings()
-prefect_home = _.home
-print(f"=== {prefect_home = }")
-prefect_api_url = _.ui_api_url
-print(f"=== {prefect_api_url = }")
+    ###################
+    # crawl-scrape
+    ###################
+    # name -> デプロイの名前。可動タイミングがわかるように manual, daily, monthly, weekly, yearly
+    # tags -> 自動・手動、系統、実行タイミングを指定する。
 
-if not (prefect_api_url):
-    raise ValueError(
-        "PREFECT_API_URLが参照できませんでしたので、処理を停止します。環境変数にPREFECT_HOMEが存在しない、またはPREFECT_API_URLが設定されていない可能性が高いです。"
+    manual_crawling_flow_deployment = await manual_crawling_flow.ato_deployment(
+        name="manual-crawl-scrape",
+        tags=["manual", "crawl-scrape"],
+        work_pool_name=work_pool_name,
     )
-path = current_dir
-print(f"=== {path =}")
+    uuid = await manual_crawling_flow_deployment.aapply()
+    print(f"deployment -> manual_crawling_flow 完了  ({uuid =})")
 
-work_pool_name = str(config("PREFECT__WORK_POOL"))
-print(f"=== {work_pool_name =}")
+    manual_scrapying_flow_deployment = await manual_scrapying_flow.ato_deployment(
+        name="manual-crawl-scrape",
+        tags=["manual", "crawl-scrape"],
+        work_pool_name=work_pool_name,
+    )
+    uuid = await manual_scrapying_flow_deployment.aapply()
+    print("deployment -> manual_scrapying_flow 完了")
 
-###################
-# crawl-scrape
-###################
-# name -> デプロイの名前。可動タイミングがわかるように manual, daily, monthly, weekly, yearly
-# tags -> 自動・手動、系統、可動タイミングがわかるように [manual, auto], [register, crawl-scrape, check, report, mongodb], [daily, monthly, weekly, yearly]
+    manual_news_clip_master_save_flow_deployment = await manual_news_clip_master_save_flow.ato_deployment(
+        name="manual-crawl-scrape",
+        tags=["manual", "crawl-scrape"],
+        work_pool_name=work_pool_name,
+    )
+    uuid = await manual_news_clip_master_save_flow_deployment.aapply()
+    print("deployment -> manual_news_clip_master_save_flow 完了")
 
-_ = manual_crawling_flow.to_deployment(name="dummy")
-manual_crawling_flow_deployment = _.from_entrypoint(
-    name="manual-crawl-scrape",
-    entrypoint=str(_.entrypoint),
-    tags=["manual", "crawl-scrape"],
-    work_pool_name=work_pool_name,
-)
-uuid = manual_crawling_flow_deployment.apply()
-print(f"deployment -> manual_crawling_flow 完了  ({uuid =})")
+    first_observation_flow_deployment = await first_observation_flow.ato_deployment(
+        name="manual-crawl-scrape",
+        tags=["manual", "crawl-scrape"],
+        work_pool_name=work_pool_name,
+    )
+    uuid = await first_observation_flow_deployment.aapply()
+    print("deployment -> first_observation_flow 完了")
 
-_ = manual_scrapying_flow.to_deployment(name="dummy")
-manual_scrapying_flow_deployment = _.from_entrypoint(
-    name="manual-crawl-scrape",
-    entrypoint=str(_.entrypoint),
-    tags=["manual", "crawl-scrape"],
-    work_pool_name=work_pool_name,
-)
-uuid = manual_scrapying_flow_deployment.apply()
-print(f"deployment -> manual_scrapying_flow 完了")
+    regular_observation_flow_deployment = await regular_observation_flow.ato_deployment(
+        name="auto-crawl-scrape",
+        tags=["auto", "daily", "crawl-scrape"],
+        work_pool_name=work_pool_name,
+    )
+    uuid = await regular_observation_flow_deployment.aapply()
+    print("deployment -> regular_observation_flow 完了")
 
-_ = manual_news_clip_master_save_flow.to_deployment(name="dummy")
-manual_news_clip_master_save_flow_deployment = _.from_entrypoint(
-    name="manual-crawl-scrape",
-    entrypoint=str(_.entrypoint),
-    tags=["manual", "crawl-scrape"],
-    work_pool_name=work_pool_name,
-)
-uuid = manual_news_clip_master_save_flow_deployment.apply()
-print(f"deployment -> manual_news_clip_master_save_flow 完了")
+    ###################
+    # register
+    ###################
+    scraper_info_by_domain_flow_deployment = await scraper_info_by_domain_flow.ato_deployment(
+        name="register",
+        tags=["manual", "register"],
+        work_pool_name=work_pool_name,
+    )
+    uuid = await scraper_info_by_domain_flow_deployment.aapply()
+    print("deployment -> scraper_info_by_domain_flow 完了")
+
+    regular_observation_controller_update_flow_deployment = (
+        await regular_observation_controller_update_flow.ato_deployment(
+            name="register",
+            tags=["manual", "register"],
+            work_pool_name=work_pool_name,
+        )
+    )
+    uuid = await regular_observation_controller_update_flow_deployment.aapply()
+    print("deployment -> regular_observation_controller_update_flow 完了")
+
+    stop_controller_update_flow_deployment = await stop_controller_update_flow.ato_deployment(
+        name="register",
+        tags=["manual", "register"],
+        work_pool_name=work_pool_name,
+    )
+    uuid = await stop_controller_update_flow_deployment.aapply()
+    print("deployment -> stop_controller_update_flow 完了")
+
+    ###################
+    # check
+    ###################
+    crawl_sync_check_flow_deployment = await crawl_sync_check_flow.ato_deployment(
+        name="check",
+        tags=["manual", "check", "report"],
+        work_pool_name=work_pool_name,
+    )
+    uuid = await crawl_sync_check_flow_deployment.aapply()
+    print("deployment -> crawl_sync_check_flow 完了")
+
+    ###################
+    # mongodb
+    ###################
+    mongo_delete_selector_flow_deployment = await mongo_delete_selector_flow.ato_deployment(
+        name="mongodb",
+        tags=["manual", "mongodb"],
+        work_pool_name=work_pool_name,
+    )
+    uuid = await mongo_delete_selector_flow_deployment.aapply()
+    print("deployment -> mongo_delete_selector_flow 完了")
+
+    mongo_export_selector_flow_deployment = await mongo_export_selector_flow.ato_deployment(
+        name="mongodb",
+        tags=["manual", "mongodb"],
+        work_pool_name=work_pool_name,
+    )
+    uuid = await mongo_export_selector_flow_deployment.aapply()
+    print("deployment -> mongo_export_selector_flow 完了")
+
+    mongo_import_selector_flow_deployment = await mongo_import_selector_flow.ato_deployment(
+        name="mongodb",
+        tags=["manual", "mongodb"],
+        work_pool_name=work_pool_name,
+    )
+    uuid = await mongo_import_selector_flow_deployment.aapply()
+    print("deployment -> mongo_import_selector_flow 完了")
+
+    ###################
+    # report
+    ###################
+    stats_info_collect_flow_deployment = await stats_info_collect_flow.ato_deployment(
+        name="report",
+        tags=["manual", "report"],
+        work_pool_name=work_pool_name,
+    )
+    uuid = await stats_info_collect_flow_deployment.aapply()
+    print("deployment -> stats_info_collect_flow 完了")
+
+    stats_analysis_report_flow_deployment = await stats_analysis_report_flow.ato_deployment(
+        name="report",
+        tags=["manual", "report"],
+        # parameters=dict(
+        #     report_term=StatsAnalysisReportConst.REPORT_TERM__WEEKLY,  # １週間の間、1日単位の集計結果を求める。
+        #     totalling_term=StatsAnalysisReportConst.TOTALLING_TERM__DAILY,
+        # ),
+        work_pool_name=work_pool_name,
+    )
+    uuid = await stats_analysis_report_flow_deployment.aapply()
+    print("deployment -> stats_analysis_report_flow 完了")
+
+    scraper_pattern_report_flow_deployment = await scraper_pattern_report_flow.ato_deployment(
+        name="report",
+        tags=["manual", "report"],
+        work_pool_name=work_pool_name,
+    )
+    uuid = await scraper_pattern_report_flow_deployment.aapply()
+    print("deployment -> scraper_pattern_report_flow 完了")
+
+    ####################
+    # Flow Net系
+    ####################
+    morning_flow_net_deployment = await morning_flow_net.ato_deployment(
+        name="daily-morning",
+        tags=["daily", "morning", "net", "report", "mongodb"],
+        work_pool_name=work_pool_name,
+    )
+    uuid = await morning_flow_net_deployment.aapply()
+    print("deployment -> morning_flow_net 完了")
 
 
-_ = first_observation_flow.to_deployment(name="dummy")
-first_observation_flow_deployment = _.from_entrypoint(
-    name="manual-crawl-scrape",
-    entrypoint=str(_.entrypoint),
-    tags=["manual", "crawl-scrape"],
-    work_pool_name=work_pool_name,
-)
-uuid = first_observation_flow_deployment.apply()
-print(f"deployment -> first_observation_flow 完了")
-
-_ = regular_observation_flow.to_deployment(name="dummy")
-regular_observation_flow_deployment = _.from_entrypoint(
-    name="auto-crawl-scrape",
-    entrypoint=str(_.entrypoint),
-    tags=["auto", "daily", "crawl-scrape"],
-    work_pool_name=work_pool_name,
-)
-uuid = regular_observation_flow_deployment.apply()
-print(f"deployment -> regular_observation_flow 完了")
-
-###################
-# register
-###################
-_ = scraper_info_by_domain_flow.to_deployment(name="dummy")
-scraper_info_by_domain_flow_deployment = _.from_entrypoint(
-    name="register",
-    entrypoint=str(_.entrypoint),
-    tags=["manual", "register"],
-    work_pool_name=work_pool_name,
-)
-uuid = scraper_info_by_domain_flow_deployment.apply()
-print(f"deployment -> scraper_info_by_domain_flow 完了")
-
-_ = regular_observation_controller_update_flow.to_deployment(name="dummy")
-regular_observation_controller_update_flow_deployment = _.from_entrypoint(
-    name="register",
-    entrypoint=str(_.entrypoint),
-    tags=["manual", "register"],
-    work_pool_name=work_pool_name,
-)
-uuid = regular_observation_controller_update_flow_deployment.apply()
-print(f"deployment -> regular_observation_controller_update_flow 完了")
-
-_ = stop_controller_update_flow.to_deployment(name="dummy")
-stop_controller_update_flow_deployment = _.from_entrypoint(
-    name="register",
-    entrypoint=str(_.entrypoint),
-    tags=["manual", "register"],
-    work_pool_name=work_pool_name,
-)
-uuid = stop_controller_update_flow_deployment.apply()
-print(f"deployment -> stop_controller_update_flow 完了")
-
-###################
-# check
-###################
-_ = crawl_sync_check_flow.to_deployment(name="dummy")
-crawl_sync_check_flow_deployment = _.from_entrypoint(
-    name="check",
-    entrypoint=str(_.entrypoint),
-    tags=["manual", "check", "report"],
-    work_pool_name=work_pool_name,
-)
-uuid = crawl_sync_check_flow_deployment.apply()
-print(f"deployment -> crawl_sync_check_flow 完了")
-
-###################
-# mongodb
-###################
-_ = mongo_delete_selector_flow.to_deployment(name="dummy")
-mongo_delete_selector_flow_deployment = _.from_entrypoint(
-    name="mongodb",
-    entrypoint=str(_.entrypoint),
-    tags=["manual", "mongodb"],
-    work_pool_name=work_pool_name,
-)
-uuid = mongo_delete_selector_flow_deployment.apply()
-print(f"deployment -> mongo_delete_selector_flow 完了")
-
-_ = mongo_export_selector_flow.to_deployment(name="dummy")
-mongo_export_selector_flow_deployment = _.from_entrypoint(
-    name="mongodb",
-    entrypoint=str(_.entrypoint),
-    tags=["manual", "mongodb"],
-    work_pool_name=work_pool_name,
-)
-uuid = mongo_export_selector_flow_deployment.apply()
-print(f"deployment -> mongo_export_selector_flow 完了")
-
-_ = mongo_import_selector_flow.to_deployment(name="dummy")
-mongo_import_selector_flow_deployment = _.from_entrypoint(
-    name="mongodb",
-    entrypoint=str(_.entrypoint),
-    tags=["manual", "mongodb"],
-    work_pool_name=work_pool_name,
-)
-uuid = mongo_import_selector_flow_deployment.apply()
-print(f"deployment -> mongo_import_selector_flow 完了")
-
-###################
-# report
-###################
-_ = stats_info_collect_flow.to_deployment(name="dummy")
-stats_info_collect_flow_deployment = _.from_entrypoint(
-    name="report",
-    entrypoint=str(_.entrypoint),
-    tags=["manual", "report"],
-    work_pool_name=work_pool_name,
-)
-uuid = stats_info_collect_flow_deployment.apply()
-print(f"deployment -> stats_info_collect_flow 完了")
-
-_ = stats_analysis_report_flow.to_deployment(name="dummy")
-stats_analysis_report_flow_deployment = _.from_entrypoint(
-    name="report",
-    entrypoint=str(_.entrypoint),
-    tags=["manual", "report"],
-    # parameters=dict(
-    #     report_term=StatsAnalysisReportConst.REPORT_TERM__WEEKLY,  # １週間の間、1日単位の集計結果を求める。
-    #     totalling_term=StatsAnalysisReportConst.TOTALLING_TERM__DAILY,
-    # ),
-    work_pool_name=work_pool_name,
-)
-uuid = stats_analysis_report_flow_deployment.apply()
-print(f"deployment -> stats_analysis_report_flow 完了")
-
-_ = scraper_pattern_report_flow.to_deployment(name="dummy")
-scraper_pattern_report_flow_deployment = _.from_entrypoint(
-    name="report",
-    entrypoint=str(_.entrypoint),
-    tags=["manual", "report"],
-    work_pool_name=work_pool_name,
-)
-uuid = scraper_pattern_report_flow_deployment.apply()
-print(f"deployment -> scraper_pattern_report_flow 完了")
-
-####################
-# Flow Net系
-####################
-_ = morning_flow_net.to_deployment(name="dummy")
-morning_flow_net_deployment = _.from_entrypoint(
-    name="daily-morning",
-    entrypoint=str(_.entrypoint),
-    tags=["daily", "morning", "net", "report", "mongodb"],
-    work_pool_name=work_pool_name,
-)
-uuid = morning_flow_net_deployment.apply()
-print(f"deployment -> morning_flow_net 完了")
+if __name__ == "__main__":
+    sys.path.append(os.getcwd())
+    asyncio.run(main())

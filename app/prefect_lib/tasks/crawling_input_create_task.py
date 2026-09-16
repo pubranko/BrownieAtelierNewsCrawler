@@ -12,7 +12,7 @@ def crawling_input_create_task(spider_kwargs: dict) -> NewsCrawlInput:
     logger.info(f"=== 引数 : spider_kwargs={spider_kwargs}")
 
     # spider_kwargsで指定された引数にスタートタイムを追加し、scrapyを実行するための引数へ補正を行う。
-    _ = dict(crawling_start_time=START_TIME)
+    _ = {"crawling_start_time": START_TIME}
     _.update(spider_kwargs)
 
     return NewsCrawlInput(**_)
