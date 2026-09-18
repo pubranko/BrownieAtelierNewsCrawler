@@ -1,11 +1,10 @@
 import os
-from prefect import get_run_logger, task
-from BrownieAtelierNotice.slack.slack_notice import slack_notice
+
 from BrownieAtelierNotice import settings
-from prefect_lib.data_models.stats_analysis_report_excel import \
-    StatsAnalysisReportExcel
-from prefect_lib.data_models.stats_analysis_report_input import \
-    StatsAnalysisReportInput
+from BrownieAtelierNotice.slack.slack_notice import slack_notice
+from prefect import get_run_logger, task
+from prefect_lib.data_models.stats_analysis_report_excel import StatsAnalysisReportExcel
+from prefect_lib.data_models.stats_analysis_report_input import StatsAnalysisReportInput
 from prefect_lib.flows import START_TIME
 from shared.settings import DATA
 
@@ -48,7 +47,7 @@ def stats_analysis_report_notice_task(
 
     message = f"""
     【stats_analysis_report】
-    
+
     各種実行結果を解析したレポート
     === 実行条件 ============================================================
     start_time = {START_TIME.isoformat()}

@@ -3,34 +3,24 @@ import os
 import pickle
 import sys
 from datetime import datetime
-from importlib import import_module
 from logging import Logger
 from typing import Any
 
 from bs4 import BeautifulSoup as bs4
-from bs4.element import ResultSet, Tag
 from pymongo import ASCENDING
 from pymongo.cursor import Cursor
 
-path = os.getcwd()
-sys.path.append(path)
-from BrownieAtelierMongo.collection_models.controller_model import \
-    ControllerModel
-from BrownieAtelierMongo.collection_models.crawler_response_model import \
-    CrawlerResponseModel
+sys.path.append(os.getcwd())
+from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
+from BrownieAtelierMongo.collection_models.crawler_response_model import CrawlerResponseModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
-    ScrapedFromResponseModel
-from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import \
-    ScraperInfoByDomainModel
-from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import \
-    ScraperInfoByDomainConst
-from prefect_lib.scraper.article_scraper import scraper as artcle_scraper
-from prefect_lib.scraper.publish_date_scraper import \
-    scraper as publish_date_scraper
-from prefect_lib.scraper.title_scraper import scraper as title_scraper
+from BrownieAtelierMongo.collection_models.scraped_from_response_model import ScrapedFromResponseModel
+from BrownieAtelierMongo.collection_models.scraper_info_by_domain_model import ScraperInfoByDomainModel
+from BrownieAtelierMongo.data_models.scraper_info_by_domain_data import ScraperInfoByDomainConst
+from prefect_lib.scraper.publish_date_scraper import scraper as publish_date_scraper
 from shared.settings import DATA__DEBUG_FILE_DIR
-from shared.timezone_recovery import timezone_recovery
+
+path = os.getcwd()
 
 """
 URLを直接指定し、レスポンスの中身を調査するためのソース。
@@ -85,7 +75,7 @@ for record in records:
     # page_source = soup.select_one('html')
     # print('\n\n\n',soup.select_one('html'))
 
-    path: str = os.path.join(DATA__DEBUG_FILE_DIR, f"response_data.html")
+    path: str = os.path.join(DATA__DEBUG_FILE_DIR, "response_data.html")
     with open(path, "w") as file:
         file.write(str(soup.select_one("html")))
 

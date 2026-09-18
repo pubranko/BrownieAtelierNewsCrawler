@@ -1,17 +1,12 @@
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
-from BrownieAtelierMongo.collection_models.crawler_response_model import \
-    CrawlerResponseModel
+from BrownieAtelierMongo.collection_models.crawler_response_model import CrawlerResponseModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.news_clip_master_model import \
-    NewsClipMasterModel
-from BrownieAtelierMongo.collection_models.scraped_from_response_model import \
-    ScrapedFromResponseModel
+from BrownieAtelierMongo.collection_models.news_clip_master_model import NewsClipMasterModel
+from BrownieAtelierMongo.collection_models.scraped_from_response_model import ScrapedFromResponseModel
 from prefect import get_run_logger, task
 from prefect.cache_policies import NO_CACHE
-from prefect_lib.common_module.scraped_record_error_check import \
-    scraped_record_error_check
 from prefect_lib.flows import START_TIME
 from pymongo import ASCENDING
 from pymongo.cursor import Cursor
@@ -20,9 +15,9 @@ from pymongo.cursor import Cursor
 @task(cache_policy=NO_CACHE)
 def news_clip_master_save_task(
     mongo: MongoModel,
-    domain: Optional[str],
-    target_start_time_from: Optional[datetime],
-    target_start_time_to: Optional[datetime],
+    domain: str | None,
+    target_start_time_from: datetime | None,
+    target_start_time_to: datetime | None,
 ):
     """
     scrapyによるクロールを実行する。
@@ -40,21 +35,9 @@ def news_clip_master_save_task(
     if domain:
         conditions.append({ScrapedFromResponseModel.DOMAIN: domain})
     if target_start_time_from:
-        conditions.append(
-            {
-                ScrapedFromResponseModel.SCRAPYING_START_TIME: {
-                    "$gte": target_start_time_from
-                }
-            }
-        )
+        conditions.append({ScrapedFromResponseModel.SCRAPYING_START_TIME: {"$gte": target_start_time_from}})
     if target_start_time_to:
-        conditions.append(
-            {
-                ScrapedFromResponseModel.SCRAPYING_START_TIME: {
-                    "$lte": target_start_time_to
-                }
-            }
-        )
+        conditions.append({ScrapedFromResponseModel.SCRAPYING_START_TIME: {"$lte": target_start_time_to}})
 
     if conditions:
         scraped_from_response_filter: Any = {"$and": conditions}
@@ -91,11 +74,7 @@ def news_clip_master_save_task(
                 "$and": [
                     {NewsClipMasterModel.URL: record[ScrapedFromResponseModel.URL]},
                     {NewsClipMasterModel.TITLE: record[ScrapedFromResponseModel.TITLE]},
-                    {
-                        NewsClipMasterModel.ARTICLE: record[
-                            ScrapedFromResponseModel.ARTICLE
-                        ]
-                    },
+                    {NewsClipMasterModel.ARTICLE: record[ScrapedFromResponseModel.ARTICLE]},
                 ]
             }
             news_clip_records = news_clip_master.find(filter=news_clip_records_filter)
@@ -107,13 +86,9 @@ def news_clip_master_save_task(
                 _[NewsClipMasterModel.SCRAPED_SAVE_START_TIME] = START_TIME
                 _.update(record)
                 news_clip_master.insert_one(_)
-                logger.info(
-                    f"=== news_clip_master への登録 : {record[ScrapedFromResponseModel.URL]}"
-                )
+                logger.info(f"=== news_clip_master への登録 : {record[ScrapedFromResponseModel.URL]}")
 
-                news_clip_master_register: str = (
-                    CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER__COMPLETE
-                )  #'登録完了'
+                news_clip_master_register: str = CrawlerResponseModel.NEWS_CLIP_MASTER_REGISTER__COMPLETE  #'登録完了'
                 crawler_response.news_clip_master_register_result(
                     record[ScrapedFromResponseModel.URL],
                     record[ScrapedFromResponseModel.RESPONSE_TIME],
@@ -126,7 +101,8 @@ def news_clip_master_save_task(
                         == record[ScrapedFromResponseModel.RESPONSE_TIME]
                     ):
                         logger.info(
-                            f"=== news_clip_master への登録処理済みデータのためスキップ : {record[ScrapedFromResponseModel.URL]}"
+                            f"=== news_clip_master への登録処理済みデータのためスキップ : "
+                            f"{record[ScrapedFromResponseModel.URL]}"
                         )
                     else:
                         news_clip_master_register: str = (
@@ -138,5 +114,6 @@ def news_clip_master_save_task(
                             news_clip_master_register,
                         )
                         logger.info(
-                            f"=== news_clip_master の登録内容に変更がないためスキップ : {record[ScrapedFromResponseModel.URL]}"
+                            f"=== news_clip_master の登録内容に変更がないためスキップ : "
+                            f"{record[ScrapedFromResponseModel.URL]}"
                         )

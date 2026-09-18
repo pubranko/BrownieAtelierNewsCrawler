@@ -4,8 +4,6 @@
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 # useful for handling different item types with a single interface
 
-from itemadapter.adapter import ItemAdapter
-from itemadapter.utils import is_item
 from scrapy import signals
 from scrapy.http import Request, Response
 
@@ -34,8 +32,7 @@ class NewsCrawlSpiderMiddleware:
         # it has processed the response.
 
         # Must return an iterable of Request, or item objects.
-        for i in result:
-            yield i
+        yield from result
 
     def process_spider_exception(self, response, exception, spider):
         # Called when a spider or process_spider_input() method
@@ -50,8 +47,7 @@ class NewsCrawlSpiderMiddleware:
         # that it doesn’t have a response associated.
 
         # Must return only requests (not items).
-        for r in start_requests:
-            yield r
+        yield from start_requests
 
     def spider_opened(self, spider):
         spider.logger.info(f"Spider opened: {spider.name}")
@@ -75,7 +71,8 @@ class NewsCrawlDownloaderMiddleware:
 
         # print('=== ミドルウェア：process_request url : ', request.url)
         # print(request.__dict__.keys())
-        # 中身：dict_keys(['_encoding', 'method', '_url', '_body', 'priority', 'callback', 'errback', 'cookies', 'headers', 'dont_filter', '_meta', '_cb_kwargs', 'flags'])
+        # 中身：dict_keys(['_encoding', 'method', '_url', '_body', 'priority', 'callback', 'errback', 'cookies',
+        # 'headers', 'dont_filter', '_meta', '_cb_kwargs', 'flags'])
 
         # Must either:
         # - return None: continue processing this request

@@ -15,7 +15,7 @@ def scraped_record_error_check(record: dict) -> bool:
         if item not in record:
             warning_flg = True
             logger.warning("=== ワーニング：" + item + "なし : " + str(record[log_item]))
-        elif len(str(record[item])) == 0 or record[item] == None:
+        elif len(str(record[item])) == 0 or record[item] is None:
             warning_flg = True
             logger.warning("=== ワーニング：" + item + " = データなし :" + str(record[log_item]))
 

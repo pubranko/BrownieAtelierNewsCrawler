@@ -52,18 +52,14 @@ class ScraperPatternReportData:
     def scraper_info_master_store(self, record: dict) -> None:
         """引数のレコードを基にpandasのデータフレーム（マスター）を作成する。"""
         _ = pd.DataFrame([record])
-        self.scraper_pattern_master_df = pd.concat(
-            [self.scraper_pattern_master_df, _], ignore_index=True
-        )
+        self.scraper_pattern_master_df = pd.concat([self.scraper_pattern_master_df, _], ignore_index=True)
         # self.scraper_pattern_master_df = self.scraper_pattern_master_df.append(
         #     record, ignore_index=True)
 
     def scraper_info_counter_store(self, record: dict) -> None:
         """引数のレコードを基にpandasのデータフレーム（カウント用）を作成する。"""
         _ = pd.DataFrame([record])
-        self.scraper_pattern_counter_df = pd.concat(
-            [self.scraper_pattern_counter_df, _], ignore_index=True
-        )
+        self.scraper_pattern_counter_df = pd.concat([self.scraper_pattern_counter_df, _], ignore_index=True)
         # self.scraper_pattern_counter_df = self.scraper_pattern_counter_df.append(
         #     record, ignore_index=True)
 
@@ -72,11 +68,13 @@ class ScraperPatternReportData:
         マスターとカウント用のデータフレームで互いに足りないkeyを穴埋めしたデータフレーム（結果）を生成する。
         ※マスターにはcount_of_useがなく、カウント用にはpriorityがない。
         """
+        pattern_counts = self.scraper_pattern_counter_df.groupby(
+            by=[self.DOMAIN, self.SCRAPE_ITEMS, self.PATTERN], as_index=False
+        ).sum()
+        assert isinstance(pattern_counts, pd.DataFrame)
         self.result_df = pd.merge(
             self.scraper_pattern_master_df,
-            self.scraper_pattern_counter_df.groupby(
-                by=[self.DOMAIN, self.SCRAPE_ITEMS, self.PATTERN], as_index=False
-            ).sum(),
+            pattern_counts,
             on=[self.DOMAIN, self.SCRAPE_ITEMS, self.PATTERN],
             how="outer",
         ).fillna(0)

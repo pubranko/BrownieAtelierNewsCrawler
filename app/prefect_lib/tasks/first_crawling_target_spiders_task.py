@@ -1,7 +1,6 @@
 from typing import Any
 
-from BrownieAtelierMongo.collection_models.controller_model import \
-    ControllerModel
+from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from prefect import get_run_logger, task
 from prefect.cache_policies import NO_CACHE
@@ -18,9 +17,7 @@ def first_crawling_target_spiders_task(mongo: MongoModel) -> list[dict[str, Any]
     # 初回観測の対象spiders_infoを抽出
     directory_search_spiders = DirectorySearchSpiders()
     controller: ControllerModel = ControllerModel(mongo)
-    regular_observation_spider_name_set: set = (
-        controller.regular_observation_spider_name_set_get()
-    )
+    regular_observation_spider_name_set: set = controller.regular_observation_spider_name_set_get()
 
     # 初回観測の対象スパイダー情報、スパイダー名称保存リスト
     crawling_target_spiders: list = []
@@ -34,7 +31,7 @@ def first_crawling_target_spiders_task(mongo: MongoModel) -> list[dict[str, Any]
             spider_name,
         )
 
-        if not spider_name in regular_observation_spider_name_set:
+        if spider_name not in regular_observation_spider_name_set:
             logger.info(f"=== 定期観測に登録がないスパイダーは対象外 : {spider_name}")
         elif len(crawl_point_record):
             logger.info(f"=== クロールポイントがある（既にクロール実績がある）スパイダーは対象外 : {spider_name}")

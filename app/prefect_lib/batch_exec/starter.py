@@ -1,12 +1,13 @@
-import os
-import yaml
 import datetime
-import logging
-from shared.settings import DATA__INFORMATION_ON_SCHEDULED_DIR, DATA__STARTER_FLOWS_FILE
-import importlib.util
 import importlib
-from typing import cast
+import importlib.util
+import logging
+import os
 from importlib.machinery import ModuleSpec
+from typing import cast
+
+import yaml
+from shared.settings import DATA__INFORMATION_ON_SCHEDULED_DIR, DATA__STARTER_FLOWS_FILE
 
 # prefectロガー配下の当ファイル名でloggerを作成
 logging.basicConfig(level=logging.INFO)
@@ -14,17 +15,23 @@ logger = logging.getLogger(f"prefect.{__name__}")
 
 
 def load_schedule_dict() -> dict:
-    """ スケジュール情報を読み込み、辞書形式で返す
+    """スケジュール情報を読み込み、辞書形式で返す
     Returns:
         dict: スケジュール情報の辞書
     """
     # YAMLファイルから辞書を取得
     schedule_path = os.path.join(DATA__INFORMATION_ON_SCHEDULED_DIR, DATA__STARTER_FLOWS_FILE)
-    with open(schedule_path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+    with open(schedule_path, encoding="utf-8") as f:
+        schedule = yaml.safe_load(f)
+    if schedule is None:
+        return {}
+    if not isinstance(schedule, dict):
+        raise ValueError("スケジュールは辞書形式で指定してください")
+    return schedule
+
 
 def main():
-    
+
     # スケジュール情報の読み込み
     schedule_dict: dict = load_schedule_dict()
     # 現在の時間を取得して、スケジュールに基づいたフロー情報＆パラメータを取得
@@ -34,6 +41,10 @@ def main():
         flow_configs = [flow_configs]
 
     for config in flow_configs:
+        if config is None:
+            continue
+        if not isinstance(config, dict):
+            raise ValueError("フロー設定は辞書形式で指定してください")
         flow_path = config.get("flow", "")
         params = config.get("params")
         if params is None:

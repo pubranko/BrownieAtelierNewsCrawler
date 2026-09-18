@@ -1,5 +1,6 @@
 import glob
 import os
+
 # from prefect.testing.utilities import prefect_test_harness
 # app/prefect_lib/flows/stop_controller_update_const.py
 from prefect_lib.flows.stop_controller_update_const import StopControllerUpdateConst
@@ -17,7 +18,6 @@ def test_exec():
         destination=StopControllerUpdateConst.CRAWLING,
         # destination=StopControllerUpdateConst.SCRAPYING,
     )
-
 
     # テスト時のログファイル削除漏れ防止用
     for log_file in glob.glob("/tmp/prefect_log_*"):

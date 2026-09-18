@@ -4,11 +4,10 @@ import sys
 from logging import Logger
 from typing import Any
 
-import pysolr
+sys.path.append(os.getcwd())
+from models.solr_news_clip_model import SolrNewsClip
 
 path = os.getcwd()
-sys.path.append(path)
-from models.solr_news_clip_model import SolrNewsClip
 
 logger: Logger = logging.getLogger()
 
@@ -28,7 +27,7 @@ if results:
     print("=== ステータス", results.raw_response["responseHeader"]["status"])
     print("=== カウント:", recodes_count)
 
-    for recode in results.docs:
+    for _recode in results.docs:
         print("=== docs:", results.docs)
         # print('=== url:',recode['url'])
 
@@ -45,9 +44,20 @@ if results:
     {'raw_response':
         {'responseHeader': {'status': 0, 'QTime': 0, 'params': {'q': '*:*', 'start': '0', 'rows': '1', 'wt': 'json'}},
         'response': {'numFound': 7427, 'start': 0,
-                    'docs': [{'mongo_id': ['〜'], 'url': '〜', 'title': '〜', 'article': '〜', 'issuer': ['〜'], 'update_count': 0, 'id': '〜', '_version_': 1638412764864053248, 'response_time': '2019-01-20T19:24:59.014Z', 'publish_date': '2018-04-01T00:00:00Z'}]}
+                    'docs': [{'mongo_id': ['〜'], 'url': '〜',
+                    'title': '〜', 'article': '〜', 'issuer':
+                    ['〜'], 'update_count': 0, 'id': '〜',
+                    '_version_': 1638412764864053248,
+                    'response_time':
+                    '2019-01-20T19:24:59.014Z',
+                    'publish_date': '2018-04-01T00:00:00Z'}]}
         },
-    'docs': [{'mongo_id': ['〜'], 'url': '〜', 'title': '〜', 'article': '〜', 'issuer': ['〜'], 'update_count': 0, 'id': '〜', '_version_': 1638412764864053248,'response_time': '2019-01-20T19:24:59.014Z', 'publish_date': '2018-04-01T00:00:00Z'}],
+    'docs': [{'mongo_id': ['〜'], 'url': '〜', 'title':
+    '〜', 'article': '〜', 'issuer': ['〜'],
+    'update_count': 0, 'id': '〜', '_version_':
+    1638412764864053248,'response_time':
+    '2019-01-20T19:24:59.014Z', 'publish_date':
+    '2018-04-01T00:00:00Z'}],
     'hits': 7427, 'debug': {}, 'highlighting': {}, 'facets': {}, 'spellcheck': {},
     'stats': {}, 'qtime': 0, 'grouped': {}, 'nextCursorMark': None, '_next_page_query': None
     }

@@ -1,0 +1,317 @@
+<mxfile host="65bd71144e">
+    <diagram id="overview" name="1 全体像">
+        <mxGraphModel dx="1422" dy="764" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1240" pageHeight="1300" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="1  次回クロールポイント：取得 → 記録 → 判定 → 更新" style="text;whiteSpace=wrap;html=0;fillColor=none;strokeColor=none;fontSize=22;fontFamily=Noto Sans CJK JP;spacing=10;align=left;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="20" width="1140" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="subtitle" value="読み方：実線＝処理の流れ、破線＝補足・データの参照。青＝処理、橙＝判定、緑＝採用、赤＝維持／更新なし、黄＝解説。" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="75" width="1140" height="65" as="geometry"/>
+                </mxCell>
+                <mxCell id="read" value="① 起動：controller から前回位置を取得&#xa;spider_init → ControllerModel.crawl_point_get" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="180" width="500" height="85" as="geometry"/>
+                </mxCell>
+                <mxCell id="init" value="② 前回位置と今回の候補を分ける&#xa;_crawl_point：今回更新する候補&#xa;CrawlProgress.previous：前回位置のコピー" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="315" width="500" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="run" value="③ 一覧・サイトマップから記事を発見し取得&#xa;各スパイダー／共通拡張クラス&#xa;前回位置を継続判定に使い、今回の候補を作る" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="465" width="500" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="end" value="④ 終了処理に入る&#xa;spider_closed._save_crawl_results" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="625" width="500" height="75" as="geometry"/>
+                </mxCell>
+                <mxCell id="flag" value="更新しないテスト指定？&#xa;crawl_point_non_update" style="rhombus;whiteSpace=wrap;html=0;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="150" y="745" width="320" height="115" as="geometry"/>
+                </mxCell>
+                <mxCell id="safe" value="⑤ 保存結果から安全な位置を算出&#xa;CrawlProgress.safe_point → 2 ページ目" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="915" width="500" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="save" value="⑥ controller の当該スパイダー欄を更新&#xa;ControllerModel.crawl_point_update&#xa;次回起動で①から読み直す" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="1050" width="500" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="db" value="controller の対象&#xa; domain ＋ document_type = crawl_point&#xa;その中の spider.name の情報を読み書き&#xa;減速用 download_control 文書とは別" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="670" y="180" width="480" height="115" as="geometry"/>
+                </mxCell>
+                <mxCell id="states" value="実行中にメモリーへ記録するもの&#xa;• 必須の一覧・サイトマップの起点&#xa;• 要求した URL と分割記事の親 URL&#xa;• 解析完了／保存成功／失敗&#xa;• 一覧のページ番号と記事の並び&#xa;&#xa;各スパイダー ＋ CrawlProgressMiddleware&#xa;詳細は 2 ページ目" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="670" y="425" width="480" height="210" as="geometry"/>
+                </mxCell>
+                <mxCell id="skip" value="クロールポイントは更新しない&#xa;（テスト用フラグ）" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#f8cecc;strokeColor=#b85450;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="690" y="755" width="440" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="note" value="「発見した最新の記事」≠「安全に完了した地点」&#xa;候補をそのまま保存せず⑤で判定する。&#xa;前回位置を採用した場合も⑥で同じ位置を書き戻す。&#xa;&#xa;図は通常の終了処理が実行される場合の流れ。&#xa;強制終了時の逐次チェックポイント保存ではない。" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="670" y="985" width="480" height="165" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge0" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="read" target="init" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="init" target="run" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="run" target="end" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="end" target="flag" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge4" value="いいえ" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="flag" target="safe" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge5" value="はい" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="flag" target="skip" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="safe" target="save" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge7" value="対象" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;dashed=1;" parent="1" source="read" target="db" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge8" value="記録" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;dashed=1;" parent="1" source="run" target="states" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge9" value="補足" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;dashed=1;" parent="1" source="save" target="note" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="common" name="2 記録と共通判定">
+        <mxGraphModel dx="1422" dy="764" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1240" pageHeight="1300" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="2  何を記録して、何を「未完了」と判定するか" style="text;whiteSpace=wrap;html=0;fillColor=none;strokeColor=none;fontSize=22;fontFamily=Noto Sans CJK JP;spacing=10;align=left;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="20" width="1140" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="subtitle" value="目的：HTTP 200 や一覧への掲載だけで完了にしない。記事の発見と、記事の保存を別々に確認する。" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="75" width="1140" height="65" as="geometry"/>
+                </mxCell>
+                <mxCell id="events" value="実行中の出来事" style="text;whiteSpace=wrap;html=0;fillColor=none;strokeColor=none;fontSize=22;fontFamily=Noto Sans CJK JP;spacing=10;align=left;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="170" width="480" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="a" value="一覧・サイトマップの起点を準備&#xa;各共通拡張 → expect_discovery" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="230" width="480" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="b" value="Scrapy が要求を登録&#xa;request_scheduled → scheduled_request" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="325" width="480" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="c" value="解析結果を最後まで取り出した&#xa;process_spider_output → parsed_response" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="420" width="480" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="d" value="全パイプラインを通過した&#xa;item_scraped → saved_response" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="515" width="480" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="e" value="解析例外／保存例外／アイテム破棄&#xa;各失敗通知 → failed_response&#xa;不正サイトマップも明示的に失敗登録" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="610" width="480" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="f" value="各サイトの一覧から URL を抽出&#xa;record_listing：ページ番号と順序を保持&#xa;※ 記事の保存成功を意味しない" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="725" width="480" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="check" value="終了時：safe_point&#xa;記事発見は完了した？" style="rhombus;whiteSpace=wrap;html=0;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="690" y="240" width="390" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="old" value="前回位置を返す&#xa;未発見記事の時刻・順序を推測しない" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#f8cecc;strokeColor=#b85450;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="790" y="450" width="440" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="incomplete" value="未完了の元記事を集める&#xa;・対象記事が saved にない、または failed&#xa;・その記事の後続ページが未保存／失敗&#xa;checkpoint_root で元記事にひも付ける" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="670" y="605" width="440" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="mode" value="候補に latest_lastmod がある？" style="rhombus;whiteSpace=wrap;html=0;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="700" y="815" width="380" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="sitemap" value="はい：日時方式&#xa;3 ページ目" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="610" y="1000" width="240" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="url" value="いいえ：URL 方式&#xa;4 ページ目" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="930" y="1000" width="240" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="guard" value="記事発見が未完了とする条件&#xa;必須起点・発見用要求が未解析／失敗、&#xa;または応答 URL 不明の失敗。&#xa;再試行の途中の HTTP エラーを&#xa;すべて failed に登録するわけではない。" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="910" width="480" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge0" value="いいえ" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" parent="1" source="check" target="old" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge1" value="はい" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="check" target="incomplete" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="640" y="310"/>
+                            <mxPoint x="640" y="670"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="incomplete" target="mode" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge3" value="はい" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="mode" target="sitemap" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge4" value="いいえ" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="mode" target="url" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="lastmod" name="3 lastmod 方式">
+        <mxGraphModel dx="1422" dy="764" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1240" pageHeight="1300" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="3  lastmod 方式：失敗した時刻を飛び越えない" style="text;whiteSpace=wrap;html=0;fillColor=none;strokeColor=none;fontSize=22;fontFamily=Noto Sans CJK JP;spacing=10;align=left;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="20" width="1140" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="subtitle" value="前提：2 ページ目で記事発見が完了している。対象記事は保存結果で判定し、同じ lastmod の記事は一組として扱う。" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="75" width="1140" height="65" as="geometry"/>
+                </mxCell>
+                <mxCell id="dates" value="全対象記事の lastmod を比較可能な UTC にそろえる&#xa;_sitemap_point ／ utc_date" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="180" width="500" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="valid" value="全記事の日時が分かる？" style="rhombus;whiteSpace=wrap;html=0;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="140" y="310" width="340" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="missing" value="未完了の記事がある？" style="rhombus;whiteSpace=wrap;html=0;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="140" y="465" width="340" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="boundary" value="未完了記事の最も古い日時を境界にする&#xa;境界より前の対象記事から、最大の日時を選ぶ" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="650" width="500" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="forward" value="選べる日時があり、&#xa;前回日時より進められる？" style="rhombus;whiteSpace=wrap;html=0;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="130" y="930" width="360" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="selected" value="候補の latest_lastmod をその日時に変更して返す&#xa;→ 全体図⑥で保存" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="1135" width="500" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="old" value="前回位置を返す&#xa;→ 全体図⑥で同じ位置を保存" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#f8cecc;strokeColor=#b85450;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="940" y="950" width="380" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="all" value="全件完了：今回の候補をそのまま返す&#xa;→ 全体図⑥で保存" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="690" y="485" width="460" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="example" value="例：前回位置は 09:55&#xa;&#xa;10:00  保存成功  ← 今回保存する位置&#xa;10:05  保存失敗  ← 未完了の境界&#xa;10:10  保存成功  ← 先へ進む根拠にしない&#xa;&#xa;次回は 10:05 を再取得できる。&#xa;10:10 の再取得は許容する。&#xa;現行の継続判定は「保存日時より古い記事」を&#xa;スキップするため、10:00 も再取得対象になる。" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="630" y="640" width="460" height="255" as="geometry"/>
+                </mxCell>
+                <mxCell id="same" value="同時刻が複数ある場合&#xa;10:05 の記事が 1 件でも未完了なら、&#xa;10:05 自体を保存位置には選ばない。" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="690" y="1135" width="460" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge0" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="dates" target="valid" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge1" value="いいえ" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;entryX=0.908;entryY=-0.011;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="valid" target="old" edge="1">
+                    <mxGeometry x="-0.9283" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge2" value="はい" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="valid" target="missing" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge3" value="いいえ" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="missing" target="all" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge4" value="はい" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="missing" target="boundary" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="boundary" target="forward" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge6" value="はい" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="forward" target="selected" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge7" value="いいえ" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="forward" edge="1">
+                    <mxGeometry x="-0.7333" relative="1" as="geometry">
+                        <mxPoint x="940" y="990" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="910" y="990"/>
+                            <mxPoint x="910" y="990"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="urls" name="4 URL 方式">
+        <mxGraphModel dx="1422" dy="764" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1240" pageHeight="1300" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="4  URL 方式：「成功した最新 10 件」ではなく、安全な目印を選ぶ" style="text;whiteSpace=wrap;html=0;fillColor=none;strokeColor=none;fontSize=22;fontFamily=Noto Sans CJK JP;spacing=10;align=left;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="20" width="1140" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="subtitle" value="前提：記事発見が完了している。一覧は新しい → 古い順。件数 N = url_continued.check_count（通常 10）。" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="75" width="1140" height="65" as="geometry"/>
+                </mxCell>
+                <mxCell id="order" value="単一起点で urls を持つ候補か確認&#xa;一覧をページ番号順に結合し、URL の重複を除く&#xa;一覧記録がなければ all_urls_list を使う" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="180" width="500" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="partial" value="未完了の記事がある？" style="rhombus;whiteSpace=wrap;html=0;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="140" y="335" width="340" height="105" as="geometry"/>
+                </mxCell>
+                <mxCell id="where" value="未完了の記事すべての位置が分かる？&#xa;最も古い未完了記事を探す" style="rhombus;whiteSpace=wrap;html=0;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="520" width="420" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="anchors" value="その記事より古い側の N 件を選ぶ&#xa;（新しい側の成功記事は目印にしない）" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="705" width="500" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="enough" value="目印が N 件そろう？" style="rhombus;whiteSpace=wrap;html=0;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="140" y="970" width="340" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="save" value="候補の urls を選んだ目印に置き換えて返す&#xa;→ 全体図⑥で保存" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="1155" width="500" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="DBdIWMOX7Jdr7UHq3C56-1" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="all" target="old">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="all" value="全件完了：一覧の先頭 N 件を選ぶ&#xa;前回位置あり ＋ N 件未満 → 前回位置を維持&#xa;初回なら N 件未満でも採用できる&#xa;→ 全体図⑥で保存" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="690" y="345" width="460" height="125" as="geometry"/>
+                </mxCell>
+                <mxCell id="old" value="前回位置を返す&#xa;複数起点／urls なし／位置不明／目印不足&#xa;→ 全体図⑥で同じ位置を保存" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#f8cecc;strokeColor=#b85450;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="690" y="540" width="460" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="example" value="例：N = 10 ／ 一覧の新しい順&#xa;&#xa;A：成功&#xa;B：未完了&#xa;C：成功&#xa;D：未完了 ← 最も古い未完了&#xa;E ～ N：10 件の目印 ← ここを保存&#xa;&#xa;次回は新しい側から再び一覧をたどる。&#xa;B・D を飛び越えず取得対象にでき、&#xa;A・C の再取得も許容する。" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="690" y="710" width="460" height="240" as="geometry"/>
+                </mxCell>
+                <mxCell id="limit" value="目印は厳密な「最後の 1 件」ではない。&#xa;現行の継続判定は保存 URL の約半数との一致を使う。&#xa;サイト側が一覧順序を変えた場合の完全保証はない。" style="rounded=1;arcSize=10;whiteSpace=wrap;html=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=15;fontFamily=Noto Sans CJK JP;spacing=10;" parent="1" vertex="1">
+                    <mxGeometry x="650" y="1155" width="540" height="95" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge0" value="候補形式が有効" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="order" target="partial" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge1" value="候補形式が無効" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;entryX=1;entryY=0.25;entryDx=0;entryDy=0;" parent="1" source="order" target="old" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1180" y="230"/>
+                            <mxPoint x="1180" y="565"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge2" value="いいえ" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="partial" target="all" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge3" value="はい" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="partial" target="where" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge4" value="いいえ" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="where" target="old" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge5" value="はい" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="where" target="anchors" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="anchors" target="enough" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge7" value="いいえ" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" parent="1" source="enough" target="old" edge="1">
+                    <mxGeometry x="-0.875" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1180" y="1020"/>
+                            <mxPoint x="1180" y="615"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge8" value="はい" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#555555;fontSize=14;labelBackgroundColor=#ffffff;" parent="1" source="enough" target="save" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

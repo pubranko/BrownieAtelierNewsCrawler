@@ -1,12 +1,12 @@
 import glob
 import os
+
 # from prefect.testing.utilities import prefect_test_harness
-from prefect_lib.flows.scraper_info_uploader_flow import \
-    scraper_info_by_domain_flow
+from prefect_lib.flows.scraper_info_uploader_flow import scraper_info_by_domain_flow
 
 
 def test_exec():
-#     with prefect_test_harness():
+    #     with prefect_test_harness():
     scraper_info_by_domain_flow(
         scraper_info_by_domain_files=[
             # "nikkei_com.json",
@@ -28,6 +28,7 @@ def test_exec():
     for log_file in glob.glob("/tmp/prefect_log_*"):
         print(f"削除漏れlog_file削除: {log_file}")
         os.remove(log_file)
+
 
 if __name__ == "__main__":
     test_exec()

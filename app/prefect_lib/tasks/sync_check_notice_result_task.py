@@ -1,7 +1,8 @@
 import io
 from urllib.parse import urlparse
-from BrownieAtelierNotice.slack.slack_notice import slack_notice
+
 from BrownieAtelierNotice import settings
+from BrownieAtelierNotice.slack.slack_notice import slack_notice
 from prefect import get_run_logger, task
 from prefect_lib.flows import START_TIME
 
@@ -27,32 +28,42 @@ def sync_check_notice_result_task(
     if len(response_async_list) > 0:
         # メール通知用メッセージ追記
         message = (
-            f"{message}以下のドメインでクローラーで対象となったにもかかわらず、crawler_responseに登録されていないケースがあります。\n"
+            f"{message}以下のドメインでクローラーで対象となったにもかかわらず"
+            f"、crawler_responseに登録されていないケースがあります。\n"
         )
         for item in response_async_domain_aggregate.items():
             if item[1] > 0:
                 message = message + item[0] + " : " + str(item[1]) + " 件\n"
-                _ = [url for url in response_async_list if urlparse(url).hostname.replace("www.","") == item[0]]    # 非同期リストよりドメインが一致したものだけのリストを生成
+                _ = [
+                    url for url in response_async_list if urlparse(url).hostname.replace("www.", "") == item[0]
+                ]  # 非同期リストよりドメインが一致したものだけのリストを生成
                 message = message + "\n".join(_) + "\n"
 
     # スクレイピングミス分のurlがあれば
     if len(master_async_list) > 0:
         # メール通知用メッセージ追記
-        message = f"{message}以下のドメインでcrawler_responseにあるにもかかわらず、news_clip_master側に登録されていないケースがあります。\n"
+        message = (
+            f"{message}以下のドメインでcrawler_responseにあるにもかか"
+            f"わらず、news_clip_master側に登録されていないケースがあります。\n"
+        )
         for item in master_async_domain_aggregate.items():
             if item[1] > 0:
                 message = message + item[0] + " : " + str(item[1]) + " 件\n"
-                _ = [url for url in master_async_list if urlparse(url).hostname.replace("www.","") == item[0]]    # 非同期リストよりドメインが一致したものだけのリストを生成
+                _ = [
+                    url for url in master_async_list if urlparse(url).hostname.replace("www.", "") == item[0]
+                ]  # 非同期リストよりドメインが一致したものだけのリストを生成
                 message = message + "\n".join(_) + "\n"
 
     # solrへの送信ミス分のurlがあれば
     # if len(solr_async_list) > 0:
     #     # メール通知用メッセージ追記
-    #     message = f"{message}以下のドメインでnews_clip_masterにあるにもかかわらず、solr_news_clip側に登録されていないケースがあります。\n"
+    # message = f"{message}以下のドメインでnews_clip_masterにあるにも
+    # かかわらず、solr_news_clip側に登録されていないケースがあります。\n"
     #     for item in solr_async_domain_aggregate.items():
     #         if item[1] > 0:
     #             message = message + item[0] + " : " + str(item[1]) + " 件\n"
-    #             _ = [url for url in solr_async_list if urlparse(url).hostname.replace("www.","") == item[0]]    # 非同期リストよりドメインが一致したものだけのリストを生成
+    #             _ = [url for url in solr_async_list if urlparse(url).hostname.replace("www.","") == item[0]]
+    # # 非同期リストよりドメインが一致したものだけのリストを生成
     #             message = message + "\n".join(_) + "\n"
 
     # エラーがあった場合エラー通知を行う。

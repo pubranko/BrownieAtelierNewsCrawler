@@ -9,139 +9,35 @@ on:
     workflow_dispatch:
 
 jobs:
-  ##########################################
-  # テスト準備
-  ##########################################
+  Branch-Controll:
+    uses: ./.github/workflows/common_branch_control.yml
+    with:
+      # 手動で master を選んでも、テスト専用フローは TEST 環境を使う。
+      environment_override: TEST
   Prefect-Flow-Test-Preparation:
-    runs-on: ubuntu-22.04
-    environment:
-      name: TEST
-    env:
-        ## dockerfile_baseで参照するubuntuイメージのタグ
-        UBUNTU_TAG: 22.04
-        ## # dockerfileで参照するbaseイメージのタグ
-        # BASE_TAG: test-0.15
-        # docker-composeで参照するnew_crawlerイメージのタグ。このワークフロー内ではlatest固定とする。
-        NEWS_CRAWLER_TAG: latest
-        # コンテナー内rootユーザーパスワード
-        CONTAINER_ROOT_PASS: password
-        # コンテナ内の一般ユーザー、パスワード
-        CONTAINER_USER: common_user
-        CONTAINER_USER_PASS: password
-        # ブラウニー工房のgitリモートリポジトリー
-        GIT_REMOTE_REPOSITORY: https://github.com/pubranko/BrownieAtelierNewsCrawler.git
-        # 上記リポジトリーのgitブランチ
-        # GIT_BRANCH: ${{ github.ref }}
-        # GIT_BRANCH: ${{github.head_ref}}
-        GIT_BRANCH: ${{github.ref_name}}
-        # Firefox の gecko driver
-        GECKO_DRIVER: https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz
+    needs: [Branch-Controll]
+    uses: ./.github/workflows/common_image_build.yml
+    with:
+      environment_name: ${{ needs.Branch-Controll.outputs.env_name }}
+    secrets: inherit
 
-        # dummy
-        HOST_OS_IP_ADDRESS: 192.0.0.1
-
-        # Docker イメージの tar アーカイブ出力先のパス
-        PATH_CACHE: /tmp/docker-img-arch
-
-        # タイムゾーン
-        TZ: "Asia/Tokyo"
-    steps:
-      - run: echo "🎉 起動イベントの種類 (${{ github.event_name }})"
-      - run: echo "🐧 github上のOSの種類 (${{ runner.os }})"
-      - name: リポジトリ(${{ github.repository }})・ブランチ(${{github.ref_name}})にチェックアウト
-        # 上記のリポジトリ・ブランチにチェックアウト
-        uses: actions/checkout@v4
-
-      - name: ワークスペースチェック
-        # テスト前チェックを確認
-        # クローン後はここにソースが格納される /home/runner/work/BrownieAtelierNewsCrawler/BrownieAtelierNewsCrawler
-        run: |
-          ls -a ${{ github.workspace }}
-
-      # インストールされているものの一覧を調べてみた。
-      #- run: sudo apt list --installed
-      #- run: sudo dpkg-query -l
-
-      #################################################
-      # baseイメージコンテナー
-      #################################################
-
-      - name: baseイメージ用キャッシュの定義 & 復元
-        # キャッシュID の定義
-        id: base_image_cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.PATH_CACHE }}
-          key: ${{ runner.os }}-brownie-atelier-news-crawler-base-${{ vars.BASE_TAG }}
-
-      # キャッシュがある場合は tar をdockerにロードしてイメージに追加
-      - name: base用キャッシュがある場合は tar をロードしてイメージ一覧に追加
-        if: steps.base_image_cache.outputs.cache-hit == 'true'
-        run: |
-          ls -l ${{ env.PATH_CACHE }}
-          docker load --input ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie-atelier-news-crawler-base-${{ vars.BASE_TAG }}.tar
-          docker images
-
-      - name: baseイメージがキャッシュにない場合にbuildとsave(キャッシュ)を実行
-        if: steps.base_image_cache.outputs.cache-hit != 'true'
-        # git branchにはdevelopを固定で割り当てとする。 new_crawlerイメージ作成側で修正中のブランチやmaster等を適用する運用とする。 
-        run: |
-          mkdir ${{ env.PATH_CACHE }}
-          export GIT_BRANCH=${{ env.GIT_BRANCH }}
-          export BASE_TAG=${{ vars.BASE_TAG }}
-          docker compose -f docker-compose__base-image-build.yml build
-          docker save brownie-atelier-news-crawler-base:${{ vars.BASE_TAG }} -o ${{ env.PATH_CACHE }}/${{ runner.os }}-brownie-atelier-news-crawler-base-${{ vars.BASE_TAG }}.tar
-          ls -l ${{ env.PATH_CACHE }}
-          docker images
-
-
-      #################################################
-      # new_crawlerイメージコンテナー
-      #################################################
-      - name: new_crawlerイメージbuild
-        # new_crawlerイメージ作成
-        run: |
-          export BASE_TAG=${{ vars.BASE_TAG }}
-          docker compose -f docker-compose__news-crawler-image-build.yml build
-          docker images
-
-      - name: new_crawlerイメージに別名のタグを付与 ※リポジトリ名を小文字に変換
-        run: |
-          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          docker tag brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}  ghcr.io/${REPO_NAME}/brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}
-
-      - name: コンテナーレジストリーにログイン
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }} # 書き込み・参照権限
-
-      - name: new_crawlerイメージをコンテナーレジストリーにプッシュ
-        run: |
-          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          docker push ghcr.io/${REPO_NAME}/brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}
-
-  ########################################
-  # テスト本体
-  ########################################
+  # 作成済みイメージをアーティファクトから受け取り、レジストリへの公開なしでテストする。
   Prefect-Flow-Test:
     needs: [Prefect-Flow-Test-Preparation]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-26.04
     environment:
       name: TEST
     env:
         ## mongoDB用コンテナーで参照するイメージのタグ
         MONGO_TAG: 7.0.1-jammy
         ## dockerfile_baseで参照するubuntuイメージのタグ
-        UBUNTU_TAG: 22.04
+        UBUNTU_TAG: "26.04"
         ## # dockerfileで参照するbaseイメージのタグ
         # BASE_TAG: test-0.15
-        # docker-composeで参照するnew_crawlerイメージのタグ。このワークフロー内ではlatest固定とする。
-        NEWS_CRAWLER_TAG: latest
-        # コンテナ内の一般ユーザー、パスワード
+        # 共通ビルドが返した実行固有タグを使い、別実行のイメージとの取り違えを防ぐ。
+        NEWS_CRAWLER_TAG: ${{ needs.Prefect-Flow-Test-Preparation.outputs.image_tag }}
+        # コンテナ内の一般ユーザー。Docker の USER で実行するためパスワードは不要。
         CONTAINER_USER: common_user
-        CONTAINER_USER_PASS: password
         # 上記リポジトリーのgitブランチ
         # GIT_BRANCH: ${{ github.ref }}
         # GIT_BRANCH: ${{github.head_ref}}
@@ -228,25 +124,15 @@ jobs:
           docker ps -a
 
       ########################################################################
-      # new_crawlerイメージをプル
+      # 共通ビルドのイメージをアーティファクトから取得
       ########################################################################
-      - name: コンテナーレジストリーにログイン
-        uses: docker/login-action@v3
+      - name: 共通ビルドのイメージを取得
+        uses: actions/download-artifact@v4
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }} # 書き込み・参照権限
-
-      - name: new_crawlerイメージをプル
-        run: |
-          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          docker pull ghcr.io/${REPO_NAME}/brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}
-
-      - name: new_crawlerイメージに別名のタグを付与
-        run: |
-          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          docker tag ghcr.io/${REPO_NAME}/brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}  brownie-atelier-news-crawler:${{ env.NEWS_CRAWLER_TAG }}
-          docker images
+          name: ${{ needs.Prefect-Flow-Test-Preparation.outputs.artifact_name }}
+          path: ${{ runner.temp }}/crawler-image
+      - name: テスト用イメージをロード
+        run: docker load --input "$RUNNER_TEMP/crawler-image/crawler-image.tar"
 
       #################################################
       # new_crawlerイメージコンテナーを起動して各種フロー実行

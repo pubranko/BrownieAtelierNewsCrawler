@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Final, Literal, Optional
+from typing import Any, Final
 
 from pydantic import BaseModel, Field
 
@@ -11,11 +11,11 @@ CONST__FOLLOWING_PROCESSING_EXECUTION: Final[str] = "following_processing_execut
 
 
 class ScrapyingInput(BaseModel):
-    domain: Optional[str] = Field(None, title="")
-    target_start_time_from: Optional[datetime] = Field(None, title="")
-    target_start_time_to: Optional[datetime] = Field(None, title="")
-    urls: Optional[list[str]] = Field(None, title="")
-    following_processing_execution: Optional[bool] = Field(None, title="")
+    domain: str | None = Field(None, title="")
+    target_start_time_from: datetime | None = Field(None, title="")
+    target_start_time_to: datetime | None = Field(None, title="")
+    urls: list[str] | None = Field(None, title="")
+    following_processing_execution: bool | None = Field(None, title="")
 
     def __init__(self, **data: Any):
         """引数チェッククラス。以下のFlowで使用。
@@ -27,8 +27,10 @@ class ScrapyingInput(BaseModel):
     """
     クラス変数側の定義順にチェックされる。
     valuesにはチェック済みの値のみが入るため順序は重要。(単項目チェック、関連項目チェックの順で定義するのが良さそう。)
-    値がNoneの場合、以下のチェックは動かない。Noneでも動かす場合、「always=True」指定で動かすことができる。例）@validator('aaa', always=True)
-    通常上記の型チェックが先に動く。型チェックの前に動かすには「pre=True」指定で動かすことができる。例）@validator('aaa', pre=True, always=True)
+    値がNoneの場合、以下のチェックは動かない。Noneでも動かす場合、「always=True」指定
+    で動かすことができる。例）@validator('aaa', always=True)
+    通常上記の型チェックが先に動く。型チェックの前に動かすには「pre=True」指定で動かすことができ
+    る。例）@validator('aaa', pre=True, always=True)
     """
     ##################################
     # 単項目チェック、省略時の値設定

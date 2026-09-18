@@ -4,7 +4,7 @@ import inspect
 import os
 import re
 import sys
-from typing import Any, Final, ItemsView
+from typing import Any, Final
 
 path = os.getcwd()
 sys.path.append(path)
@@ -27,23 +27,19 @@ class DirectorySearchSpiders:
     """定数: domain_name"""
     SELENIUM_MODE: Final[str] = "selenium_mode"
     """定数: selenium_mode"""
-    SPLASH_MODE: Final[str] = "splash_mode"
-    """定数: splash_mode"""
 
     """ データイメージ
     {'asahi_com_sitemap': {'class_instans': <class 'news_crawl.spiders.asahi_com_sitemap.AsahiComSitemapSpider'>,
                         'class_name': 'AsahiComSitemapSpider',
                         'domain': 'asahi.com',
                         'domain_name': 'asahi_com',
-                        'selenium_mode': False,
-                        'splash_mode': False},
+                        'selenium_mode': False},
     〜省略〜
     'sankei_com_sitemap': {'class_instans': <class 'news_crawl.spiders.sankei_com_sitemap.SankeiComSitemapSpider'>,
                             'class_name': 'SankeiComSitemapSpider',
                             'domain': 'sankei.com',
                             'domain_name': 'sankei_com',
-                            'selenium_mode': True,
-                            'splash_mode': False},}
+                            'selenium_mode': True},}
     """
 
     def __init__(self, directory_path: str = "news_crawl/spiders") -> None:
@@ -75,7 +71,6 @@ class DirectorySearchSpiders:
                 domain_name: str = ""
                 spider_name: str = ""
                 selenium_mode: bool = False
-                splash_mode: bool = False
                 if ptn.search(class_name) and class_name not in exclusion_list:
                     members = class_instans.__dict__
                     if "allowed_domains" in members:
@@ -86,16 +81,7 @@ class DirectorySearchSpiders:
                             domain = members["allowed_domains"][0]
                             domain_name = members["_domain_name"]
                             spider_name = members["name"]
-                            selenium_mode = (
-                                members["selenium_mode"]
-                                if "selenium_mode" in members
-                                else False
-                            )
-                            splash_mode = (
-                                members["splash_mode"]
-                                if "splash_mode" in members
-                                else False
-                            )
+                            selenium_mode = members["selenium_mode"] if "selenium_mode" in members else False
                     else:
                         select_flg = False
                 else:
@@ -109,7 +95,6 @@ class DirectorySearchSpiders:
                         "domain": domain,
                         "domain_name": domain_name,
                         "selenium_mode": selenium_mode,
-                        "splash_mode": splash_mode,
                     }
 
             del mod  # 不要になったモジュールを削除(メモリ節約)
@@ -120,27 +105,23 @@ class DirectorySearchSpiders:
         """
         return list(self.spiders_info.keys())
 
-    def spiders_info_list_get(
-        self, target_spiders_name: set[str]
-    ) -> list[dict[str, Any]]:
+    def spiders_info_list_get(self, target_spiders_name: set[str]) -> list[dict[str, Any]]:
         """
         引数(spiders_name)で指定された対象スパイダーのスパイダー情報リストを返す。
         ＜データイメージ＞
             result = [spider_info, spider_info,,,]
-            spider_info = {'class_instans': *, 'class_name': *, 'domain': *, 'domain_name': *, 'selenium_mode': *, 'splash_mode': *}
+            spider_info = {'class_instans': *, 'class_name': *, 'domain': *, 'domain_name': *, 'selenium_mode': *}
         """
         result: list[dict[str, Any]] = []
         for spider_name, spider_attr in self.spiders_info.items():
             # 対象スパイダー以外は除外
-            if not spider_name in target_spiders_name:
+            if spider_name not in target_spiders_name:
                 continue
             result.append(spider_attr)
 
         return result
 
-    def separate_spider_using_selenium(
-        self, target_spiders_name: set
-    ) -> list[list[dict[str, Any]]]:
+    def separate_spider_using_selenium(self, target_spiders_name: set) -> list[list[dict[str, Any]]]:
         """
         引数(spiders_name)で指定された対象スパイダーセットに対して、
         seleniumを使用しているスパイダーは単独、それ以外は１つにまとめたリストを返す。
@@ -148,13 +129,13 @@ class DirectorySearchSpiders:
             result = [[spider_info],  # selenium使用
                       [spider_info],  # selenium使用
                       [spider_info, spider_info]]    # selenium未使用
-            spider_info = [{'class_instans': *, 'class_name': *, 'domain': *, 'domain_name': *, 'selenium_mode': *, 'splash_mode': *}]
+            spider_info = [{'class_instans': *, 'class_name': *, 'domain': *, 'domain_name': *, 'selenium_mode': *}]
         """
         result: list[list[dict[str, Any]]] = []
         non_selenium: list[dict[str, Any]] = []
         for spider_name, spider_attr in self.spiders_info.items():
             # 対象スパイダー以外は除外
-            if not spider_name in target_spiders_name:
+            if spider_name not in target_spiders_name:
                 continue
             # seleniumuを使っている場合は単独、それ以外は非selenium用へ集約
             # if spider_attr['selenium_mode']:
@@ -189,10 +170,8 @@ if __name__ == "__main__":
     # execute only if run as a script
     directory_search_spiders = DirectorySearchSpiders()
     spiders_info = directory_search_spiders.spiders_info
-    separate_spider_using_selenium = (
-        directory_search_spiders.separate_spider_using_selenium(
-            set(directory_search_spiders.spiders_name_list_get())
-        )
+    separate_spider_using_selenium = directory_search_spiders.separate_spider_using_selenium(
+        set(directory_search_spiders.spiders_name_list_get())
     )
     from pprint import pprint
 

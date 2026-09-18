@@ -2,15 +2,12 @@
 import logging
 import os
 import sys
-from datetime import datetime as dt
 from logging import Logger
 
-import pysolr
+sys.path.append(os.getcwd())
+from models.solr_news_clip_model import SolrNewsClip
 
 path = os.getcwd()
-sys.path.append(path)
-from models.solr_news_clip_model import SolrNewsClip
-from shared.settings import TIMEZONE
 
 logger: Logger = logging.getLogger()
 

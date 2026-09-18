@@ -6,7 +6,7 @@ services:
             args:
                 ## dockerfileで参照するbase側のイメージタグ
                 BASE_TAG: ${BASE_TAG}
-                # コンテナ内の一般ユーザー、パスワード
+                # ベースイメージ作成時と同じ一般ユーザー名（パスワードは不要）
                 CONTAINER_USER: ${CONTAINER_USER}
                 # ブラウニー工房のgitリモートリポジトリーのブランチ
                 GIT_BRANCH: ${GIT_BRANCH}

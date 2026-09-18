@@ -11,9 +11,9 @@
 # ~.venv/lib/python3.8/site-packages/scrapy/settings/default_settings.py
 import os
 from datetime import timedelta, timezone
-from shutil import which
 
-from decouple import AutoConfig, config
+from decouple import config
+from shared.settings import DATA
 
 # .envファイルが存在するパスを指定。実行時のカレントディレクトリに.envを配置している場合、以下の設定不要。
 # config = AutoConfig(search_path="./shared")
@@ -27,9 +27,7 @@ NEWSPIDER_MODULE = "news_crawl.spiders"
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # リクエストに含まれるユーザーエージェントの指定
 # USER_AGENT = 'news_crawl (+http://www.yourdomain.com)'
-USER_AGENT = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0"
-)
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0"
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
@@ -45,12 +43,15 @@ CONCURRENT_REQUESTS = 32
 # See also autothrottle settings and docs
 # DOWNLOAD_DELAY = 3
 DOWNLOAD_DELAY = 3
+# 基準間隔を下回るランダムな短縮を避ける（AutoThrottle による延長は別途行う）。
+RANDOMIZE_DOWNLOAD_DELAY = False
 
 # The download delay setting will honor only one of:
 # webサイトのドメインごとに、同時平行処理するリクエストの最大値
 # CONCURRENT_REQUESTS_PER_DOMAIN = 100
 CONCURRENT_REQUESTS_PER_DOMAIN = 1
-# webサイトのIPごとの同時並行リクエストの最大値。これを指定すると、DOWNLOAD_DELAYもipごとになり、CONCURRENT_REQUESTS_PER_DOMAINは無視される。
+# webサイトのIPごとの同時並行リクエストの最大値。これを指定すると、DOWNLOAD_DELAYもip
+# ごとになり、CONCURRENT_REQUESTS_PER_DOMAINは無視される。
 # CONCURRENT_REQUESTS_PER_IP = 1
 
 # Disable cookies (enabled by default)
@@ -76,23 +77,18 @@ TELNETCONSOLE_ENABLED = False
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 # スパイダーのミドルウェアを作る場合に使用する。
 SPIDER_MIDDLEWARES = {
+    # 要求・解析・保存の結果を共通で集計し、終了時の安全なクロールポイント算出に使う。
+    "news_crawl.spiders.common.crawl_progress.CrawlProgressMiddleware": 50,
     # 'news_crawl.middlewares.NewsCrawlSpiderMiddleware': 543,
-    # Splash用
-    # 'scrapy_splash.SplashDeduplicateArgsMiddleware': 100,
 }
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 # ダウンロードのミドルウェアを自作のものを使いたい場合、以下の設定を変える。
 DOWNLOADER_MIDDLEWARES = {
+    "scrapy.downloadermiddlewares.retry.RetryMiddleware": None,
+    "news_crawl.adaptive_throttle.RateLimitRetryMiddleware": 550,
     #'news_crawl.middlewares.NewsCrawlDownloaderMiddleware': 543,
-    # splash用
-    # 'scrapy_splash.SplashCookiesMiddleware': 723,
-    # 'scrapy_splash.SplashMiddleware': 725,
-    # selenium用 -> カスタムバージョン
-    # 'news_crawl.scrapy_selenium_custom_middlewares.SeleniumMiddleware': 800,
-    # selenium用
-    #'scrapy_selenium.SeleniumMiddleware': 800,
     # defalt_settings.pyより
     # Engine side
     # 'scrapy.downloadermiddlewares.robotstxt.RobotsTxtMiddleware': 100,
@@ -131,16 +127,35 @@ ITEM_PIPELINES = {
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
-# AUTOTHROTTLE_ENABLED = True
+AUTOTHROTTLE_ENABLED = True
 # The initial download delay
-# AUTOTHROTTLE_START_DELAY = 5
+AUTOTHROTTLE_START_DELAY = 3
 # The maximum download delay to be set in case of high latencies
-# AUTOTHROTTLE_MAX_DELAY = 60
+AUTOTHROTTLE_MAX_DELAY = 60
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-# AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
+AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
 # Enable showing throttling stats for every response received:
-# AUTOTHROTTLE_DEBUG = False
+# AUTOTHROTTLE_DEBUG は下の LOG_LEVEL 定義後に同じログ設定から決定する。
+
+# 標準 AutoThrottle を拡張し、controller の基準間隔を調整の下限にする。
+EXTENSIONS = {
+    "scrapy.extensions.throttle.AutoThrottle": None,
+    "news_crawl.adaptive_throttle.AdaptiveThrottle": 0,
+}
+DOWNLOADER = "news_crawl.adaptive_throttle.ThrottledDownloader"
+
+# 429 は同じ実行内で待機し、基準間隔を3秒ずつ延ばす。倍増はしない。
+# Retry-After の指定が60秒より長ければ、その時刻まで待機する。
+RATE_LIMIT_COOLDOWN = 60
+RATE_LIMIT_DELAY_STEP = 2
+RATE_LIMIT_MAX_DELAY = 60
+# 1リクエストの再試行上限と、1回のクロール全体で許容する待機時間（秒）。
+# 上限を超えた場合は、保存成功が確認できた安全な地点まで controller を更新する。
+RATE_LIMIT_MAX_RETRIES = 5
+RATE_LIMIT_MAX_WAIT = 900
+# URL方式で前回の目印が見つからない場合の一覧探索上限。未到達なら再開位置を進めない。
+CONTINUED_MAX_LISTING_PAGES = 100
 
 # Enable and configure HTTP caching (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
@@ -174,12 +189,14 @@ SCHEDULER_PRIORITY_QUEUE = "scrapy.pqueues.ScrapyPriorityQueue"
 # DEPTH_STATS_VERBOSE = True
 
 # 何かしら時間による処理を行いたい場合、使用するタイムゾーンを定義する。
-#  例：spider内のsitemap_fillterで、lastmodの時間を絞り込みしたい。引数に与える時間のタイムゾーンには、settingsのTIME_ZONEを使用する。
+# 例：spider内のsitemap_fillterで、lastmodの時間を絞り込みしたい。引数に与える
+# 時間のタイムゾーンには、settingsのTIME_ZONEを使用する。
 TIMEZONE = timezone(timedelta(hours=9), "JST")
 
 # LOGのレベル(CRITICAL > ERROR > WARNING > INFO > DEBUG)
 # 環境変数にSCRAPY__LOG_LEVELがあればそれをログレベルとする。
 LOG_LEVEL: str = str(config("SCRAPY__LOG_LEVEL", default="INFO"))
+AUTOTHROTTLE_DEBUG = LOG_LEVEL.upper() == "DEBUG"
 
 # 基本的にSCRAPY__LOG_FILEに指定されたprefect側のログファイルを使用する。
 LOG_FILE = str(config("SCRAPY__LOG_FILE", default="./scrapy.log"))
@@ -188,7 +205,8 @@ LOG_FILE = str(config("SCRAPY__LOG_FILE", default="./scrapy.log"))
 LOG_ENABLED = True
 # LOG_ENABLED = False
 LOG_ENCODING = "utf-8"
-# ログ・メッセージをフォーマットするための文字列。 利用可能なプレース・ホルダーの全リストについては、 Python logging documentation を参照してください。
+# ログ・メッセージをフォーマットするための文字列。 利用可能なプレース・ホルダーの全リストについては、
+# Python logging documentation を参照してください。
 LOG_FORMAT = "%(asctime)s %(levelname)-7s [%(name)s] : %(message)s"
 # LOG_FORMAT = '[%(asctime)s] %(levelname)s - %(name)s | %(message)s'
 # 日付/時刻をフォーマットするための文字列、 LOG_FORMAT の %(asctime)s プレース・ホルダーの展開。
@@ -196,48 +214,32 @@ LOG_FORMAT = "%(asctime)s %(levelname)-7s [%(name)s] : %(message)s"
 LOG_DATEFORMAT = "%Y-%m-%d %H:%M:%S"
 # LOG_DATEFORMAT = '%Y-%m-%d %H:%M:%S%z'
 # LOG_FORMATTER = True
-# True の場合、処理のすべての標準出力(およびエラー)がログにリダイレクトされます。 たとえば、 print('hello') の場合、Scrapyログに表示されます。
+# True の場合、処理のすべての標準出力(およびエラー)がログにリダイレクトされます。 たとえば、
+# print('hello') の場合、Scrapyログに表示されます。
 # LOG_STDOUT = False
-# True の場合、ログにはルート・パスのみが含まれます。 False に設定されている場合、ログ出力を担当するコンポーネントが表示されます
+# True の場合、ログにはルート・パスのみが含まれます。 False
+# に設定されている場合、ログ出力を担当するコンポーネントが表示されます
 # LOG_SHORT_NAMES = False
 # LogStats による統計の各ログ出力間の間隔(秒単位)。
 # LOGSTATS_INTERVAL = 60.0
 INSTALL_ROOT_HANDLER = False
 
-# Scrapy-Seleniumの設定。上述のDOWNLOADER_MIDDLEWARES={}にも設定を行っている。
-SELENIUM_DRIVER_NAME = "firefox"
-SELENIUM_DRIVER_EXECUTABLE_PATH = which("geckodriver")
-# SELENIUM_DRIVER_ARGUMENTS = ["-headless"]
-SELENIUM_DRIVER_ARGUMENTS = [
-    "--headless",
-    "--window-size=1920,1080"
-]
-# ブラウザ・通信の不可軽減のため、独自の設定を追加してみた。
-#   その他の設定については、ここが参考になりそう https://www.programcreek.com/python/example/100026/selenium.webdriver.FirefoxProfile
-#   1:通常、2:禁止
-SELENIUM_DRIVER_SET_PREFERENCE = {
-    "permissions.default.image": 2,  # 画像のダウンロード禁止
-    "permissions.default.image.animation_mode": 2,  # gitなどのアニメーションのダウンロード禁止
-    "permissions.default.stylesheet": 2,  # cssのダウンロード禁止
-    "dom.ipc.plugins.enabled.libflashplayer.so": "false",  # Flashを使わない
+# scrapy-playwright の設定
+TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
+DOWNLOAD_HANDLERS = {
+    "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+    "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
 }
-SELENIUM_FIREFOX_PROFILE_DIRECTORY = (
-    "firefox_profile"  # firefoxのクローラー用にカスタマイズしたプロファイル。Browniatelier/app/firefox_profile
-)
+PLAYWRIGHT_BROWSER_TYPE = "chromium"
+PLAYWRIGHT_LAUNCH_OPTIONS = {"headless": True}
+PLAYWRIGHT_DEFAULT_NAVIGATION_TIMEOUT = 60_000
 
 
-# Scrapy-Splashの設定
-SPLASH_URL = "http://localhost:8050/"
-DUPEFILTER_CLASS = "scrapy_splash.SplashAwareDupeFilter"
-HTTPCACHE_STORAGE = "scrapy_splash.SplashAwareFSCacheStorage"
-
-# splashの再起動でエラーが多発する。その分をretryでカバーしたい。
 RETRY_ENABLED = True
 # RETRY_TIMES = 2    requestオブジェクトで直接拡張させたのでここでの設定不要。
 RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408, 429]
 
 # 排他制御用のワークディレクトリ設定
-from shared.settings import DATA
 
 EXCLUSIVE_WORK = os.path.join(DATA, "exclusive_work")
 
@@ -261,7 +263,7 @@ EXCLUSIVE_WORK = os.path.join(DATA, "exclusive_work")
     'scrapy.downloadermiddlewares.redirect.RedirectMiddleware': 600,
     'scrapy.downloadermiddlewares.cookies.CookiesMiddleware': 700,
     'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 750,
-    ここにseleniumuが入るイメージ
+    ここにPlaywrightのダウンロードハンドラーが入るイメージ
     'scrapy.downloadermiddlewares.stats.DownloaderStats': 850,
     'scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware': 900,
 }

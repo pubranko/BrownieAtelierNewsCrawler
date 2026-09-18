@@ -1,16 +1,14 @@
-import logging
-import sys
 from logging import Logger, LoggerAdapter
-from typing import Union
 
 import psutil
 
 
-def resource_check(logger: Union[Logger, LoggerAdapter]) -> dict:
+def resource_check(logger: Logger | LoggerAdapter) -> dict:
     """
     CPU、メモリースワップメモリーの使用状況をチェックする。
     psutilで取得した値をログへ出力しdictで返す。
-    cpu_percent, memory_used, memory_total, memory_available, memory_percent, swap_memory_used, swap_memory_total, swap_memory_percent
+    cpu_percent, memory_used, memory_total, memory_available, memory_percent, swap_memory_used,
+    swap_memory_total, swap_memory_percent
     """
 
     memory = psutil.virtual_memory()
@@ -32,13 +30,9 @@ def resource_check(logger: Union[Logger, LoggerAdapter]) -> dict:
     logger.info("=== ＣＰＵ使用率 : " + str(psutil.cpu_percent()) + "%")
     logger.info("=== メモリー使用状況")
     logger.info("=== used       / total      / available  / percent")
-    logger.info(
-        f"=== {str(memory.used)} / {str(memory.total)} / {str(memory.available)} / {str(memory.percent)}"
-    )
+    logger.info(f"=== {str(memory.used)} / {str(memory.total)} / {str(memory.available)} / {str(memory.percent)}")
     logger.info("=== スワップメモリー使用状況")
     logger.info("=== used       / total      / percent")
-    logger.info(
-        f"=== {str(swap_memory.used)}   / {str(swap_memory.total)} / {str(swap_memory.percent)}"
-    )
+    logger.info(f"=== {str(swap_memory.used)}   / {str(swap_memory.total)} / {str(swap_memory.percent)}")
 
     return resource

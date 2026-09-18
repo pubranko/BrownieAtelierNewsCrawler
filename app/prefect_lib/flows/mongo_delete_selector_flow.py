@@ -1,4 +1,5 @@
 from datetime import date
+
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from prefect import flow, get_run_logger
 from prefect.futures import PrefectFuture
@@ -14,7 +15,9 @@ def mongo_delete_selector_flow(
     collections_name: list[str],
     period_date_from: date,  # 月次エクスポートを行うデータの基準年月日
     period_date_to: date,  # 月次エクスポートを行うデータの基準年月日
-    crawler_response__registered: bool = True,  # crawler_responseの場合、登録済みになったレコードのみ削除する場合True、登録済み以外のレコードも含めて削除する場合False
+    # crawler_responseの場合、登録済みになったレコードのみ削除する場合True、
+    # 登録済み以外のレコードも含めて削除する場合False
+    crawler_response__registered: bool = True,
 ):
     init_flow()
 
@@ -22,8 +25,9 @@ def mongo_delete_selector_flow(
     logger = get_run_logger()  # PrefectLogAdapter
     # 初期処理
     init_task_instance: PrefectFuture = init_task.submit()
-    # 実行結果が返ってくるまで待機し、戻り値を保存。 
-    #   ※タスクのステータスをresultを受け取る前に判定してもPendingとなる。インスタンスのステータスはリアルタイムで更新されているので注意。
+    # 実行結果が返ってくるまで待機し、戻り値を保存。
+    # ※タスクのステータスをresultを受け取る前に判定してもPendingとなる。
+    # インスタンスのステータスはリアルタイムで更新されているので注意。
     init_task_result = init_task_instance.result()
 
     if init_task_instance.state.is_completed():
@@ -31,9 +35,7 @@ def mongo_delete_selector_flow(
 
         try:
             # mongo操作Flowの共通処理
-            dir_path, period_from, period_to = mongo_common_task(
-                "", "", period_date_from, period_date_to
-            )
+            dir_path, period_from, period_to = mongo_common_task("", "", period_date_from, period_date_to)
 
             mongo_delete_task(
                 mongo,
@@ -51,7 +53,7 @@ def mongo_delete_selector_flow(
             end_task(mongo)
 
     else:
-        logger.error(f"=== init_taskが正常に完了しなかったため、後続タスクの実行を中止しました。")
+        logger.error("=== init_taskが正常に完了しなかったため、後続タスクの実行を中止しました。")
 
 
 def main(**kwargs):

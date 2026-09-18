@@ -1,11 +1,8 @@
-import glob
-import os
-# from prefect.testing.utilities import prefect_test_harness
 from prefect_lib.flows.manual_crawling_flow import manual_crawling_flow
 
 
 def test_exec():
-#     with prefect_test_harness():
+    #     with prefect_test_harness():
     manual_crawling_flow(
         spider_names=[
             "sankei_com_sitemap",
@@ -17,19 +14,19 @@ def test_exec():
             "mainichi_jp_crawl",
             "nikkei_com_crawl",
         ],
-        spider_kwargs=dict(
-            debug=True,
-            # continued = True,
-            # crawl_point_non_update = True,
-            page_span_from=2,
-            page_span_to=2,
-            lastmod_term_minutes_from=90,
-            lastmod_term_minutes_to=60,
-            # direct_crawl_urls = [],
-            # url_pattern =  'https://www.yomiuri.co.jp/national/20220430-OYT1T50050',
-        ),
+        spider_kwargs={
+            "debug": True,
+            # "continued": True,
+            # "crawl_point_non_update": True,
+            "page_span_from": 1,
+            "page_span_to": 2,
+            "lastmod_term_minutes_from": 90,
+            "lastmod_term_minutes_to": 0,
+            # "direct_crawl_urls": [],
+            # "url_pattern": "https://www.yomiuri.co.jp/national/20220430-OYT1T50050",
+        },
         # following_processing_execution=False    # 後続処理実行(scrapying,news_clip_masterへの登録,solrへの登録)
-        following_processing_execution=True  # 後続処理実行(scrapying,news_clip_masterへの登録,solrへの登録)
+        following_processing_execution=True,  # 後続処理実行(scrapying,news_clip_masterへの登録,solrへの登録)
         # spider_kwargs={
         #     'debug': 'Yes',
         #     'pages': '1,1',
@@ -44,6 +41,7 @@ def test_exec():
         #     #'url_pattern':'https://www.epochtimes.jp/2022/06/107648.html',
         # },
     )
+
 
 if __name__ == "__main__":
     test_exec()

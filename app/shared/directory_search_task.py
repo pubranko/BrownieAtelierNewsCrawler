@@ -4,20 +4,20 @@ import inspect
 import os
 import re
 import sys
-from typing import Any, Final, List
+
+sys.path.append(os.getcwd())
+from shared import settings
 
 path = os.getcwd()
-sys.path.append(path)
-from shared import settings
 
 
 def directory_search_task(
     directory_path: str = settings.PREFECT_LIB__TASK_DIR,
-) -> List[dict]:
+) -> list[dict]:
     """
     引数に渡されたパス内にあるタスククラスを読み込み、クラス名のリストにして返す。
     """
-    class_list: List[dict] = []
+    class_list: list[dict] = []
     # 引数で渡されたパス内のpythonモジュールファイル名を取得し、パス＋ファイル名を生成する。(fpath)
     # 拡張子を除去＆ファイルパスのセパレータ (Unix系なら'/') を '.' に置き換え
     # モジュールとして読み込み

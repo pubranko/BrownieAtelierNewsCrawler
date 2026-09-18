@@ -2,7 +2,7 @@ import os
 from datetime import timedelta, timezone
 from typing import Final
 
-from decouple import AutoConfig, config
+from decouple import config
 
 # .envファイルが存在するパスを指定。実行時のカレントディレクトリに.envを配置している場合、以下の設定不要。
 # config = AutoConfig(search_path="./shared")

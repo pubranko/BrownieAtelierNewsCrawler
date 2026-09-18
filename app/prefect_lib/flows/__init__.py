@@ -2,10 +2,7 @@ import logging
 import os
 import tempfile
 from datetime import datetime
-from logging import Logger
-from typing import Any
 
-from prefect_lib.flows import *
 from shared.settings import DATA__LOGS, TIMEZONE
 
 # from prefect import get_run_logger
@@ -20,7 +17,7 @@ START_TIME = datetime.now().astimezone(TIMEZONE)
 
 # prefectのlogger本体にファイルハンドラーを付与する。※flow_logger/task_loggerの内容をログファイルに保存させる。
 LOG_FILE_PATH = tempfile.NamedTemporaryFile(
-    prefix=f'prefect_log_{START_TIME.strftime("%Y-%m-%d %H-%M-%S")}_',
+    prefix=f"prefect_log_{START_TIME.strftime('%Y-%m-%d %H-%M-%S')}_",
     dir=DATA__LOGS,
 ).name
 

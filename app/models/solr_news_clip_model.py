@@ -1,9 +1,7 @@
-import logging
 import os
 from collections.abc import ItemsView
 from datetime import datetime
 from logging import Logger
-from typing import Union
 
 import pysolr
 from dateutil import parser
@@ -12,7 +10,7 @@ from dateutil import parser
 #   + - && || ! ( ) { } [ ] ^ " ~ * ? : \
 
 
-class SolrNewsClip(object):
+class SolrNewsClip:
     """
     solr用のモデル。solrからのデータの取得を行う。
     """
@@ -28,7 +26,7 @@ class SolrNewsClip(object):
         self.solr = pysolr.Solr(
             os.environ["SOLR_URL"] + os.environ["SOLR_CORE"],
             timeout=30,
-            verify="",
+            verify=False,
             # verify=SolrEnv.VERIFY,     #solrの公開鍵を指定する場合、ここにファイルパスを入れる。
             auth=(os.environ["SOLR_WRITE_USER"], os.environ["SOLR_WRITE_PASS"]),
             always_commit=True,
@@ -41,16 +39,20 @@ class SolrNewsClip(object):
         search_query: list,
         skip: int = 0,
         limit: int = 100,
-        sort: dict = {
-            "response_time": "desc",
-        },
-        field: list = [],
+        sort: dict | None = None,
+        field: list | None = None,
         facet: str = "on",
-        facet_field: list = [],
-    ) -> Union[pysolr.Results, None]:
+        facet_field: list | None = None,
+    ) -> pysolr.Results | None:
         """
         引数で渡されたrequest内のsolrサーチ用の情報より、検索を実行しレスポンスを返す。
         """
+        if sort is None:
+            sort = {"response_time": "desc"}
+        if field is None:
+            field = []
+        if facet_field is None:
+            facet_field = []
         search_query_str = "".join(search_query)
         # self.logger.info('=== solrへqueryを送信:' + str(search_query_str))
 
@@ -73,7 +75,7 @@ class SolrNewsClip(object):
                     # ファセット、取得したいフィールド
                     "facet": facet,
                     "facet_field": ",".join(facet_field),
-                }
+                },
             )
             return results
 
@@ -84,11 +86,25 @@ class SolrNewsClip(object):
         """ pysolr.Resultsの内部構造は以下の通り。
         ('__class__', <class 'pysolr.Results'>)
         {'raw_response':
-            {'responseHeader': {'status': 0, 'QTime': 0, 'params': {'q': '*:*', 'start': '0', 'rows': '1', 'wt': 'json'}},
+            {'responseHeader': {'status': 0, 'QTime': 0,
+            'params': {'q': '*:*', 'start': '0', 'rows':
+            '1', 'wt': 'json'}},
             'response': {'numFound': 7427, 'start': 0,
-                        'docs': [{'mongo_id': ['〜'], 'url': '〜', 'title': '〜', 'article': '〜', 'issuer': ['〜'], 'update_count': 0, 'id': '〜', '_version_': 1638412764864053248, 'response_time': '2019-01-20T19:24:59.014Z', 'publish_date': '2018-04-01T00:00:00Z'}]}
+                        'docs': [{'mongo_id': ['〜'], 'url': '〜',
+                        'title': '〜', 'article': '〜', 'issuer':
+                        ['〜'], 'update_count': 0, 'id': '〜',
+                        '_version_': 1638412764864053248,
+                        'response_time':
+                        '2019-01-20T19:24:59.014Z',
+                        'publish_date':
+                        '2018-04-01T00:00:00Z'}]}
             },
-        'docs': [{'mongo_id': ['〜'], 'url': '〜', 'title': '〜', 'article': '〜', 'issuer': ['〜'], 'update_count': 0, 'id': '〜', '_version_': 1638412764864053248,'response_time': '2019-01-20T19:24:59.014Z', 'publish_date': '2018-04-01T00:00:00Z'}],
+        'docs': [{'mongo_id': ['〜'], 'url': '〜',
+        'title': '〜', 'article': '〜', 'issuer': ['〜'],
+        'update_count': 0, 'id': '〜', '_version_':
+        1638412764864053248,'response_time':
+        '2019-01-20T19:24:59.014Z', 'publish_date':
+        '2018-04-01T00:00:00Z'}],
         'hits': 7427, 'debug': {}, 'highlighting': {}, 'facets': {}, 'spellcheck': {},
         'stats': {}, 'qtime': 0, 'grouped': {}, 'nextCursorMark': None, '_next_page_query': None
         }
@@ -137,7 +153,7 @@ class SolrNewsClip(object):
                 recode["publish_date"]
                 recode["issuer"]
                 recode["update_count"]
-            except:
+            except Exception:
                 recodes.append(
                     {
                         "title": "登録データに欠損があるため、こちらのurlの情報は正しく表示できない状態です。",
@@ -154,9 +170,7 @@ class SolrNewsClip(object):
                         "title": recode["title"],
                         "article": recode["article"],
                         "url": recode["url"],
-                        "publish_date": datetime.strftime(
-                            parser.parse(recode["publish_date"]), "%Y-%m-%d %H:%M"
-                        ),
+                        "publish_date": datetime.strftime(parser.parse(recode["publish_date"]), "%Y-%m-%d %H:%M"),
                         "issuer": recode["issuer"][0],
                         "update_count": recode["update_count"],
                     }

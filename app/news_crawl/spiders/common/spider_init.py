@@ -1,34 +1,26 @@
 from __future__ import annotations  # ExtensionsSitemapSpiderの循環参照を回避するため
 
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING
 
-from BrownieAtelierMongo.collection_models.controller_model import \
-    ControllerModel
+from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from news_crawl.news_crawl_input import NewsCrawlInput
-from news_crawl.spiders.common.crawling_domain_duplicate_check import \
-    CrawlingDomainDuplicatePrevention
-from news_crawl.spiders.common.lastmod_continued_skip_check import \
-    LastmodContinuedSkipCheck
-from news_crawl.spiders.common.lastmod_term_skip_check import \
-    LastmodTermSkipCheck
-from news_crawl.spiders.common.start_request_debug_file_init import \
-    start_request_debug_file_init
+from news_crawl.spiders.common.crawl_progress import CrawlProgress
+from news_crawl.spiders.common.crawling_domain_duplicate_check import CrawlingDomainDuplicatePrevention
+from news_crawl.spiders.common.lastmod_continued_skip_check import LastmodContinuedSkipCheck
+from news_crawl.spiders.common.lastmod_term_skip_check import LastmodTermSkipCheck
+from news_crawl.spiders.common.start_request_debug_file_init import start_request_debug_file_init
 from scrapy.exceptions import CloseSpider
 from shared.resource_check import resource_check
 
 if TYPE_CHECKING:  # 型チェック時のみインポート
-    from news_crawl.spiders.extensions_class.extensions_crawl import \
-        ExtensionsCrawlSpider
-    from news_crawl.spiders.extensions_class.extensions_sitemap import \
-        ExtensionsSitemapSpider
+    from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
+    from news_crawl.spiders.extensions_class.extensions_sitemap import ExtensionsSitemapSpider
 
     # from news_crawl.spiders.extensions_class.extensions_xml_feed import ExtensionsXmlFeedSpider
 
 
-def spider_init(
-    spider: Union[ExtensionsSitemapSpider, ExtensionsCrawlSpider], *args, **kwargs
-):
+def spider_init(spider: ExtensionsSitemapSpider | ExtensionsCrawlSpider, *args, **kwargs):
     """spider共通の初期処理"""
     domain_name: str = spider._domain_name
     spider_name: str = spider.name
@@ -41,8 +33,12 @@ def spider_init(
     )  # MongoModelではLoggerAdapterではなくLoggerで定義している。そのためとりあえずLoggerを渡すよう対応中
     # コントローラーモデルを生成
     controller = ControllerModel(spider.mongo)
+    spider._controller = controller
     # コントローラーよりクロールポイントを取得し、各スパイダーのクラス変数へ保存
     spider._crawl_point = controller.crawl_point_get(domain_name, spider.name)
+    # 前回位置をコピーして保持し、今回の要求・解析・保存結果を集計する。
+    # 終了時はこの集計から、未完了の記事を飛び越えない再開位置を求める。
+    spider._crawl_progress = CrawlProgress(spider._crawl_point)
 
     # 引数の保存＆チェックを行う
     spider.news_crawl_input = NewsCrawlInput(**kwargs)
@@ -57,6 +53,8 @@ def spider_init(
     duplicate_check = crawling_domain_control.execution(domain_name)
     if not duplicate_check:
         raise CloseSpider("同一ドメインへの多重クローリングとなるため中止")
+    # ロックオブジェクトを終了まで保持し、共通終了処理で解放する。
+    spider._crawling_domain_control = crawling_domain_control
 
     resource: dict = resource_check(spider.logger)
     # CPUチェック
@@ -73,9 +71,7 @@ def spider_init(
     elif float(str(resource["swap_memory_percent"])) > 95:
         raise CloseSpider("=== スワップメモリー使用率が95%を超えたためスパイダーを停止します。")
 
-    spider.logger.info(
-        f"=== __init__ : 開始時間({spider.news_crawl_input.crawling_start_time.isoformat()})"
-    )
+    spider.logger.info(f"=== __init__ : 開始時間({spider.news_crawl_input.crawling_start_time.isoformat()})")
     spider.logger.info(f"=== __init__ : 引数({kwargs})")
     spider.logger.info(f"=== __init__ : 今回向けクロールポイント情報 \n {spider._crawl_point}")
 

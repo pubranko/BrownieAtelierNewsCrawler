@@ -2,13 +2,11 @@ import logging
 import os
 import sys
 from logging import Logger
-from typing import Any
 
 import pysolr
 
 path = os.getcwd()
 sys.path.append(path)
-from models.solr_news_clip_model import SolrNewsClip
 
 logger: Logger = logging.getLogger()
 
@@ -24,7 +22,7 @@ limit = 5
 solr = pysolr.Solr(
     os.environ["SOLR_URL"] + os.environ["SOLR_CORE"],
     timeout=30,
-    verify="",
+    verify=False,
     # verify=SolrEnv.VERIFY,     #solrの公開鍵を指定する場合、ここにファイルパスを入れる。
     auth=(os.environ["SOLR_ADMIN_USER"], os.environ["SOLR_ADMIN_PASS"]),
     always_commit=True,
@@ -51,5 +49,5 @@ results = solr.search(
         # ファセット、取得したいフィールド
         #'facet': facet,
         #'facet_field': ','.join(facet_field),
-    }
+    },
 )

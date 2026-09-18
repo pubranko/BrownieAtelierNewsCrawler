@@ -1,32 +1,28 @@
 import pickle
+from collections.abc import AsyncIterable, Callable, Iterable
 from datetime import datetime
-from typing import Any, Final, Callable
+from typing import Any, Final
 from urllib.parse import unquote
 
 import scrapy
-from BrownieAtelierMongo.collection_models.controller_model import \
-    ControllerModel
-from BrownieAtelierMongo.collection_models.crawler_logs_model import \
-    CrawlerLogsModel
-from BrownieAtelierMongo.collection_models.crawler_response_model import \
-    CrawlerResponseModel
+from BrownieAtelierMongo.collection_models.controller_model import ControllerModel
+from BrownieAtelierMongo.collection_models.crawler_logs_model import CrawlerLogsModel
+from BrownieAtelierMongo.collection_models.crawler_response_model import CrawlerResponseModel
+
 #
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
 from news_crawl.items import NewsCrawlItem
 from news_crawl.news_crawl_input import NewsCrawlInput
-from news_crawl.spiders.common.lastmod_continued_skip_check import \
-    LastmodContinuedSkipCheck
-from news_crawl.spiders.common.lastmod_term_skip_check import \
-    LastmodTermSkipCheck
+from news_crawl.spiders.common.crawl_progress import CrawlProgress
+from news_crawl.spiders.common.crawling_domain_duplicate_check import CrawlingDomainDuplicatePrevention
+from news_crawl.spiders.common.lastmod_continued_skip_check import LastmodContinuedSkipCheck
+from news_crawl.spiders.common.lastmod_term_skip_check import LastmodTermSkipCheck
 from news_crawl.spiders.common.pagination_check import PaginationCheck
 from news_crawl.spiders.common.spider_closed import spider_closed
 from news_crawl.spiders.common.spider_init import spider_init
-from news_crawl.spiders.common.urls_continued_skip_check import \
-    UrlsContinuedSkipCheck
-from scrapy.http import TextResponse
+from news_crawl.spiders.common.urls_continued_skip_check import UrlsContinuedSkipCheck
+from scrapy.http import Response, TextResponse
 from scrapy.spiders import CrawlSpider
-from scrapy_splash import SplashRequest
-from scrapy_selenium import SeleniumRequest
 
 
 class ExtensionsCrawlSpider(CrawlSpider):
@@ -41,7 +37,7 @@ class ExtensionsCrawlSpider(CrawlSpider):
     start_urls: list = [
         "https://www.sample.com/crawl.html",
     ]  # 継承先で上書き要。
-    custom_settings: dict = {
+    custom_settings: dict[str, Any] | None = {
         "DEPTH_LIMIT": 2,
         "DEPTH_STATS_VERBOSE": True,
     }
@@ -50,6 +46,10 @@ class ExtensionsCrawlSpider(CrawlSpider):
 
     # MongoDB関連
     mongo: MongoModel  # MongoDBへの接続を行うインスタンスをspider内に保持。pipelinesで使用。
+    _controller: ControllerModel
+    # 起動時に生成する実行単位の進捗。ミドルウェアの保存結果と一覧の並びを集約する。
+    _crawl_progress: CrawlProgress
+    _crawling_domain_control: CrawlingDomainDuplicatePrevention
     # スパイダーの挙動制御関連、固有の情報など
     _domain_name = "sample_com"  # 各種処理で使用するドメイン名の一元管理。継承先で上書き要。
 
@@ -58,14 +58,12 @@ class ExtensionsCrawlSpider(CrawlSpider):
     _crawl_point: dict = {}
     """オーバーライド必須 この説明がvscodeで見えているということは、オーバーライドが漏れています。"""
 
-    # seleniumモード
-    selenium_mode: bool = False 
-    """記事本体のページへのリクエストにseleniumを使用する場合True。それ以外False"""
-    selenium_mode__start_request: bool = False
-    """開始ページ（一覧ページ）へのリクエストにseleniumを使用する場合True。それ以外False"""
-    # splashモード
-    splash_mode: bool = False
-
+    playwright_mode: bool = False
+    """記事本体のページへのリクエストをPlaywrightで処理する場合True。"""
+    playwright_mode__start_request: bool = False
+    """開始ページ（一覧ページ）へのリクエストをPlaywrightで処理する場合True。"""
+    playwright_include_page: bool = False
+    """コールバックでPlaywrightのPageを直接操作する場合True。"""
     # 一覧ページの情報を保存 [{'source_url': '', 'lastmod': '', 'loc': ''},,,]
     crawl_urls_list: list[dict[str, Any]] = []
 
@@ -128,53 +126,65 @@ class ExtensionsCrawlSpider(CrawlSpider):
         一覧ページのリクエストを作成する。
         ただしダイレクトクロールの指定がある場合は一覧ページではなく実際の記事へのリクエストを直接作成する。
         """
-        # クロールの種類に応じて開始させるurls、レスポンスを処理させるCall Back関数、seleniumのモードを設定
+        # クロールの種類に応じて開始URL、コールバック、Playwright使用有無を設定する。
         if self.news_crawl_input.direct_crawl_urls:
-            # ダイレクトクロール指定がある場合、一覧ページなどはクロールせず、引数で受け取ったURLリストのみクロールさせる。
-            start_urls:list = self.news_crawl_input.direct_crawl_urls
+            # ダイレクトクロール指定時は、一覧ページをクロールせず、指定されたURLだけをクロールする。
+            start_urls: list = self.news_crawl_input.direct_crawl_urls
             callback: Callable = self.parse_news
-            selenium_mode = self.selenium_mode
+            playwright_mode = self.playwright_mode
         elif self.url_continued.continued:
             # 前回の続きからクロールの場合、start_urlsから順に処理させる。レスポンスは続き用の関数に処理される。
-            start_urls:list = self.start_urls
+            start_urls: list = self.start_urls
             callback: Callable = self.parse_start_response_continued_crawl_mode
-            selenium_mode = self.selenium_mode__start_request
+            playwright_mode = self.playwright_mode__start_request
         else:
             # ページ指定によるクロールの場合、start_urlsから順に処理させる。レスポンスはページ指定用の関数に処理される。
-            start_urls:list = self.start_urls
+            start_urls: list = self.start_urls
             callback: Callable = self.parse_start_response_page_crawl_mode
-            selenium_mode = self.selenium_mode__start_request
-        
+            playwright_mode = self.playwright_mode__start_request
+
+        if not self.news_crawl_input.direct_crawl_urls:
+            # 要求生成前に一覧の起点を登録し、起点が未解析のまま終了した場合の位置更新を防ぐ。
+            self._crawl_progress.expect_discovery(start_urls)
         for url in start_urls:
-            if selenium_mode:
-                yield SeleniumRequest(url=url, callback=callback)
+            if playwright_mode:
+                yield scrapy.Request(
+                    url=url,
+                    callback=callback,
+                    meta={
+                        "playwright": True,
+                        "playwright_include_page": self.playwright_include_page,
+                        # 広告・計測通信の完了を待たず、DOM構築後にコールバックへ進む。
+                        "playwright_page_goto_kwargs": {"wait_until": "domcontentloaded", "timeout": 60_000},
+                    },
+                )
             else:
-                yield scrapy.Request(url=url,callback=callback)
+                yield scrapy.Request(url=url, callback=callback)
 
-
-    def parse_start_response_continued_crawl_mode(self):
+    def parse_start_response_continued_crawl_mode(
+        self, response: TextResponse
+    ) -> Iterable[scrapy.Request] | AsyncIterable[scrapy.Request]:
         """(拡張メソッド)
         継承先でオーバーライドして使用する。
         前回の続きからクロールする場合の処理を記載してください。
         """
-        pass
+        return ()
 
-
-    def parse_start_response_page_crawl_mode(self):
+    def parse_start_response_page_crawl_mode(
+        self, response: TextResponse
+    ) -> Iterable[scrapy.Request] | AsyncIterable[scrapy.Request]:
         """(拡張メソッド)
         継承先でオーバーライドして使用する。
         ページにより範囲指定でクロールする場合の処理を記載してください。
         """
-        pass
+        return ()
 
-
-    def parse_news(self, response: TextResponse):
+    def parse_news(self, response: Response):
         """(拡張メソッド)
         取得したレスポンスよりDBへ書き込み
         """
-        # selenium、splash、通常モードにより処理を切り分ける
-        meta = {}
-        args = {}
+        if not isinstance(response, TextResponse):
+            raise TypeError(f"parse_news requires a TextResponse: {response.url}")
 
         urls: set = set()
         req: list = []
@@ -183,33 +193,39 @@ class ExtensionsCrawlSpider(CrawlSpider):
             # 相対パスの場合絶対パスへ変換。また%エスケープされたものはUTF-8へ変換
             link_url: str = unquote(response.urljoin(link))
             # リンクのurlが対象としたurlの別ページで抽出されていなかった場合リクエストへ追加
-            if self.pagination_check.check(
-                link_url, self.crawl_target_urls, self.logger, self.name
-            ):
+            if self.pagination_check.check(link_url, self.crawl_target_urls, self.logger, self.name):
                 urls.add(link_url)
 
         for url in urls:
-            if self.splash_mode:
-                req.append(
-                    SplashRequest(url=url, callback=self.parse, meta=meta, args=args)
+            req.append(
+                scrapy.Request(
+                    url=url,
+                    callback=self.parse_news,
+                    meta={
+                        # 後続ページの未保存も元記事の未完了として判定できるよう、親 URL を引き継ぐ。
+                        "checkpoint_root": response.meta.get(
+                            "checkpoint_root", response.meta.get("progress_url", response.url)
+                        )
+                    },
                 )
-            else:
-                req.append(scrapy.Request(url=url, callback=self.parse))
+            )
         yield from req
 
         # クロール時のスパイダーのバージョン情報を記録 ( ex: 'jp_reuters_com_crawl:1.0 / extensions_crawl:1.0' )
-        _info = f"{self.name}:{str(self._spider_version)} / {self.EXTENSIONS_CRAWL}:{str(self._extensions_crawl_version)}"
+        _info = (
+            f"{self.name}:{str(self._spider_version)} / {self.EXTENSIONS_CRAWL}:{str(self._extensions_crawl_version)}"
+        )
 
         source_of_information: dict = {}
         for record in self.crawl_urls_list:
             record: dict
             if response.url == record[self.CRAWL_URLS_LIST__LOC]:
-                source_of_information[
-                    CrawlerResponseModel.SOURCE_OF_INFORMATION__SOURCE_URL
-                ] = record[self.CRAWL_URLS_LIST__SOURCE_URL]
-                source_of_information[
-                    CrawlerResponseModel.SOURCE_OF_INFORMATION__LASTMOD
-                ] = record[self.CRAWL_URLS_LIST__LASTMOD]
+                source_of_information[CrawlerResponseModel.SOURCE_OF_INFORMATION__SOURCE_URL] = record[
+                    self.CRAWL_URLS_LIST__SOURCE_URL
+                ]
+                source_of_information[CrawlerResponseModel.SOURCE_OF_INFORMATION__LASTMOD] = record[
+                    self.CRAWL_URLS_LIST__LASTMOD
+                ]
 
         yield NewsCrawlItem(
             domain=self.allowed_domains[0],
@@ -232,26 +248,21 @@ class ExtensionsCrawlSpider(CrawlSpider):
         """
         return url["url"]
 
-    def pages_setting(
-        self, default_page_span_from: int, default_page_span_to: int
-    ) -> tuple[int, int]:
+    def pages_setting(self, default_page_span_from: int, default_page_span_to: int) -> tuple[int, int]:
         """(拡張メソッド)
         クロール対象のurlを抽出するページの開始・終了の範囲を決める。
         ・起動時の引数にpagesがある場合は、その指定に従う。
         ・それ以外は、各サイトの標準値に従う。
         """
-        if (
-            self.news_crawl_input.page_span_from and self.news_crawl_input.page_span_to
-        ):  # ページ範囲指定ありの場合
+        if self.news_crawl_input.page_span_from and self.news_crawl_input.page_span_to:  # ページ範囲指定ありの場合
             self.logger.info(
-                f"=== page_span_from ~ page_span_to {self.news_crawl_input.page_span_from} : {self.news_crawl_input.page_span_to}"
+                "=== page_span_from ~ page_span_to "
+                f"{self.news_crawl_input.page_span_from} : {self.news_crawl_input.page_span_to}"
             )
             return (
                 self.news_crawl_input.page_span_from,
                 self.news_crawl_input.page_span_to,
             )
         else:
-            self.logger.info(
-                f"=== page_span_from ~ page_span_to {default_page_span_from} : {default_page_span_to}"
-            )
+            self.logger.info(f"=== page_span_from ~ page_span_to {default_page_span_from} : {default_page_span_to}")
             return default_page_span_from, default_page_span_to

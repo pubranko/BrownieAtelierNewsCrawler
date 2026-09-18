@@ -1,10 +1,12 @@
 from datetime import datetime, timedelta
 
+
 def test_exec():
     # カレントディレクトリをpythonpathに追加
     import os
     import sys
-    current_directory = os.environ.get('PWD')
+
+    current_directory = os.environ.get("PWD")
     if current_directory:
         sys.path.append(current_directory)
 
@@ -14,8 +16,11 @@ def test_exec():
     from shared.settings import TIMEZONE
 
     # 絞り込み用の引数がなければ全量チェック
-    base_datetime = datetime.now().astimezone(TIMEZONE).replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)  # 当日の現在時＋１・０分・０秒
+    base_datetime = datetime.now().astimezone(TIMEZONE).replace(minute=0, second=0, microsecond=0) + timedelta(
+        hours=1
+    )  # 当日の現在時＋１・０分・０秒
     morning_flow_net(base_datetime)
+
 
 if __name__ == "__main__":
     test_exec()

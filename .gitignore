@@ -144,6 +144,8 @@ data/prefect_data/*
 !data/**/.gitkeep
 certificate
 test_aria/*
+temp/*
+!temp/.gitkeep
 #!/data/scraper_info_by_domain/
 profiles.toml
 memo_store.toml
@@ -153,3 +155,6 @@ mongodb/log/mongodb/mongod.log
 
 # prefectのローカルテスト時に作成される不要ファイル
 server.pid
+
+# marimoのローカル実行セッション
+app/marimo/__marimo__/

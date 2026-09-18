@@ -1,10 +1,12 @@
 from datetime import datetime
+
 # from prefect.testing.utilities import prefect_test_harness
 from prefect_lib.flows.manual_scrapying_flow import manual_scrapying_flow
 from shared.settings import TIMEZONE
 
+
 def test_exec():
-#     with prefect_test_harness():
+    #     with prefect_test_harness():
 
     manual_scrapying_flow(
         # domain='sankei_com_sitemap',
@@ -15,6 +17,7 @@ def test_exec():
         # following_processing_execution=True,
         following_processing_execution=False,
     )
+
 
 if __name__ == "__main__":
     test_exec()

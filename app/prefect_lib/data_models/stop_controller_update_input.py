@@ -1,6 +1,6 @@
 from typing import Any, Final
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 
 class StopControllerUpdateConst:
@@ -41,25 +41,29 @@ class StopControllerUpdateInput(BaseModel):
     ##################################
     # 単項目チェック、省略時の値設定
     ##################################
-    @validator(StopControllerUpdateConst.COMMAND)
-    def report_term_check(cls, value: str, values: dict) -> str:
+    @field_validator(StopControllerUpdateConst.COMMAND)
+    @classmethod
+    def report_term_check(cls, value: str) -> str:
         if value not in [
             StopControllerUpdateConst.COMMAND__ADD,
             StopControllerUpdateConst.COMMAND__DELETE,
         ]:
             raise ValueError(
-                f"コマンド指定ミス。{StopControllerUpdateConst.COMMAND__ADD}, {StopControllerUpdateConst.COMMAND__DELETE} のいずれかで入力してください。"
+                f"コマンド指定ミス。{StopControllerUpdateConst.COMMAND__ADD}, "
+                f"{StopControllerUpdateConst.COMMAND__DELETE} のいずれかで入力してください。"
             )
         return value
 
-    @validator(StopControllerUpdateConst.DESTINATION)
-    def totalling_term_check(cls, value: str, values: dict) -> str:
+    @field_validator(StopControllerUpdateConst.DESTINATION)
+    @classmethod
+    def totalling_term_check(cls, value: str) -> str:
         if value not in [
             StopControllerUpdateConst.DESTINATION__CRAWLING,
             StopControllerUpdateConst.DESTINATION__SCRAPYING,
         ]:
             raise ValueError(
-                f"指定先の指定ミス。{StopControllerUpdateConst.DESTINATION__CRAWLING}, {StopControllerUpdateConst.DESTINATION__SCRAPYING} のいずれかで入力してください。"
+                f"指定先の指定ミス。{StopControllerUpdateConst.DESTINATION__CRAWLING}, "
+                f"{StopControllerUpdateConst.DESTINATION__SCRAPYING} のいずれかで入力してください。"
             )
         return value
 

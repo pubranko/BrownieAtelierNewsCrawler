@@ -1,27 +1,19 @@
 import copy
 import urllib.parse
-from typing import Final, cast, Callable
+from collections.abc import Callable
+from typing import Any, Final, cast
 
 import scrapy
-from news_crawl.spiders.common.start_request_debug_file_generate import \
-    LASTMOD as debug_file__LASTMOD
-from news_crawl.spiders.common.start_request_debug_file_generate import \
-    LOC as debug_file__LOC
-from news_crawl.spiders.common.start_request_debug_file_generate import \
-    start_request_debug_file_generate
-from news_crawl.spiders.common.url_pattern_skip_check import \
-    url_pattern_skip_check
-from news_crawl.spiders.common.urls_continued_skip_check import \
-    UrlsContinuedSkipCheck
-from news_crawl.spiders.extensions_class.extensions_crawl import \
-    ExtensionsCrawlSpider
+from news_crawl.spiders.common.start_request_debug_file_generate import LASTMOD as debug_file__LASTMOD
+from news_crawl.spiders.common.start_request_debug_file_generate import LOC as debug_file__LOC
+from news_crawl.spiders.common.start_request_debug_file_generate import start_request_debug_file_generate
+from news_crawl.spiders.common.url_pattern_skip_check import url_pattern_skip_check
+from news_crawl.spiders.common.urls_continued_skip_check import UrlsContinuedSkipCheck
+from news_crawl.spiders.extensions_class.extensions_crawl import ExtensionsCrawlSpider
 from scrapy.http import TextResponse
 
-
 base_start_url: str = "https://www.nikkei.com/news/category/"
-# "https://www.nikkei.com/news/category/",  # 新着
-# 'https://www.nikkei.com/news/category/?page=1',  #クエリー部分で取得開始したい記事を指定。省略すればpage=1として処理される。
-# 'https://www.nikkei.com/news/category/?page=2',  # 初期処理で指定ページに合わせてpage=部をカスタマイズ
+
 
 class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
     name: str = "nikkei_com_crawl"
@@ -32,14 +24,7 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
     _domain_name: str = "nikkei_com"  # 各種処理で使用するドメイン名の一元管理
     _spider_version: float = 1.0
 
-    custom_settings: dict = {
-        "DEPTH_LIMIT": 0,
-        "DEPTH_STATS_VERBOSE": True,
-        "DOWNLOADER_MIDDLEWARES": {
-            # selenium用 -> カスタムバージョン
-            "news_crawl.scrapy_selenium_custom_middlewares.SeleniumMiddleware": 800,
-        },
-    }
+    custom_settings: dict[str, Any] | None = {"DEPTH_LIMIT": 0, "DEPTH_STATS_VERBOSE": True}
 
     _crawl_point: dict = {}
     """次回クロールポイント情報 (ExtensionsCrawlSpiderの同項目をオーバーライド必須)"""
@@ -53,6 +38,10 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
     # selenium_mode: bool = True
 
     ITEMS_ON_PAGE_COUNT: Final[int] = 30
+    ARTICLE_LINK_SELECTOR: Final[str] = (
+        "main[class^=main] article[class^=sokuhoCard] > div[class^=container] "
+        "> div[class^=textArea_] > a[href]::attr(href)"
+    )
 
     def __init__(self, *args, **kwargs):
         """(拡張メソッド)
@@ -67,7 +56,7 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
         self.url_continued = UrlsContinuedSkipCheck(
             self._crawl_point, self.start_urls[0], self.news_crawl_input.continued
         )
-        
+
         if self.url_continued.continued:
             # 前回の続きからクロールする場合、start_urlsのページより順にクロールする。
             pass
@@ -79,7 +68,6 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
             page_range = range(self.page_from, self.page_to + 1)
             self.start_urls = [f"{base_start_url}?page={p}" for p in page_range]
 
-
     def parse_start_response_continued_crawl_mode(self, response: TextResponse):
         """(拡張メソッド)
         取得したレスポンスよりDBへ書き込み
@@ -88,10 +76,13 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
 
         # ページ内の対象urlを抽出
         # ※1ページ目と２ページ目以降でリンクを抽出するcssセレクターが異なるため以下のように操作
-        links = response.css(
-            # f"#CONTENTS_MAIN > div > h3.m-miM09_title > a[href]::attr(href)"
-            f"main[class^=main] article[class^=sokuhoCard] > div[class^=container] > div[class^=textArea_] > a[href]::attr(href)"
-        ).getall()
+        links: list[str] = response.css(self.ARTICLE_LINK_SELECTOR).getall()
+        # スキップ判定前の並びを保持し、途中失敗時に未取得記事より古い URL を再開の目印にする。
+        self._crawl_progress.record_listing(
+            base_start_url,
+            self.page,
+            [{"loc": urllib.parse.unquote(response.urljoin(link)), "lastmod": ""} for link in links],
+        )
         self.logger.info(f"=== ページ内の記事件数 = {len(links)}")
         # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
         if not len(links) == self.ITEMS_ON_PAGE_COUNT:
@@ -120,8 +111,8 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
                     }
                 )
 
-        # 前回からの続きの指定がある場合、前回の10件のurlが全て確認できたら前回以降に追加された記事は全て取得完了と考えられるため終了する。
-        if self.url_continued.skip_flg == True:
+        # 前回の10件のURLをすべて確認したら、前回以降の記事は取得済みとする。
+        if self.url_continued.skip_flg:
             self.logger.info(
                 f"=== parse_start_response 前回の続きまで再取得完了 ({response.url})",
             )
@@ -130,23 +121,21 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
             for _ in self.crawl_urls_list:
                 yield scrapy.Request(
                     response.urljoin(_[self.CRAWL_POINT__LOC]),
-                    callback=cast(Callable,self.parse_news),
+                    callback=cast(Callable, self.parse_news),
                 )
 
             # 次回向けに1ページ目の10件をcontrollerへ保存する
             self._crawl_point[self.start_urls[0]] = {
-                self.CRAWL_POINT__URLS: self.all_urls_list[
-                    0 : self.url_continued.check_count
-                ],
+                self.CRAWL_POINT__URLS: self.all_urls_list[0 : self.url_continued.check_count],
                 self.CRAWL_POINT__CRAWLING_START_TIME: self.news_crawl_input.crawling_start_time,
             }
 
             # debug指定がある場合、取得した全リンクをデバック用ファイルに保存
-            start_request_debug_file_generate(
-                self.name, response.url, self.all_urls_list, self.news_crawl_input.debug
-            )
+            start_request_debug_file_generate(self.name, response.url, self.all_urls_list, self.news_crawl_input.debug)
         else:
             # 次のページのURLを生成しリクエスト
+            if not links or self.page >= self.settings.getint("CONTINUED_MAX_LISTING_PAGES", 100):
+                raise RuntimeError("前回のクロールポイントに到達できませんでした。再開位置を維持します。")
             self.page += 1
             next_page_url = f"{self.start_urls[0]}?page={self.page}"
             yield scrapy.Request(
@@ -163,9 +152,15 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
 
         # ページ内の対象urlを抽出
         # ※1ページ目と２ページ目以降でリンクを抽出するcssセレクターが異なるため以下のように操作
-        links = response.css(
-            f"main[class^=main] article[class^=sokuhoCard] > div[class^=container] > div[class^=textArea_] > a[href]::attr(href)"
-        ).getall()
+        links: list[str] = response.css(self.ARTICLE_LINK_SELECTOR).getall()
+        original_url = response.meta.get("progress_url", response.url)
+        page_number = int(urllib.parse.parse_qs(urllib.parse.urlparse(original_url).query).get("page", ["1"])[0])
+        # 応答の到着順ではなくページ番号で一覧を復元し、安全な再開用 URL 群を選べるようにする。
+        self._crawl_progress.record_listing(
+            base_start_url,
+            page_number,
+            [{"loc": urllib.parse.unquote(response.urljoin(link)), "lastmod": ""} for link in links],
+        )
         self.logger.info(f"=== ページ内の記事件数 = {len(links)}")
         # ページ内記事は通常30件。それ以外の場合はワーニングメール通知（環境によって違うかも、、、）
         if not len(links) == self.ITEMS_ON_PAGE_COUNT:
@@ -206,9 +201,6 @@ class NikkeiComCrawlSpider(ExtensionsCrawlSpider):
 
         # 次回向けに今回の1ページ目(self.page_from)の10件をcontrollerへ保存する
         self._crawl_point[base_start_url] = {
-            self.CRAWL_POINT__URLS: self.all_urls_list[
-                0 : self.url_continued.check_count
-            ],
+            self.CRAWL_POINT__URLS: self.all_urls_list[0 : self.url_continued.check_count],
             self.CRAWL_POINT__CRAWLING_START_TIME: self.news_crawl_input.crawling_start_time,
         }
-

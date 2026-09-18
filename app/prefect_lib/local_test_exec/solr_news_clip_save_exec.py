@@ -1,7 +1,5 @@
-from datetime import datetime
 # from prefect.testing.utilities import prefect_test_harness
 # from prefect_lib.flow.solr_news_clip_save_flow import flow
-from shared.settings import TIMEZONE
 
 
 def test_exec():
@@ -19,6 +17,7 @@ def test_exec():
     #         # scraped_save_start_time_to=datetime(2021, 8, 21, 10, 18, 12, 160000).astimezone(TIMEZONE),
     #     )
     # )
+
 
 if __name__ == "__main__":
     test_exec()

@@ -1,0 +1,121 @@
+name: Common Docker Image Build
+on:
+  workflow_call:
+    inputs:
+      environment_name:
+        description: 使用するGitHub Environment（TEST / PRODUCT）
+        type: string
+        default: TEST
+      branch:
+        description: アプリ更新ブランチ。空欄なら実行時のブランチ
+        type: string
+        default: ''
+      base_branch:
+        description: ベース初期導入ブランチ。空欄ならアプリと同じ
+        type: string
+        default: ''
+      image_tag:
+        description: ローカルイメージタグ。空欄なら実行固有タグ
+        type: string
+        default: ''
+    outputs:
+      image_tag:
+        description: 作成したタグ
+        value: ${{ jobs.Build.outputs.image_tag }}
+      artifact_name:
+        description: ジョブ間受け渡し用アーティファクト名
+        value: ${{ jobs.Build.outputs.artifact_name }}
+  workflow_dispatch:
+    inputs:
+      environment_name:
+        description: 使用するGitHub Environment（TEST / PRODUCT）
+        type: string
+        default: TEST
+      branch:
+        description: アプリ更新ブランチ。空欄なら実行時のブランチ
+        type: string
+        default: ''
+      base_branch:
+        description: ベース初期導入ブランチ。空欄ならアプリと同じ
+        type: string
+        default: ''
+      image_tag:
+        description: ローカルイメージタグ。空欄なら実行固有タグ
+        type: string
+        default: ''
+
+# Environment は呼び出し先で指定する。BASE_TAG と認証情報はその環境から取得する。
+# リポジトリの secrets は呼び出し側の secrets: inherit でも受け取れる。
+# 作成したイメージは tar をアーティファクトとして保存し、テスト・デプロイ側へ渡す。
+# レジストリ認証・タグ採番・push はデプロイ側の責務。手動実行でも公開は行わない。
+jobs:
+  Build:
+    runs-on: ubuntu-22.04
+    environment:
+      name: ${{ inputs.environment_name }}
+    outputs:
+      image_tag: ${{ steps.image.outputs.image_tag }}
+      artifact_name: ${{ steps.image.outputs.artifact_name }}
+    env:
+      UBUNTU_TAG: '26.04'
+      BASE_TAG: ${{ vars.BASE_TAG }}
+      CONTAINER_USER: common_user
+      GIT_REMOTE_REPOSITORY: https://github.com/${{ github.repository }}.git
+      GIT_BRANCH: ${{ inputs.branch || github.ref_name }}
+      BASE_BRANCH: ${{ inputs.base_branch || inputs.branch || github.ref_name }}
+      PATH_CACHE: /tmp/docker-img-arch
+      TZ: Asia/Tokyo
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch || github.ref_name }}
+      - name: 入力の検証
+        env:
+          TARGET_ENV: ${{ inputs.environment_name }}
+        run: |
+          case "$TARGET_ENV" in TEST|PRODUCT) ;; *) exit 1 ;; esac
+          test -n "$BASE_TAG" || { echo 'Environment の BASE_TAG が未設定です' >&2; exit 1; }
+      - name: ベースキャッシュを復元
+        id: base_cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PATH_CACHE }}
+          # Python のソース・lock 更新ではベースを再作成しない。
+          # 定義変更はハッシュ、OS更新だけなら BASE_TAG の変更で再作成する。
+          # 初期導入ブランチの異なるベースが混在しないようブランチもキーに含める。
+          key: base-v2-${{ runner.os }}-${{ runner.arch }}-${{ inputs.environment_name }}-${{ env.BASE_TAG }}-${{ env.UBUNTU_TAG }}-${{ env.CONTAINER_USER }}-${{ env.BASE_BRANCH }}-${{ hashFiles('dockerfile_base', 'docker-compose__base-image-build.yml') }}
+      - name: キャッシュ済みベースをロード
+        if: steps.base_cache.outputs.cache-hit == 'true'
+        run: docker load --input "$PATH_CACHE/base.tar"
+      - name: ベースを作成してキャッシュ用に保存
+        if: steps.base_cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p "$PATH_CACHE"
+          GIT_BRANCH="$BASE_BRANCH" docker compose -f docker-compose__base-image-build.yml build
+          docker save "brownie-atelier-news-crawler-base:$BASE_TAG" -o "$PATH_CACHE/base.tar"
+      - name: ローカルタグと受け渡し名を決定
+        id: image
+        env:
+          REQUESTED_TAG: ${{ inputs.image_tag }}
+        run: |
+          image_tag="${REQUESTED_TAG:-run-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}}"
+          [[ "$image_tag" =~ ^[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$ ]]
+          echo "NEWS_CRAWLER_TAG=$image_tag" >> "$GITHUB_ENV"
+          echo "image_tag=$image_tag" >> "$GITHUB_OUTPUT"
+          echo "artifact_name=crawler-image-$image_tag" >> "$GITHUB_OUTPUT"
+      - name: アプリイメージを更新
+        # アプリ側は Git 更新を取得し、FROM の構築済みベースは再利用する。
+        run: docker compose -f docker-compose__news-crawler-image-build.yml build --no-cache
+      - name: ジョブ間受け渡し用に保存
+        run: docker save "brownie-atelier-news-crawler:$NEWS_CRAWLER_TAG" -o "$RUNNER_TEMP/crawler-image.tar"
+      - name: イメージをアーティファクトへ保存
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.image.outputs.artifact_name }}
+          path: ${{ runner.temp }}/crawler-image.tar
+          # 大きなイメージを長期保管せず、後続ジョブ・手動デバッグ用に1日だけ保持する。
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
+      - name: 手動デバッグ向けの結果表示
+        run: echo "Built image brownie-atelier-news-crawler:$NEWS_CRAWLER_TAG (artifact only)" >> "$GITHUB_STEP_SUMMARY"

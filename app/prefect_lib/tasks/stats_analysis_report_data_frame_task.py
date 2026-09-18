@@ -1,14 +1,11 @@
-from typing import Any, Union
+from typing import Any
 
 from BrownieAtelierMongo.collection_models.mongo_model import MongoModel
-from BrownieAtelierMongo.collection_models.stats_info_collect_model import \
-    StatsInfoCollectModel
+from BrownieAtelierMongo.collection_models.stats_info_collect_model import StatsInfoCollectModel
 from prefect import get_run_logger, task
 from prefect.cache_policies import NO_CACHE
-from prefect_lib.data_models.stats_analysis_report_input import \
-    StatsAnalysisReportInput
-from prefect_lib.data_models.stats_info_collect_data import \
-    StatsInfoCollectData
+from prefect_lib.data_models.stats_analysis_report_input import StatsAnalysisReportInput
+from prefect_lib.data_models.stats_info_collect_data import StatsInfoCollectData
 from prefect_lib.flows import START_TIME
 from pymongo.cursor import Cursor
 
@@ -16,7 +13,7 @@ from pymongo.cursor import Cursor
 @task(cache_policy=NO_CACHE)
 def stats_analysis_report_data_frame_task(
     mongo: MongoModel, stats_analysis_report_input: StatsAnalysisReportInput
-) -> Union[StatsInfoCollectData, None]:
+) -> StatsInfoCollectData | None:
     """
     mongoDBより指定期間内の統計情報集計レコードを取得しデータフレームを生成する。
     生成したデータフレームを返す。
@@ -36,7 +33,8 @@ def stats_analysis_report_data_frame_task(
     record_count: int = stats_info_collect_model.count(filter=log_filter)
 
     stats_info_collect_records: Cursor = stats_info_collect_model.find(
-        filter=log_filter, projection={"_id": 0, "parameter": 0}  # 不要項目を除外
+        filter=log_filter,
+        projection={"_id": 0, "parameter": 0},  # 不要項目を除外
     )
 
     logger.info(f"=== 統計情報レポート件数({record_count})")

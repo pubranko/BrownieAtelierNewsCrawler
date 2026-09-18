@@ -6,13 +6,10 @@ from typing import Any, Final
 import pandas as pd
 from openpyxl import Workbook
 from openpyxl.cell import Cell
-from openpyxl.chart.bar_chart import BarChart
-from openpyxl.styles import (Alignment, Border, Font, PatternFill, Protection,
-                             Side)
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
-from prefect_lib.data_models.stats_info_collect_data import \
-    StatsInfoCollectData
+from prefect_lib.data_models.stats_info_collect_data import StatsInfoCollectData
 
 
 class StatsAnalysisReportExcel:
@@ -43,7 +40,8 @@ class StatsAnalysisReportExcel:
     robots_analysis_columns_info: list = [
         # head1                     : 必須 : 見出し１行目
         # col                       : 必須 : データフレーム列名
-        # equivalent_color          : 任意 : 上のセルと同値の場合の文字色。上と同値の場合、文字色を薄くするなどに使用する。
+        # equivalent_color          : 任意 :
+        # 上のセルと同値の場合の文字色。上と同値の場合、文字色を薄くするなどに使用する。
         # warning_value             : 任意 : ワーニングとする値を入れる配列
         # warning_background_color  : 任意 : ワーンングとなったセルの背景色
         {HEAD1: "集計日〜", COL: "aggregate_base_term"},
@@ -60,7 +58,8 @@ class StatsAnalysisReportExcel:
     downloader_analysis_columns_info: list = [
         # head1                     : 必須 : 見出し１行目
         # col                       : 必須 : データフレーム列名
-        # equivalent_color          : 任意 : 上のセルと同値の場合の文字色。上と同値の場合、文字色を薄くするなどに使用する。
+        # equivalent_color          : 任意 :
+        # 上のセルと同値の場合の文字色。上と同値の場合、文字色を薄くするなどに使用する。
         # warning_value             : 任意 : ワーニングとする値を入れる配列
         # warning_background_color  : 任意 : ワーンングとなったセルの背景色
         {HEAD1: "集計日〜", COL: "aggregate_base_term"},
@@ -80,7 +79,8 @@ class StatsAnalysisReportExcel:
         # col                       : 必須 : データフレーム列名
         # digit_adjustment          : 任意 : 単位の調整。1000とした場合、'value/1000'となる。
         # number_format             : 任意 : 小数点以下の桁数。省略した場合'#,##0'
-        # equivalent_color          : 任意 : 上のセルと同値の場合の文字色。上と同値の場合、文字色を薄くするなどに使用する。
+        # equivalent_color          : 任意 :
+        # 上のセルと同値の場合の文字色。上と同値の場合、文字色を薄くするなどに使用する。
         # warning_value             : 任意 : ワーニングとする値を入れる配列
         # warning_value_over        : 任意 : 超過したらワーニングとする値
         # warning_background_color  : 任意 : ワーンングとなったセルの背景色
@@ -220,9 +220,7 @@ class StatsAnalysisReportExcel:
         # データ編集
 
         # 入力パラメータの集計期間単位ごとにpandasによる解析を実行
-        spider_result_all_df = stats_info_collect_data.stats_analysis_exec(
-            datetime_term_list
-        )
+        spider_result_all_df = stats_info_collect_data.stats_analysis_exec(datetime_term_list)
 
         self.stats_warning_flg: bool = self.stats_analysis_report_body(
             spider_result_all_df, stats_info_collect_data.spider_list
@@ -241,9 +239,7 @@ class StatsAnalysisReportExcel:
         self.robots_warning_flg: bool = self.collect_result_analysis_report_edit_body(
             self.worksheet_2,
             stats_info_collect_data.spider_list,
-            stats_info_collect_data.robots_result_df[
-                StatsInfoCollectData.AGGREGATE_TYPE__SUM
-            ],
+            stats_info_collect_data.robots_result_df[StatsInfoCollectData.AGGREGATE_TYPE__SUM],
             self.ROBOTS_RESPONSE_STATUS,
             self.robots_analysis_columns_info,
         )
@@ -261,16 +257,12 @@ class StatsAnalysisReportExcel:
             self.WORKSHEET_3_NAME,
             self.downloader_analysis_columns_info,
         )
-        self.downloder_warning_flg: bool = (
-            self.collect_result_analysis_report_edit_body(
-                self.worksheet_3,
-                stats_info_collect_data.spider_list,
-                stats_info_collect_data.downloader_result_df[
-                    StatsInfoCollectData.AGGREGATE_TYPE__SUM
-                ],
-                self.DOWNLOADER_RESPONSE_STATUS,
-                self.downloader_analysis_columns_info,
-            )
+        self.downloder_warning_flg: bool = self.collect_result_analysis_report_edit_body(
+            self.worksheet_3,
+            stats_info_collect_data.spider_list,
+            stats_info_collect_data.downloader_result_df[StatsInfoCollectData.AGGREGATE_TYPE__SUM],
+            self.DOWNLOADER_RESPONSE_STATUS,
+            self.downloader_analysis_columns_info,
         )
 
     def stats_analysis_report_header(self):
@@ -314,9 +306,6 @@ class StatsAnalysisReportExcel:
         border = Border(top=side, bottom=side, left=side, right=side)
 
         # 集計期間の数を確認
-        aggregate_base_term_list_count = len(
-            spider_result_all_df["aggregate_base_term"].drop_duplicates()
-        )
 
         # ワーニング有無フラグ(初期値：無し)
         warning_flg: bool = False
@@ -328,19 +317,12 @@ class StatsAnalysisReportExcel:
             columns_info_by_spider = deepcopy(self.stats_analysis_columns_info)
             # スパイダー別のデータフレームを作成
             by_spider_df = spider_result_all_df.query(f'spider_name == "{spider}"')
-            # データ無しの件数を確認 ※スパイダーの可動前はデータ無しとなる。
-            data_none_count: int = len(
-                by_spider_df.query(f'elapsed_time_seconds == ""')
-            )
-            nomal_count: int = aggregate_base_term_list_count - data_none_count
 
             # 列ごとにエクセルに編集
             for col_idx, col_info in enumerate(columns_info_by_spider):
                 for row_idx, value in enumerate(by_spider_df[col_info[self.COL]]):
                     # 更新対象のセル
-                    any: Any = self.worksheet_1[
-                        f"{get_column_letter(col_idx + 1)}{str(base_row_idx + row_idx)}"
-                    ]
+                    any: Any = self.worksheet_1[f"{get_column_letter(col_idx + 1)}{str(base_row_idx + row_idx)}"]
                     target_cell: Cell = any
 
                     # 表示単位の切り上げ (example:b -> kb)
@@ -348,9 +330,7 @@ class StatsAnalysisReportExcel:
                     if self.DIGIT_ADJUSTMENT in col_info:
                         if value:
                             custom_value = int(value) // col_info[self.DIGIT_ADJUSTMENT]
-                            Decimal(str(custom_value)).quantize(
-                                Decimal("0"), rounding=ROUND_HALF_UP
-                            )
+                            Decimal(str(custom_value)).quantize(Decimal("0"), rounding=ROUND_HALF_UP)
 
                     # 小数点以下の調整
                     if self.NUMBER_FORMAT in col_info:
@@ -369,9 +349,7 @@ class StatsAnalysisReportExcel:
                         ]
                         compare_cell: Cell = any
                         if target_cell.value == compare_cell.value:
-                            target_cell.font = Font(
-                                color=col_info[self.EQUIVALENT_COLOR]
-                            )
+                            target_cell.font = Font(color=col_info[self.EQUIVALENT_COLOR])
 
                     # ワーニング値チェック列の場合、ワーニング値セルの背景色を設定。
                     if self.WARNING_VALUE in col_info:
@@ -411,12 +389,12 @@ class StatsAnalysisReportExcel:
         # 最大幅を確認
         # それに合わせた幅を設定する。
         # for col in ws.columns:
-        for col in self.worksheet_1.iter_cols():
+        for column_index, col in enumerate(self.worksheet_1.iter_cols(), start=1):
             max_length = 0
-            column = col[0].column_letter  # 列名A,Bなどを取得
-            for cell in col:
-                if len(str(cell.value)) > max_length:
-                    max_length = len(str(cell.value))
+            column = get_column_letter(column_index)  # 列名A,Bなどを取得
+            for column_cell in col:
+                if len(str(column_cell.value)) > max_length:
+                    max_length = len(str(column_cell.value))
             # 型ヒントでcolumn_dimensionsが存在しないものとみなされエラーが出るため、動的メソッドの実行形式で記述
             # getattr(ws, 'column_dimensions')()[column].width = (max_length + 2.07)
             self.worksheet_1.column_dimensions[column].width = max_length + 2.07
@@ -469,9 +447,7 @@ class StatsAnalysisReportExcel:
         border = Border(top=side, bottom=side, left=side, right=side)
 
         # 集計期間の数を確認
-        aggregate_base_term_list_count = len(
-            result_df[StatsInfoCollectData.AGGREGATE_BASE_TERM].drop_duplicates()
-        )
+        aggregate_base_term_list_count = len(result_df[StatsInfoCollectData.AGGREGATE_BASE_TERM].drop_duplicates())
 
         # ワーニング有無フラグ(初期値：無し)
         warning_flg: bool = False
@@ -489,7 +465,9 @@ class StatsAnalysisReportExcel:
 
             # ステータス別の一覧を作成し、
             # ステータス別の出現件数が集計期間数と一致するか確認
-            status_list_sr: pd.Series = by_spider_df[check_col].drop_duplicates()
+            status_column = by_spider_df[check_col]
+            assert isinstance(status_column, pd.Series)
+            status_list_sr = status_column.drop_duplicates()
             for status in status_list_sr:
                 # データ無しは除く
                 if status:
@@ -507,23 +485,17 @@ class StatsAnalysisReportExcel:
                     # 更新対象のセルに値を設定
                     f"{get_column_letter(col_idx + 1)}{str(base_row_idx + row_idx)}"
                     # any: Any = ws[get_column_letter(col_idx + 1) + str(base_row_idx + row_idx)]
-                    any: Any = ws[
-                        f"{get_column_letter(col_idx + 1)}{str(base_row_idx + row_idx)}"
-                    ]
+                    any: Any = ws[f"{get_column_letter(col_idx + 1)}{str(base_row_idx + row_idx)}"]
                     target_cell: Cell = any
                     ws[target_cell.coordinate] = value
 
                     # 同値カラー調整列の場合、更新対象セルの上と同値ならば色を変える。
                     if self.EQUIVALENT_COLOR in col_info:
-                        any: Any = ws[
-                            f"{get_column_letter(col_idx + 1)}{str(base_row_idx + row_idx - 1)}"
-                        ]
+                        any: Any = ws[f"{get_column_letter(col_idx + 1)}{str(base_row_idx + row_idx - 1)}"]
                         compare_cell: Cell = any
 
                         if target_cell.value == compare_cell.value:
-                            target_cell.font = Font(
-                                color=col_info[self.EQUIVALENT_COLOR]
-                            )
+                            target_cell.font = Font(color=col_info[self.EQUIVALENT_COLOR])
                             warning_flg = True
 
                     # ワーニング値チェック列の場合、ワーニング値セルの背景色を設定。
@@ -542,9 +514,7 @@ class StatsAnalysisReportExcel:
             base_row_idx = base_row_idx + len(by_spider_df)
 
         # 各明細行のセルに罫線を設定する。
-        max_cell: str = get_column_letter(ws.max_column) + str(
-            ws.max_row
-        )  # "BC55"のようなセル番地を生成
+        max_cell: str = get_column_letter(ws.max_column) + str(ws.max_row)  # "BC55"のようなセル番地を生成
         rows = ws[f"a2:{max_cell}"]
         if type(rows) is tuple:
             for cells in rows:
